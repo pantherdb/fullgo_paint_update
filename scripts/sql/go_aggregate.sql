@@ -1,0 +1,1 @@
+select * from panther_upl.go_aggregate;

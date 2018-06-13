@@ -1,5 +1,11 @@
 import psycopg2
 import yaml
+import argparse
+from os import path
+from sys import exit
+
+parser = argparse.ArgumentParser()
+parser.add_argument("query_filename")
 
 with open("config/config.yaml") as f:
     cfg = yaml.load(f)
@@ -9,10 +15,12 @@ dbname = cfg["dbname"]
 username = cfg["username"]
 pword = cfg["pword"]
 
-con = psycopg2.connect("dbname = {} user={} host={} password={}".format(dbname,
-                                                                        username,
-                                                                        host,
-                                                                        pword))
+def get_connection():
+    con = psycopg2.connect("dbname = {} user={} host={} password={}".format(dbname,
+                                                                            username,
+                                                                            host,
+                                                                            pword))
+    return con
 
 def exec_query(connection, query):
     cursor = connection.cursor()
@@ -22,8 +30,8 @@ def exec_query(connection, query):
     res.insert(0, colnames)
     return res
 
-if __name__ == "__main__":
-    results = exec_query(con, "select * from panther_upl.go_aggregate limit 5;")
+def format_results(results, delimiter=";"):
+    formatted_results = []
     for r in results:
         vals = []
         for val in r:
@@ -32,4 +40,19 @@ if __name__ == "__main__":
             else:
                 val = str(val)
             vals.append(val)
-        print(",".join(vals))
+        formatted_results.append(";".join(vals))
+    return formatted_results
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    qfile = args.query_filename
+    if not path.isfile(qfile):
+        print("ERROR: No such query file '{}'.".format(qfile))
+        exit()
+    with open(qfile) as qf:
+        # print(qf.read())
+        # results = []
+        con = get_connection()
+        results = exec_query(con, qf.read())
+    for r in format_results(results):
+        print(r)
