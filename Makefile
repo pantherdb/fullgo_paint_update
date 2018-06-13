@@ -38,3 +38,8 @@ go_aggregate:
 
 organism_taxon:
 	python3 scripts/db_caller.py scripts/sql/organism_taxon.sql > resources/$(TAXON)
+
+repair_gaf_symbols:
+	wget ftp://ftp.pombase.org/nightly_update/misc/allNames.tsv -O resources/allNames.tsv
+	wget ftp://ftp.pombase.org/nightly_update/misc/sysID2product.tsv -O resources/sysID2product.tsv
+	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p resources/allNames.tsv -d resources/sysID2product.tsv > gene_association.paint_pombase.fixed.gaf
