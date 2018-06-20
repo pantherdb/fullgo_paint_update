@@ -27,7 +27,7 @@ IBA_DIR = "IBA_GAFs"
 
 download_fullgo:
 	mkdir $(GAF_FILES_PATH)
-	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A ".gz" http://geneontology.org/gene-associations/gene_association.pombase.gz
+	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A ".gz" http://geneontology.org/gene-associations/
 	gunzip $(GAF_FILES_PATH)/*.gz
 	wget -P $(BASE_PATH) http://geneontology.org/ontology/go.obo
 
