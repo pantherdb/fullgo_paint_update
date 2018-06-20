@@ -1,3 +1,6 @@
+### Working directory where files will be downloaded and built for each release (e.g. "06192018_fullgo") - Need to make into makefile argument
+### should create new base folder derived from current date, unless base path argument is specified (for example, if incomplete update is continued on later dates)
+BASE_PATH ?= "`date +%Y-%m-%d`_fullgo"
 ########## GAF CREATION ##########
 ### -i property file with go and panther version.
 GAF_PROFILE = "profile.txt"
@@ -20,9 +23,24 @@ GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_b
 ### -o output IBA gaf file folder
 IBA_DIR = "IBA_GAFs"
 
+get_base_path:
+	echo $(BASE_PATH)
+
+download_fullgo:
+	mkdir $(BASE_PATH)/gaf_files
+	cd $(BASE_PATH)/gaf_files
+	wget -r -l1 -nd --no-parent -A ".gz" http://geneontology.org/gene-associations/
+	gunzip *.gz
+	cd ..
+	wget http://geneontology.org/ontology/go.obo
+
+extractfromgoobo:
+	perl ../scripts/extractfromgoobo.pl -i go.obo -o inputforGOClassification.tsv > obsolete_go_terms.txt
+
 create_gafs: paint_annotation, paint_evidence, paint_annotation_qualifier, go_aggregate, organism_taxon
 	tcsh
 	( perl createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(ANNOT) -q $(ANNOT_QUALIFIER) -g $(GO_AGG) -t $(TAIR_MAP) -c $(EVIDENCE) -T $(TAXON) -G $(GENE_DAT) -o $(IBA_DIR) > IBD ) > & err &
+	repair_gaf_symbols
 
 paint_annotation:
 	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql > resources/$(ANNOT)
