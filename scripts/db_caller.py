@@ -25,9 +25,16 @@ def get_connection():
 def exec_query(connection, query):
     cursor = connection.cursor()
     cursor.execute(query)
-    res = cursor.fetchall()
-    colnames = [desc[0] for desc in cursor.description]
-    res.insert(0, colnames)
+    print(cursor.query.decode("utf-8"))
+    try:
+        res = cursor.fetchall()
+        colnames = [desc[0] for desc in cursor.description]
+        res.insert(0, colnames)
+    except psycopg2.ProgrammingError:
+        # Could be due to insert
+        print(cursor.statusmessage)
+        res = []
+    connection.commit()
     return res
 
 def format_results(results, delimiter=";"):
@@ -54,5 +61,6 @@ if __name__ == "__main__":
         # results = []
         con = get_connection()
         results = exec_query(con, qf.read())
+        con.close()
     for r in format_results(results):
         print(r)

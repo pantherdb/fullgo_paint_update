@@ -2,7 +2,10 @@
 ### should create new base folder derived from current date, unless base path argument is specified (for example, if incomplete update is continued on later dates)
 ### maybe we should just call this 'target', adhering to GO pipeline then rename after everything's done?
 BASE_PATH ?= $(shell date +%Y-%m-%d)_fullgo
+export FULL_BASE_PATH = $(realpath $(BASE_PATH))
 GAF_FILES_PATH = $(BASE_PATH)/gaf_files
+export FULL_GAF_FILES_PATH = $(realpath $(GAF_FILES_PATH))
+export PWD = $(shell pwd)
 ########## GAF CREATION ##########
 ### -i property file with go and panther version.
 GAF_PROFILE = "profile.txt"
@@ -41,19 +44,7 @@ extractfromgoobo_relation:
 	wc -l $(BASE_PATH)/goparentchild.tsv
 
 write_fullGoMappingPthr_slurm:
-	echo "#!/bin/tcsh\n\
-	#SBATCH --time=08:00:00\n\
-	#SBATCH --ntasks=1\n\
-	#SBATCH --mem=48gb\n\n\
-	source /home/pmd-02/pdt/pdthomas/panther/cshrc.panther\n\n\
-	perl $(shell pwd)/scripts/fullGoMappingPthr.pl \
-	-f $(realpath $(GAF_FILES_PATH))/ \
-	-t $(shell pwd)/scripts/pthr13_code_taxId.txt \
-	-i /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat \
-	-g /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat \
-	-o $(realpath $(BASE_PATH))/go.obo \
-	-w $(realpath $(BASE_PATH))/Pthr_GO.tsv \
-	-e $(realpath $(BASE_PATH))/PthrGOLog.txt" > $(BASE_PATH)/fullGoMappingPthr.slurm
+	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr.slurm
 
 create_gafs: paint_annotation, paint_evidence, paint_annotation_qualifier, go_aggregate, organism_taxon
 	tcsh
