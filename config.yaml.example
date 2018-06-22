@@ -1,0 +1,4 @@
+host: "localhost"
+dbname: "dbname"
+username: "postgres"
+pword: "clever_password"
