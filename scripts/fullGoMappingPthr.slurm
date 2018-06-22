@@ -1,7 +1,8 @@
 #!/bin/tcsh
-#SBATCH --time=08:00:00
+#SBATCH --time=16:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=48gb
+#SBATCH --mem=96gb
+#SBATCH --account=lc_pdt
 
 source /home/pmd-02/pdt/pdthomas/panther/cshrc.panther
 

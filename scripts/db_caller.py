@@ -50,6 +50,13 @@ def format_results(results, delimiter=";"):
         formatted_results.append(";".join(vals))
     return formatted_results
 
+def clean_query(raw_query):
+    noncommented_lines = []
+    for line in raw_query.split("\n"):
+        if not line.startswith("--") and line != "":
+            noncommented_lines.append(line)
+    return "\n".join(noncommented_lines)
+
 if __name__ == "__main__":
     args = parser.parse_args()
     qfile = args.query_filename
@@ -57,10 +64,13 @@ if __name__ == "__main__":
         print("ERROR: No such query file '{}'.".format(qfile))
         exit()
     with open(qfile) as qf:
-        # print(qf.read())
-        # results = []
         con = get_connection()
-        results = exec_query(con, qf.read())
+        query_text = qf.read()
+        results = []
+        for split_query in query_text.split(";"):
+            cleaned_query = clean_query(split_query)
+            if cleaned_query:
+                results = exec_query(con, split_query + ";")
+                for r in format_results(results):
+                    print(r)
         con.close()
-    for r in format_results(results):
-        print(r)
