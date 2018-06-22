@@ -1,6 +1,7 @@
 import psycopg2
 import yaml
 import argparse
+import datetime
 from os import path
 from sys import exit
 
@@ -70,7 +71,9 @@ if __name__ == "__main__":
         for split_query in query_text.split(";"):
             cleaned_query = clean_query(split_query)
             if cleaned_query:
+                start_time = datetime.datetime.now()
                 results = exec_query(con, split_query + ";")
                 for r in format_results(results):
                     print(r)
+                print("Execution time:", datetime.datetime.now() - start_time)
         con.close()
