@@ -4,6 +4,7 @@
 BEGIN { $ENV{LIST_MOREUTILS_PP}=1; }
 use Carp;
 use List::MoreUtils qw(uniq);
+use Time::localtime;
 
 my %go_id_to_pthrid;
 my %uniprot_id_to_pthrid;
@@ -51,13 +52,21 @@ $verbose = 1 if ($opt_v);      # -v for (v)erbose (debug info to STDERR)
 $verbose = 2 if ($opt_V);      # -V for (V)ery verbose (debug info to STDERR)
 
 open(GEN, $gen) or die $!;
+for (<GEN>) {};
+$gene_file_count = $.;
+print STDERR "gene.dat file: $gene_file_count\n";
+open(GEN, $gen) or die $!;
 opendir(GO, $fullgo) or die $!;
 open(TAX, $tax) or die $!;
+open(ID, $ide) or die $!;
+for (<ID>) {};
+$id_file_count = $.;
+print STDERR "identifiers.dat file: $id_file_count\n";
 open(ID, $ide) or die $!;
 open(GOT, $go) or die $!;
 open(GOW, ">$goannow") or die $!;
 open(STDERR, ">$errFile") or die $!;
-
+print STDERR "Opened arg files\n";
 
 while (<TAX>) 
 {
@@ -72,6 +81,7 @@ while (<TAX>)
 }
 	
 close(TAX);
+print STDERR "Loaded taxonomy file\n";
 
 my %obso_go;
 {
@@ -114,7 +124,10 @@ while (my $record=<GOT>){
 }
 close(GOT);
 }
+print STDERR "Loaded ontology file\n";
 
+$gen_counter = 0;
+$gen_percent = 0;
 while (<GEN>) 
 	 {
 	 chomp($_);
@@ -160,9 +173,19 @@ while (<GEN>)
 	 $pthrid_to_taxid{$pthrid} = $tax;
 	 $gene_symbol_taxa_to_pthr{$geneSym}{$tax} = $pthrid;
 	 $gene_symbol_db_to_pthr{$geneSym}{$dbname} = $pthrid;
-	 }	
-close(GEN);
 
+	$gen_counter++;
+	$new_gen_percent = int($gen_counter / $gene_file_count * 100);
+	if ($new_gen_percent > $gen_percent) {
+		$gen_percent = $new_gen_percent;
+		print STDERR "$gen_percent\% of gene file is parsed\n";
+	}
+ 	}	
+close(GEN);
+print STDERR "Loaded gene.dat file\n";
+
+$id_counter = 0;
+$id_percent = 0;
 while (<ID>){
 	chomp($_);
 	my ($unipro_id,$db,$alter_id) = split('\t');
@@ -177,9 +200,17 @@ while (<ID>){
 	print STDERR "$pthrid missing taxon code to taxID mapping." unless ($tax);
 	$alterid_to_pthrid{$alter_id}{$db} = $pthrid;
 	$alterid_to_pthrid{$alter_id}{$tax} = $pthrid;
+
+	$id_counter++;
+        $new_id_percent = int($id_counter / $id_file_count * 100);
+        if ($new_id_percent > $id_percent) {
+                $id_percent = $new_id_percent;
+                print STDERR "$id_percent\% of identifier file is parsed\n";
+        }
 }
 	
 close(ID);
+print STDERR "Loaded indentifier.dat file\n";
 
 
 print STDERR "pthr_id\tmap_go_gid\tmap_by\t\tmap_by_comb\tgo_term\tgo_type\n";
@@ -187,6 +218,7 @@ for my $gaf (readdir GO) {
     next if $file =~ /^\.\.?$/;
 	print "working on $gaf\n";
 	open (GAF, "$fullgo/$gaf");
+	print STDERR "Parsing file: $gaf";
     while (<GAF>) {
 	      next if ($_ =~ /^!/);
 		  chomp($_);
@@ -315,6 +347,7 @@ for my $gaf (readdir GO) {
     close(GAF);
 
 }
+print STDERR "Loaded GAF files\n";
 
 #my %matched_pid = map {$_ => 1 } @matched_ptherid;
 #@unmatched_ptherid = grep {not $matched_pid{$_}} @all_pthrid;
@@ -345,7 +378,8 @@ for my $l (sort keys %goccw) {
 		 };
 	 }
 }
-
+print STDERR "Did something with MF-BP-CC outputs.\n";
+print STDERR "Job finished on ".ctime()."\n";
 
 sub goToPthr{
     my ($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref)=@_;
