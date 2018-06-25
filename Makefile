@@ -46,6 +46,36 @@ extractfromgoobo_relation:
 write_fullGoMappingPthr_slurm:
 	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr.slurm
 
+raw_table_count:
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,goanno_wf
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,goobo_extract
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,goobo_parent_child
+
+panther_table_count:
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,go_classification
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,go_classification_relationship
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,fullgo_version
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,genelist_agg
+
+load_raw_go_to_panther:
+	@echo "Counts of raw tables before data load:"
+	$(MAKE) raw_table_count
+	python3 scripts/db_caller.py scripts/sql/panther_prod_update/load_raw_go.sql
+	@echo "Counts of raw tables after data load:"
+	$(MAKE) raw_table_count
+
+update_panther_new_tables:
+	python3 scripts/db_caller.py scripts/sql/panther_prod_update/go_classification.sql
+	python3 scripts/db_caller.py scripts/sql/panther_prod_update/fullgo_version.sql
+	python3 scripts/db_caller.py scripts/sql/panther_prod_update/genelist_agg.sql
+
+switch_panther_table_names:
+	@echo "Counts of panther tables before data load:"
+	$(MAKE) panther_table_count
+	python3 scripts/db_caller.py scripts/sql/panther_prod_update/switch_table_names.sql
+	@echo "Counts of panther tables after data load:"
+	$(MAKE) panther_table_count
+
 create_gafs: paint_annotation, paint_evidence, paint_annotation_qualifier, go_aggregate, organism_taxon
 	tcsh
 	( perl createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(ANNOT) -q $(ANNOT_QUALIFIER) -g $(GO_AGG) -t $(TAIR_MAP) -c $(EVIDENCE) -T $(TAXON) -G $(GENE_DAT) -o $(IBA_DIR) > IBD ) > & err &
