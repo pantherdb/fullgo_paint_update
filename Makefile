@@ -60,21 +60,38 @@ panther_table_count:
 load_raw_go_to_panther:
 	@echo "Counts of raw tables before data load:"
 	$(MAKE) raw_table_count
-	python3 scripts/db_caller.py scripts/sql/panther_prod_update/load_raw_go.sql
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/load_raw_go.sql
 	@echo "Counts of raw tables after data load:"
 	$(MAKE) raw_table_count
 
 update_panther_new_tables:
-	python3 scripts/db_caller.py scripts/sql/panther_prod_update/go_classification.sql
-	python3 scripts/db_caller.py scripts/sql/panther_prod_update/fullgo_version.sql
-	python3 scripts/db_caller.py scripts/sql/panther_prod_update/genelist_agg.sql
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/go_classification.sql
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/fullgo_version.sql
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/genelist_agg.sql
 
 switch_panther_table_names:
 	@echo "Counts of panther tables before data load:"
 	$(MAKE) panther_table_count
-	python3 scripts/db_caller.py scripts/sql/panther_prod_update/switch_table_names.sql
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/switch_table_names.sql
 	@echo "Counts of panther tables after data load:"
 	$(MAKE) panther_table_count
+
+check_dups:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql
+
+update_paint_go_classification:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification.sql
+	# python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql	# Check for dups in relationship table?
+
+regen_go_classification_relationship:	# Incorporated into go_classification.sql, so shouldn't need to be run ever again
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_relationship.sql
+
+update_paint_go_annotation:	# Could run up to an hour
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_annotation.sql
+
+update_paint_go_evidence:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_evidence.sql
+	# go_evidence
 
 create_gafs: paint_annotation, paint_evidence, paint_annotation_qualifier, go_aggregate, organism_taxon
 	tcsh

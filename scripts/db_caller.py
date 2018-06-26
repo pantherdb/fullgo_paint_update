@@ -106,5 +106,7 @@ if __name__ == "__main__":
                 results = exec_query(con, cleaned_query + ";")
                 for r in format_results(results):
                     print(r)
+                if len(results) > 0:    # Display row count unless insert, update, set, etc.
+                    print("Rows returned:", len(results) - 1)
                 print("Execution time:", datetime.datetime.now() - start_time, "- Host:", host, "- DB:", dbname)
         con.close()
