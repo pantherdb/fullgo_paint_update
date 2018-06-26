@@ -15,7 +15,14 @@ Note: you'll also need a config/config.yaml file for the postgres DB caller (che
 * `extractfromgoobo` and `extractfromgoobo_relation` parse out the ontology terms and term relationships, respectively.
 * `write_fullGoMappingPthr_slurm` is a convenience thing that creates a slurm batch script to run `scripts/fullGoMappingPthr.pl` on the USC HPC. This script maps the GAF gene product IDs to Panther IDs.
 
-Once the input files `inputforGOClassification.tsv`, `goparentchild.tsv`, and `Pthr_GO.tsv` are generated, they're SCP'd over to the Panther DB server to be copied into staging tables.
+Once the input files `inputforGOClassification.tsv`, `goparentchild.tsv`, and `Pthr_GO.tsv` are generated, they're SCP'd over to the Panther DB server to be copied into staging tables. The following commands will then load the data into Panther and update the aggregation table:
+```
+make load_raw_go_to_panther
+make update_panther_new_tables
+make switch_panther_table_names
+```
+
+After these are run the Panther web server needs to be restarted before the changes are visible.
 
 ## GAF generation
 After update of both Panther and the PAINT curation DBs, queries are run against the curation DB to generate inputs for creating PAINT GAFs.
