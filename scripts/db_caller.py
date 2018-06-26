@@ -43,7 +43,6 @@ def exec_query(connection, query):
         # Could be due to insert
         print(cursor.statusmessage)
         res = []
-    connection.commit()
     return res
 
 def format_results(results, delimiter=";"):
@@ -109,4 +108,5 @@ if __name__ == "__main__":
                 if len(results) > 0:    # Display row count unless insert, update, set, etc.
                     print("Rows returned:", len(results) - 1)
                 print("Execution time:", datetime.datetime.now() - start_time, "- Host:", host, "- DB:", dbname)
+        con.commit()
         con.close()
