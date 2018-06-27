@@ -40,6 +40,9 @@ and n.classification_version_sid = 24;
 
 -- record the information, insert into comments_new table
 set search_path = panther_upl;
+ALTER TABLE comments_old RENAME TO comments_new;
+truncate table comments_new;
+insert into comments_new select * from comments;
 update comments_new cm
 set remark = cm.remark || '\n' || current_date || ': ' || gc.accession || ' is obsoleted and replaced by ' || gcn.replaced_by_acc || ' so the annotion to ' || n.public_id || ' is updated with new GO term.\n'
 from paint_annotation pa, classification c,
