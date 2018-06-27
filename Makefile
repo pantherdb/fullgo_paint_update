@@ -91,7 +91,15 @@ update_paint_go_annotation:	# Could run up to an hour
 
 update_paint_go_evidence:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_evidence.sql
-	# go_evidence
+
+update_paint_go_annot_qualifier:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_annotation_qualifier.sql
+
+update_paint_paint_annotation:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/paint_annotation.sql
+
+update_paint_paint_evidence:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/paint_evidence.sql
 
 create_gafs: paint_annotation, paint_evidence, paint_annotation_qualifier, go_aggregate, organism_taxon
 	tcsh
