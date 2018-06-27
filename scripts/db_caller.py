@@ -59,11 +59,7 @@ def format_results(results, delimiter=";"):
     return formatted_results
 
 def clean_query(raw_query, query_variables=None):
-    noncommented_lines = []
-    for line in raw_query.split("\n"):
-        if not line.startswith("--") and line != "":
-            noncommented_lines.append(line)
-    cleaned_query = "\n".join(noncommented_lines)
+    cleaned_query = raw_query
     statement_var_count = cleaned_query.count("{}")
     if query_variables:
         provided_var_count = len(query_variables)
@@ -79,6 +75,14 @@ def clean_query(raw_query, query_variables=None):
         exit()
     return cleaned_query
 
+def clean_file(raw_file_text):
+    noncommented_lines = []
+    for line in raw_file_text.split("\n"):
+        if not line.startswith("--") and line != "":
+            noncommented_lines.append(line)
+    cleaned_file = "\n".join(noncommented_lines)
+    return cleaned_file
+
 if __name__ == "__main__":
     args = parser.parse_args()
     qfile = args.query_filename
@@ -92,6 +96,7 @@ if __name__ == "__main__":
         con = get_connection()
         query_text = qf.read()
         results = []
+        query_text = clean_file(query_text)
         query_statements = query_text.split(";")
         query_statements = list(filter(None, query_statements)) # Filter out empty strings
         if query_variables and len(query_statements) > 1:
