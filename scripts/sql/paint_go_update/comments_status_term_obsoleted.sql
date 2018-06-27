@@ -68,11 +68,6 @@ and gc.accession = gcn.accession
 and gcn.obsolescence_date is not null
 and gcn.replaced_by_acc is null;
 
-set search_path = panther_upl;
-ALTER TABLE curation_status_old RENAME TO curation_status_new;
-truncate table curation_status_new;
-insert into curation_status_new select * from curation_status;
-
 -- insert a new row with “Require paint review” status into curation_status_new table if you find the records by above query
 set search_path = panther_upl;
 insert into curation_status_new
@@ -91,10 +86,6 @@ and c.classification_version_sid = 24
 and n.classification_version_sid = 24;
 
 -- record the information in comments table
-set search_path = panther_upl;
-ALTER TABLE comments_old RENAME TO comments_new;
-truncate table comments_new;
-insert into comments_new select * from comments;
 
 set search_path = panther_upl;
 update comments_new cm
