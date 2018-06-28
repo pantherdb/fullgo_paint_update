@@ -12,15 +12,15 @@ GAF_PROFILE = "profile.txt"
 ### -d for the data folder from library
 PTHR_DATA_DIR = "/auto/rcf-proj3/hm/mi/UPL/PANTHER13.1/data/"
 ### -a paint_annotation (from database)
-ANNOT = "paint_annotation_datefix2"
+ANNOT = "paint_annotation"
 ### -q paint_annotation_qualifier (from database)
-ANNOT_QUALIFIER = "paint_annotation_qualifier_semicolon"
+ANNOT_QUALIFIER = "paint_annotation_qualifier"
 ### -g go_aggregate (from database)
-GO_AGG = "go_aggregate_semicolon"
+GO_AGG = "go_aggregate"
 ### -t TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
 TAIR_MAP = "/auto/rcf-proj3/hm/mi/PAINT/Analysis/TAIR10_TAIRlocusaccessionID_AGI_mapping.txt"
 ### -c evidence (from database)
-EVIDENCE = "paint_evidence_semicolon"
+EVIDENCE = "paint_evidence"
 ### -T organism_taxon
 TAXON = "organism_taxon"
 ### -G gene.dat in the DBload folder
@@ -130,6 +130,17 @@ paint_table_counts:
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,curation_status
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,comments
 
+backup_paint_tables:
+	pg_dump -d Curation -t panther_upl.go_classification --username postgres > go_classification.dump
+	pg_dump -d Curation -t panther_upl.go_classification_relationship --username postgres > go_classification_relationship.dump
+	pg_dump -d Curation -t panther_upl.go_evidence --username postgres > go_evidence.dump
+	pg_dump -d Curation -t panther_upl.go_annotation --username postgres > go_annotation.dump
+	pg_dump -d Curation -t panther_upl.go_annotation_qualifier --username postgres > go_annotation_qualifier.dump
+	pg_dump -d Curation -t panther_upl.paint_annotation --username postgres > paint_annotation.dump
+	pg_dump -d Curation -t panther_upl.paint_evidence --username postgres > paint_evidence.dump
+	pg_dump -d Curation -t panther_upl.curation_status --username postgres > curation_status.dump
+	pg_dump -d Curation -t panther_upl.comments --username postgres > comments.dump
+
 switch_paint_table_names:
 	@echo "Counts of paint tables before table switch:"
 	$(MAKE) paint_table_counts
@@ -142,7 +153,7 @@ regenerate_go_aggregate_view:
 
 # update_taxon_constraints_file:
 
-create_gafs: paint_annotation, paint_evidence, paint_annotation_qualifier, go_aggregate, organism_taxon
+create_gafs: paint_annotation paint_evidence paint_annotation_qualifier go_aggregate organism_taxon
 	tcsh
 	( perl createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(ANNOT) -q $(ANNOT_QUALIFIER) -g $(GO_AGG) -t $(TAIR_MAP) -c $(EVIDENCE) -T $(TAXON) -G $(GENE_DAT) -o $(IBA_DIR) > IBD ) > & err &
 	$(MAKE) repair_gaf_symbols
