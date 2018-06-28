@@ -60,13 +60,14 @@ def format_results(results, delimiter=";"):
 
 def clean_query(raw_query, query_variables=None):
     cleaned_query = raw_query
+    if cleaned_query.lstrip().startswith("--"):
+        return None
     statement_var_count = cleaned_query.count("{}")
     if query_variables:
         provided_var_count = len(query_variables)
         if statement_var_count == provided_var_count:
             cleaned_query = cleaned_query.format(*query_variables)
         else:
-            print(cleaned_query)
             print("ERROR: Non-matching number of variables in statement ({}) to number of variables provided ({})".format(statement_var_count, provided_var_count))
             exit()
     elif statement_var_count > 0:
