@@ -119,8 +119,23 @@ run_restore_annots:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/fix_anc_node_comments.sql
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/fix_other_evi_types.sql
 
+paint_table_counts:
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,go_classification
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,go_classification_relationship
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,go_evidence
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,go_annotation
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,go_annotation_qualifier
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,paint_annotation
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,paint_evidence
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,curation_status
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,comments
+
 switch_paint_table_names:
+	@echo "Counts of paint tables before table switch:"
+	$(MAKE) paint_table_counts
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/switch_table_names.sql
+	@echo "Counts of paint tables after table switch:"
+	$(MAKE) paint_table_counts
 
 regenerate_go_aggregate_view:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/regenerate_go_aggregate_view.sql
