@@ -153,8 +153,7 @@ regenerate_go_aggregate_view:
 
 # update_taxon_constraints_file:
 
-create_gafs: paint_annotation paint_evidence paint_annotation_qualifier go_aggregate organism_taxon
-	tcsh
+create_gafs: paint_annotation paint_evidence paint_annotation_qualifier go_aggregate organism_taxon	# must run from tcsh shell
 	( perl createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(ANNOT) -q $(ANNOT_QUALIFIER) -g $(GO_AGG) -t $(TAIR_MAP) -c $(EVIDENCE) -T $(TAXON) -G $(GENE_DAT) -o $(IBA_DIR) > IBD ) > & err &
 	$(MAKE) repair_gaf_symbols
 
