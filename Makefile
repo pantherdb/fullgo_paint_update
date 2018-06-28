@@ -113,7 +113,11 @@ delete_incorrect_go_annot_qualifiers:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/delete_incorrect_go_annot_qualifiers.sql
 
 run_restore_annots:
-	python3 scripts/db_caller.py scripts/sql/paint_go_update/restore_annots.sql
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/fix_leaf_node_annots.sql
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/fix_leaf_node_comments.sql
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/fix_anc_node_annots.sql
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/fix_anc_node_comments.sql
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/fix_other_evi_types.sql
 
 switch_paint_table_names:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/switch_table_names.sql
