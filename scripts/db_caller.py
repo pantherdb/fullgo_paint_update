@@ -78,7 +78,7 @@ def clean_query(raw_query, query_variables=None):
 def clean_file(raw_file_text):
     noncommented_lines = []
     for line in raw_file_text.split("\n"):
-        if not line.startswith("--") and line != "":
+        if not line.lstrip().startswith("--") and line != "":
             noncommented_lines.append(line)
     cleaned_file = "\n".join(noncommented_lines)
     return cleaned_file
