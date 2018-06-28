@@ -106,10 +106,27 @@ update_comments_status:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_term_not_obsoleted.sql
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_lost_leaf_annots.sql	### SET CORRECT DATE IN THIS SCRIPT BEFORE RUNNING (SHOULD BE DATE OF paint_annotation TABLE UPDATE)
 
+switch_evidence_to_pmid: # (before restore queries?)
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/switch_evidence_to_pmid.sql
+
+delete_incorrect_go_annot_qualifiers:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/delete_incorrect_go_annot_qualifiers.sql
+
+run_restore_annots:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/restore_annots.sql
+
+switch_paint_table_names:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/switch_table_names.sql
+
+regenerate_go_aggregate_view:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/regenerate_go_aggregate_view.sql
+
+# update_taxon_constraints_file:
+
 create_gafs: paint_annotation, paint_evidence, paint_annotation_qualifier, go_aggregate, organism_taxon
 	tcsh
 	( perl createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(ANNOT) -q $(ANNOT_QUALIFIER) -g $(GO_AGG) -t $(TAIR_MAP) -c $(EVIDENCE) -T $(TAXON) -G $(GENE_DAT) -o $(IBA_DIR) > IBD ) > & err &
-	repair_gaf_symbols
+	$(MAKE) repair_gaf_symbols
 
 paint_annotation:
 	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql > resources/$(ANNOT)
