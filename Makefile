@@ -106,7 +106,7 @@ update_comments_status:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_term_not_obsoleted.sql
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_lost_leaf_annots.sql	### SET CORRECT DATE IN THIS SCRIPT BEFORE RUNNING (SHOULD BE DATE OF paint_annotation TABLE UPDATE)
 
-switch_evidence_to_pmid: # (before restore queries?)
+switch_evidence_to_pmid:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/switch_evidence_to_pmid.sql
 
 delete_incorrect_go_annot_qualifiers:

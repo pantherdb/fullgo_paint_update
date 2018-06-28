@@ -1,7 +1,7 @@
 -- delete all go_annotation_qualifier records for CONTRIBUTES_TO go annotations to non-MF terms and COLOCALIZES_WITH to non-CC terms
 set search_path = panther_upl;
-delete from go_annotation_qualifier gq
-using go_annotation ga, go_classification gc
+delete from go_annotation_qualifier_new gq
+using go_annotation_new ga, go_classification_new gc
 where ga.annotation_id = gq.annotation_id
 and gc.classification_id = ga.classification_id
 and 
