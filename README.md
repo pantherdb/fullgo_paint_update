@@ -2,18 +2,19 @@
 Update of Panther and PAINT DBs with monthly GO release data
 
 ## Updating GO tables
-As this is being developed, the Makefile recipes will likely be called independent of each other. To execute the current existing workflow:
+Logging is not built in to the Makefile yet so you'll need to redirect output to a file. I like to do the following:
+```
+make do_stuff | tee -a log.txt
+```
+This will append to a file while still displaying to STDOUT. You'll also need a config/config.yaml file for the postgres DB caller (check `config.yaml.example`). As this is being developed, the Makefile recipes will likely be called independent of each other. 
+
+To execute the current existing workflow:
 ```
 make download_fullgo
 make extractfromgoobo
 make extractfromgoobo_relation
 make write_fullGoMappingPthr_slurm
-```
-Note: you'll also need a config/config.yaml file for the postgres DB caller (check `config.yaml.example`). Also, logging is not built in to the Makefile yet so you'll need to redirect output to a file. I like to do the following:
-```
-make do_stuff | tee -a log.txt
-```
-This will append to a file while still displaying to STDOUT.
+``` 
 
 * `download_fullgo` will download all current GAF and GO.obo files from GO ftp server. This also creates the base folder ("YYYY-MM-DD_fullgo/") where the update files will live.
 * `extractfromgoobo` and `extractfromgoobo_relation` parse out the ontology terms and term relationships, respectively.
