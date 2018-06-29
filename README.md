@@ -1,7 +1,7 @@
 # fullgo_paint_update
 Update of Panther and PAINT DBs with monthly GO release data
 
-## Running
+## Updating GO tables
 As this is being developed, the Makefile recipes will likely be called independent of each other. To execute the current existing workflow:
 ```
 make download_fullgo
@@ -9,7 +9,11 @@ make extractfromgoobo
 make extractfromgoobo_relation
 make write_fullGoMappingPthr_slurm
 ```
-Note: you'll also need a config/config.yaml file for the postgres DB caller (check `config.yaml.example`).
+Note: you'll also need a config/config.yaml file for the postgres DB caller (check `config.yaml.example`). Also, logging is not built in to the Makefile yet so you'll need to redirect output to a file. I like to do the following:
+```
+make do_stuff | tee -a log.txt
+```
+This will append to a file while still displaying to STDOUT.
 
 * `download_fullgo` will download all current GAF and GO.obo files from GO ftp server. This also creates the base folder ("YYYY-MM-DD_fullgo/") where the update files will live.
 * `extractfromgoobo` and `extractfromgoobo_relation` parse out the ontology terms and term relationships, respectively.
@@ -23,6 +27,23 @@ make switch_panther_table_names
 ```
 
 After these are run the Panther web server needs to be restarted before the changes are visible.
+
+## Updating PAINT tables
+
+```
+make update_paint_go_classification
+make update_paint_go_annotation
+make update_paint_go_evidence
+make update_paint_go_annot_qualifier
+make switch_evidence_to_pmid
+make delete_incorrect_go_annot_qualifiers
+make update_paint_paint_annotation
+make update_paint_paint_evidence
+make update_comments_status
+make run_restore_annots
+make switch_paint_table_names
+make regenerate_go_aggregate_view
+```
 
 ## GAF generation
 After update of both Panther and the PAINT curation DBs, queries are run against the curation DB to generate inputs for creating PAINT GAFs.
