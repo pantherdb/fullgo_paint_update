@@ -84,8 +84,8 @@ open (TA, $taxon);
 while (my $line=<TA>){
     chomp $line;
     
-    my ($org, $id)=split(/\t/, $line);
-    $taxon{$org}=$id;
+    my ($org, $sh_name, $id)=split(/;/, $line);
+    $taxon{$sh_name}=$id;
 }
 close (TA);
 
