@@ -14,10 +14,14 @@ parser.add_argument("-v", "--query_variables", type=str, required=False, help="c
 with open("config/config.yaml") as f:
     cfg = yaml.load(f)
 
-host = cfg["host"]
-dbname = cfg["dbname"]
-username = cfg["username"]
-pword = cfg["pword"]
+for df in cfg["DB_DEFINITIONS"]["value"]:
+    if df["id"] == cfg["DB_DEFINITION"]["value"]:
+        chosen_df = df
+
+host = chosen_df["host"]
+dbname = chosen_df["dbname"]
+username = chosen_df["username"]
+pword = chosen_df["pword"]
 
 def get_connection():
     con = psycopg2.connect("dbname = {} user={} host={} password={}".format(dbname,

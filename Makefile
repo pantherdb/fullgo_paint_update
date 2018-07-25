@@ -26,7 +26,7 @@ TAXON = "organism_taxon"
 ### -G gene.dat in the DBload folder
 GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
 ### -o output IBA gaf file folder
-IBA_DIR = "IBA_GAFs"
+IBA_DIR = $(BASE_PATH)/IBA_GAFs
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH)

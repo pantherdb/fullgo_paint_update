@@ -1,4 +1,24 @@
-host: "localhost"
-dbname: "dbname"
-username: "postgres"
-pword: "clever_password"
+DB_DEFINITION:
+  comment: The database profile to use with DB caller.
+  type: string
+  value: environment_2
+
+DB_DEFINITIONS:
+  comment: A list of credentials that DB caller can use.
+  type: list
+  value:
+    - id: dev
+      host: "localhost"
+      dbname: "dbname"
+      username: "postgres"
+      pword: "clever_password"
+    - id: test
+      host: "localhost"
+      dbname: "dbname"
+      username: "postgres"
+      pword: "clever_password"
+    - id: prod
+      host: "localhost"
+      dbname: "dbname"
+      username: "postgres"
+      pword: "clever_password"
