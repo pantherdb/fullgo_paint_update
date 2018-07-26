@@ -10,6 +10,7 @@ parser.add_argument("query_filename")
 # Only use query variables for single query SQL files, otherwise managing these gets tricky due to the per-statement cleaning step.
 parser.add_argument("-v", "--query_variables", type=str, required=False, help="comma-delimited, ordered list of values to replace variables in SQL script.\
                                                 Only use query variables for single query SQL files, otherwise managing these gets tricky due to the per-statement cleaning step.")
+parser.add_argument("-o", "--rows_outfile", help="Write result rows to specified filename.")
 
 with open("config/config.yaml") as f:
     cfg = yaml.load(f)
@@ -97,6 +98,9 @@ if __name__ == "__main__":
     if not path.isfile(qfile):
         print("ERROR: No such query file '{}'.".format(qfile))
         exit()
+    rows_outfile = None
+    if args.rows_outfile:
+        rows_outfile = open(args.rows_outfile, "w+")
     with open(qfile) as qf:
         con = get_connection()
         query_text = qf.read()
@@ -114,9 +118,14 @@ if __name__ == "__main__":
                 start_time = datetime.datetime.now()
                 results = exec_query(con, cleaned_query + ";")
                 for r in format_results(results):
-                    print(r)
+                    if rows_outfile:
+                        rows_outfile.write("{}\n".format(r))
+                    else:
+                        print(r)
                 if len(results) > 0:    # Display row count unless insert, update, set, etc.
                     print("Rows returned:", len(results) - 1)
                 print("Execution time:", datetime.datetime.now() - start_time, "- Host:", host, "- DB:", dbname)
         con.commit()
         con.close()
+    if rows_outfile:
+        rows_outfile.close()

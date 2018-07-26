@@ -12,17 +12,17 @@ GAF_PROFILE = "profile.txt"
 ### -d for the data folder from library
 PTHR_DATA_DIR = "/auto/rcf-proj3/hm/mi/UPL/PANTHER13.1/data/"
 ### -a paint_annotation (from database)
-ANNOT = "paint_annotation"
+ANNOT = paint_annotation
 ### -q paint_annotation_qualifier (from database)
-ANNOT_QUALIFIER = "paint_annotation_qualifier"
+ANNOT_QUALIFIER = paint_annotation_qualifier
 ### -g go_aggregate (from database)
-GO_AGG = "go_aggregate"
+GO_AGG = go_aggregate
 ### -t TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
 TAIR_MAP = "/auto/rcf-proj3/hm/mi/PAINT/Analysis/TAIR10_TAIRlocusaccessionID_AGI_mapping.txt"
 ### -c evidence (from database)
-EVIDENCE = "paint_evidence"
+EVIDENCE = paint_evidence
 ### -T organism_taxon
-TAXON = "organism_taxon"
+TAXON = organism_taxon
 ### -G gene.dat in the DBload folder
 GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
 ### -o output IBA gaf file folder
@@ -159,19 +159,19 @@ create_gafs: paint_annotation paint_evidence paint_annotation_qualifier go_aggre
 	$(MAKE) repair_gaf_symbols
 
 paint_annotation:
-	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql > $(BASE_PATH)/resources/$(ANNOT)
+	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql -o $(BASE_PATH)/resources/$(ANNOT)
 
 paint_annotation_qualifier:
-	python3 scripts/db_caller.py scripts/sql/paint_annotation_qualifier.sql > $(BASE_PATH)/resources/$(ANNOT_QUALIFIER)
+	python3 scripts/db_caller.py scripts/sql/paint_annotation_qualifier.sql -o $(BASE_PATH)/resources/$(ANNOT_QUALIFIER)
 
 paint_evidence:
-	python3 scripts/db_caller.py scripts/sql/paint_evidence.sql > $(BASE_PATH)/resources/$(EVIDENCE)
+	python3 scripts/db_caller.py scripts/sql/paint_evidence.sql -o $(BASE_PATH)/resources/$(EVIDENCE)
 
 go_aggregate:
-	python3 scripts/db_caller.py scripts/sql/go_aggregate.sql > $(BASE_PATH)/resources/$(GO_AGG)
+	python3 scripts/db_caller.py scripts/sql/go_aggregate.sql -o $(BASE_PATH)/resources/$(GO_AGG)
 
 organism_taxon:
-	python3 scripts/db_caller.py scripts/sql/organism_taxon.sql > $(BASE_PATH)/resources/$(TAXON)
+	python3 scripts/db_caller.py scripts/sql/organism_taxon.sql -o $(BASE_PATH)/resources/$(TAXON)
 
 repair_gaf_symbols:
 	wget ftp://ftp.pombase.org/nightly_update/misc/allNames.tsv -O $(BASE_PATH)/resources/allNames.tsv
