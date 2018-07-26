@@ -1,6 +1,7 @@
 --copy data to new paint annotation table to be updated, old table serve as a backup, try to keep the annotation_id that didn't change annotation
 set search_path = panther_upl;
-ALTER TABLE paint_annotation_old RENAME TO paint_annotation_new;
+--due to the _fix table switcheroos the _new tables will always be hanging around
+--ALTER TABLE paint_annotation_old RENAME TO paint_annotation_new;
 Truncate table paint_annotation_new;
 insert into paint_annotation_new select * from paint_annotation;
 

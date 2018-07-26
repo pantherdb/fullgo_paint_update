@@ -2,6 +2,7 @@
 -- every paint_annotation_new with evidence type 46 (paint_exp)
 
 set search_path = 'panther_upl';
+ALTER TABLE paint_evidence_old RENAME TO paint_evidence_fix;
 truncate table paint_evidence_fix;
 insert into paint_evidence_fix (
             evidence_id, evidence_type_sid, classification_id, primary_object_id, 
@@ -37,7 +38,8 @@ and pen.evidence_type_sid = pe.evidence_type_sid;
 
 -- Go through the paint_annotation_fix table (replicate of paint_annotation_new table for update, original table as a backup), and see if an annotation_id (for paint_annotation_new of evidence_type paint_exp (46) only) is in the paint_evidence_fix table, if not, obsolete the paint_annotation_new entry
 set search_path=panther_upl;
-truncate paint_annotation_fix;
+ALTER TABLE paint_annotation_old RENAME TO paint_annotation_fix;
+truncate table paint_annotation_fix;
 insert into paint_annotation_fix
 select * from paint_annotation_new;
 
