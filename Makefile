@@ -154,26 +154,26 @@ regenerate_go_aggregate_view:
 # update_taxon_constraints_file:
 
 create_gafs: paint_annotation paint_evidence paint_annotation_qualifier go_aggregate organism_taxon	# must run from tcsh shell
-	mkdir IBA_GAFs
-	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a resources/$(ANNOT) -q resources/$(ANNOT_QUALIFIER) -g resources/$(GO_AGG) -t $(TAIR_MAP) -c resources/$(EVIDENCE) -T resources/$(TAXON) -G $(GENE_DAT) -o $(IBA_DIR) > IBD ) > & err &
+	mkdir $(IBA_DIR)
+	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_DAT) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > & $(BASE_PATH)/err &
 	$(MAKE) repair_gaf_symbols
 
 paint_annotation:
-	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql > resources/$(ANNOT)
+	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql > $(BASE_PATH)/resources/$(ANNOT)
 
 paint_annotation_qualifier:
-	python3 scripts/db_caller.py scripts/sql/paint_annotation_qualifier.sql > resources/$(ANNOT_QUALIFIER)
+	python3 scripts/db_caller.py scripts/sql/paint_annotation_qualifier.sql > $(BASE_PATH)/resources/$(ANNOT_QUALIFIER)
 
 paint_evidence:
-	python3 scripts/db_caller.py scripts/sql/paint_evidence.sql > resources/$(EVIDENCE)
+	python3 scripts/db_caller.py scripts/sql/paint_evidence.sql > $(BASE_PATH)/resources/$(EVIDENCE)
 
 go_aggregate:
-	python3 scripts/db_caller.py scripts/sql/go_aggregate.sql > resources/$(GO_AGG)
+	python3 scripts/db_caller.py scripts/sql/go_aggregate.sql > $(BASE_PATH)/resources/$(GO_AGG)
 
 organism_taxon:
-	python3 scripts/db_caller.py scripts/sql/organism_taxon.sql > resources/$(TAXON)
+	python3 scripts/db_caller.py scripts/sql/organism_taxon.sql > $(BASE_PATH)/resources/$(TAXON)
 
 repair_gaf_symbols:
-	wget ftp://ftp.pombase.org/nightly_update/misc/allNames.tsv -O resources/allNames.tsv
-	wget ftp://ftp.pombase.org/nightly_update/misc/sysID2product.tsv -O resources/sysID2product.tsv
-	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p resources/allNames.tsv -d resources/sysID2product.tsv > gene_association.paint_pombase.fixed.gaf
+	wget ftp://ftp.pombase.org/nightly_update/misc/allNames.tsv -O $(BASE_PATH)/resources/allNames.tsv
+	wget ftp://ftp.pombase.org/nightly_update/misc/sysID2product.tsv -O $(BASE_PATH)/resources/sysID2product.tsv
+	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p $(BASE_PATH)/resources/allNames.tsv -d $(BASE_PATH)/resources/sysID2product.tsv > $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf
