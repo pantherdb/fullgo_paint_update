@@ -12,7 +12,7 @@ where pa.annotation_id not in (
 )
 and pa.annotation_id = pe.annotation_id
 and pe.evidence_type_sid = 46
-and pa.obsolescence_date > '2018-06-27'
+and pa.obsolescence_date > '2018-07-26'
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
 and n.classification_version_sid = 24
@@ -35,7 +35,7 @@ and pe.evidence_type_sid = 46
 and pe.obsoleted_by is null)
 and pa.annotation_id = pe.annotation_id
 and pe.evidence_type_sid = 46
-and pa.obsolescence_date > '2018-06-27' -- need to update the date every time
+and pa.obsolescence_date > '2018-07-26' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
 and n.classification_version_sid = 24
@@ -59,7 +59,7 @@ and pe.evidence_type_sid = 46
 and pe.obsoleted_by is null)
 and pa.annotation_id = pe.annotation_id
 and pe.evidence_type_sid = 46
-and pa.obsolescence_date > '2018-06-27' -- need to update the date every time
+and pa.obsolescence_date > '2018-07-26' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
 and n.classification_version_sid = 24
@@ -91,7 +91,7 @@ and pe.evidence_type_sid = 46
 and pe.obsoleted_by is null)
 and pa.annotation_id = pe.annotation_id
 and pe.evidence_type_sid = 46
-and pa.obsolescence_date > '2018-06-27' -- need to update the date every time
+and pa.obsolescence_date > '2018-07-26' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
 and n.classification_version_sid = 24
@@ -125,7 +125,7 @@ and pe.evidence_type_sid = 46
 and pe.obsoleted_by is null)
 and pa.annotation_id = pe.annotation_id
 and pe.evidence_type_sid = 46
-and pa.obsolescence_date > '2018-06-27' -- need to update the date every time
+and pa.obsolescence_date > '2018-07-26' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
 and n.classification_version_sid = 24
