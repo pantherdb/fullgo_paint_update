@@ -1,5 +1,6 @@
 # fullgo_paint_update
-Update of Panther and PAINT DBs with monthly GO release data
+Update of Panther and PAINT DBs with monthly GO release data.
+[Summary Google doc](https://docs.google.com/document/d/1Tx3DGLanQ1P6vBL6FWH5V5M7nVqCCCsqu-6m61jPtQ4/edit?usp=sharing)
 
 ## Updating GO tables
 Logging is not built in to the Makefile yet so you'll need to redirect output to a file. I like to do the following:
