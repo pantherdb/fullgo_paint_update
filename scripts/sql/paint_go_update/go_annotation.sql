@@ -14,7 +14,7 @@ insert into go_annotation_new(annotation_id, node_id, classification_id, annotat
     join gene g on g.gene_id = gn.gene_id and g.classification_version_sid = 24 
     join goanno_wf gw on g.primary_ext_acc = gw.geneid 
     join go_classification_new gc on gc.accession = gw.go_acc 
-    where not exists  (select 1 from go_annotation_new gan where gn.node_id = gan.node_id and gc.classification_id = gan.classification_id)
+    where not exists  (select 1 from go_annotation_new gan where gn.node_id = gan.node_id and gc.classification_id = gan.classification_id and gan.obsolescence_date is null)
   ) x; 
 
 -- for the previous fullgo annotation no longer in the new data in the goanno_wf table, mark them as obsoleted - 27 min
