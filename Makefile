@@ -151,6 +151,13 @@ switch_paint_table_names:
 regenerate_go_aggregate_view:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/regenerate_go_aggregate_view.sql
 
+reset_paint_table_names:
+	@echo "Counts of paint tables before table switch:"
+	$(MAKE) paint_table_counts
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/reset_table_names.sql
+	@echo "Counts of paint tables after table switch:"
+	$(MAKE) paint_table_counts
+
 # update_taxon_constraints_file:
 
 create_gafs: paint_annotation paint_evidence paint_annotation_qualifier go_aggregate organism_taxon	# must run from tcsh shell
