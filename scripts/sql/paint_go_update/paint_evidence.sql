@@ -20,7 +20,7 @@ where not exists (
 --Update evidence column to correct, non-obsolete GO annotation for PAINT EXP evidence records
 set search_path=panther_upl;
 update paint_evidence_new pen
-set pen.evidence = x.go_annotation_id
+set evidence = x.go_annotation_id
 from
 (select distinct ga.annotation_id go_annotation_id, pa.annotation_id paint_annotation_id, pe.evidence_id
 from
@@ -44,7 +44,7 @@ where x.evidence_id = pen.evidence_id;
 --Update evidence column to correct, non-obsolete GO annotation for PAINT ANCESTOR evidence records
 set search_path=panther_upl;
 update paint_evidence_new pen
-set pen.evidence = x.ancestor_paint_annotation_id
+set evidence = x.ancestor_paint_annotation_id
 from
 (
   select distinct pan.annotation_id child_paint_annotation_id, pan1.annotation_id ancestor_paint_annotation_id, pe.evidence_id
