@@ -17,10 +17,10 @@ where not exists (
   and pen.evidence_type_sid = 46 
   and pen.obsolescence_date is null;
 
---Update evidence column to correct, non-obsolete GO annotation for PAINT EXP evidence records
+--Update evidence column to correct, non-obsolete GO annotation for PAINT EXP evidence records and mark un-obsoleted
 set search_path=panther_upl;
 update paint_evidence_new pen
-set evidence = x.go_annotation_id
+set evidence = x.go_annotation_id, obsolescence_date = null, obsoleted_by = null
 from
 (select distinct ga.annotation_id go_annotation_id, pa.annotation_id paint_annotation_id, pe.evidence_id
 from
@@ -39,12 +39,13 @@ and ga.annotation_id != pe.annotation_id
 and ga.obsolescence_date is null
 and ge.confidence_code_sid = cc.confidence_code_sid
 and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP')) x
-where x.evidence_id = pen.evidence_id;
+where x.evidence_id = pen.evidence_id
+and pen.obsolescence_date is not null;
 
---Update evidence column to correct, non-obsolete GO annotation for PAINT ANCESTOR evidence records
+--Update evidence column to correct, non-obsolete GO annotation for PAINT ANCESTOR evidence records and mark un-obsoleted
 set search_path=panther_upl;
 update paint_evidence_new pen
-set evidence = x.ancestor_paint_annotation_id
+set evidence = x.ancestor_paint_annotation_id, obsolescence_date = null, obsoleted_by = null
 from
 (
   select distinct pan.annotation_id child_paint_annotation_id, pan1.annotation_id ancestor_paint_annotation_id, pe.evidence_id
@@ -63,7 +64,8 @@ from
   and n.classification_version_sid = 24
   and n1.classification_version_sid = 24
 ) x
-where pen.evidence_id = x.evidence_id;
+where pen.evidence_id = x.evidence_id
+and pen.obsolescence_date is not null;
 
 -- Go through the paint-annotation table, and see if this annotation_id is still exist in the paint_evidence table with obsoleted_by column is null, if not, obsolete the paint_annotation entry
 set search_path=panther_upl;
