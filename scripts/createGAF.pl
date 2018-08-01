@@ -174,13 +174,23 @@ foreach my $file (@files){
                 }elsif ($geneId =~/WormBase/){
                     $geneId=~s/WormBase/WB/;
                     $shortId = $geneId;
-                }elsif ($geneId=~/^TAIR|Araport/){
+                }elsif ($geneId=~/^TAIR/){
                     $geneId=~s/^\w+\://;
                     if (defined $tair{$geneId}){
                         my $locus = $tair{$geneId};
                         $shortId="TAIR:locus:$locus";
                     }else{
                         print STDERR "TAIR ID $geneId has no mapped locus link ID.\n";
+                        next;
+                    }
+                }elsif ($geneId=~/Araport/){
+                    $geneId=~s/^\w+\://;
+                    if (defined $tair{$geneId}){
+                        my $locus = $tair{$geneId};
+                        $shortId="TAIR:locus:$locus";
+                    }else{
+                        print STDERR "Araport ID $geneId has no mapped locus link ID.\n";
+                        next;
                     }
                 }elsif ($geneId=~/HGNC/){
                     $shortId=$proteinId;
@@ -306,7 +316,7 @@ while (my $line=<EV>){
             
             #  my $line_a = $annotation{$annotation_id};  # the current node.
             #  my ($id_a, $an_a, $ptn_a, $go_a, $go_name_a, $type_a)=split(/\t/, $line_a);
-            $nots{$evidence}{$annotation_id}=confidence_code;
+            $nots{$evidence}{$annotation_id}=$confidence_code;
         }else{
             print STDERR "Annotation ID $annotation_id has $evidence as ancestor node evidence that can't be found in annotation table.\n";
         }
@@ -420,12 +430,12 @@ foreach my $annotation_id (keys %annotation){
             my ($annotation_id_n, $an_n, $ptn_n, $go_n, $go_name_n, $type_n)=split(/\;/, $not_line);
             
             if (defined $node_genes{$ptn_n}){
-                foreach my $gene (keys %{$node_genes{%ptn_n}}){
+                foreach my $gene (keys %{$node_genes{$ptn_n}}){
                     if ($confidence_code =~/IKR/){
-                        $not_genes{$gene}=1;
+                        #$not_genes{$gene}=1;
                         
                         
-                    }elsif ($$confidence_code =~/IRD/){
+                    }elsif ($confidence_code =~/IRD/){
                         $not_genes{$gene}=1;
                     }
                 }
@@ -480,7 +490,8 @@ foreach my $annotation_id (keys %annotation){
             }else{
                 print STDERR "$gene has no ptn id found.\n";
             }
-            
+            next unless ($db);
+            next unless ($short_id);
             my $foo = "$db\t$short_id\t$symbol\t$qual\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t";
             
             my $file_type;
