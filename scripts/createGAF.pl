@@ -432,7 +432,7 @@ foreach my $annotation_id (keys %annotation){
             if (defined $node_genes{$ptn_n}){
                 foreach my $gene (keys %{$node_genes{$ptn_n}}){
                     if ($confidence_code =~/IKR/){
-                        #$not_genes{$gene}=1;
+                        $not_genes{$gene}=1;
                         
                         
                     }elsif ($confidence_code =~/IRD/){
