@@ -17,16 +17,23 @@ INSERT INTO go_classification_new(classification_id, classification_version_sid,
   FROM goobo_extract ge 
   where ge.accession not in ( select accession from go_classification_new);
 
+-- This only inserts go_classification records for alt_ids if the term is completely new but already obsoleted.
 set search_path = panther_upl;
 INSERT INTO go_classification_new(classification_id, classification_version_sid, name,accession, definition,created_by,creation_date,obsolescence_date,term_type_sid,replaced_by_acc) 
   SELECT nextval('uids'), 303, ge.name, ge.alt_id, ge.definition,1,now(), to_date(ge.obsolete_date,'YYYY:MM:DD'), ge.term_type_sid, ge.replaced_by 
   FROM goobo_extract ge 
   where ge.alt_id not in ( select accession from go_classification_new);
 
---obsolete obsoleted go terms in the new table, these go terms having GO accession not in the new data
+--obsolete obsoleted go terms in the new table, these go terms having GO accession not in the new data. Needed if obsoletion is done via deletion from obo file.
 set search_path = panther_upl;
 update go_classification_new set obsoleted_by = 1, obsolescence_date = now() 
-where accession not in (select accession from goobo_extract union select alt_id from goobo_extract);
+where accession not in (select accession from goobo_extract)
+and obsolescence_date is null;
+
+-- Update replaced_by for obsoleted terms. Duplicates work for obsoleted terms still existing in obo file but fixes terms that were completely deleted.
+set search_path = panther_upl;
+update go_classification_new gcn set replaced_by = goo.accession
+from goobo_extract goo on goo.alt_id = gcn.accession;
 
 -- generate new go_classification_relationship table, no need to try to keep the old classification_relationship_id, just erase old data and load new data with new id
 set search_path = panther_upl;
