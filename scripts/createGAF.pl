@@ -214,6 +214,9 @@ open (QA, $qualifier);
 while (my $line = <QA>){
     chomp $line;
     my ($annotation_id, $qual)=split(/\;/, $line);
+    if ($qual =~/CONTRIBUTES|COLOCALIZES/){
+        $qual=~tr/[A-Z]/[a-z]/;
+    }
     $qualifier{$annotation_id} = $qual;
 }
 close (QA);
@@ -228,7 +231,9 @@ while (my $line=<GA>){
     chomp $line;
     my ($annotation_id, $an, $go, $type, $evidence_id, $evidence, $confidence, $qualifier)=split(/\;/, $line);
     next unless ($confidence=~/IDA|EXP|IMP|IPI|IGI|IEP/);
-    
+    if ($qual =~/CONTRIBUTES|COLOCALIZES/){
+        $qual=~tr/[A-Z]/[a-z]/;
+    }
     $experimental_seqs{$annotation_id}=$an;
 }
 
@@ -245,7 +250,9 @@ while (my $line=<GD>){
     chomp $line;
     my ($longId, $def, $symbol, $id)=split(/\t/, $line);
     #  $longId =~s/\=/\:/g;
-    $gene_symbol{$longId}=$symbol;
+    if ($symbol){
+        $gene_symbol{$longId}=$symbol;
+    }
     $gene_def{$longId}=$def;
 }
 
@@ -342,6 +349,7 @@ foreach my $annotation_id (keys %annotation){
     my ($annotation_id, $an, $ptn, $go, $go_name, $type, $date)=split(/\;/, $line);
     
     $date=~s/(\d+\-\d+\-\d+)\s\S+/$1/;
+    $date=~s/\-//g;
     
     my $ontology;
     if ($type=~/cellular/){
@@ -464,6 +472,7 @@ foreach my $annotation_id (keys %annotation){
             if (defined $gene_symbol{$gene}){
                 $symbol = $gene_symbol{$gene};
             }else{
+                $symbol = $short_id;
                 print STDERR "$gene -- no gene symbol found.\n";
             }
             
