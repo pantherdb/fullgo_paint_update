@@ -1,4 +1,4 @@
-### Working directory where files will be downloaded and built for each release (e.g. "06192018_fullgo") - Need to make into makefile argument
+### Working directory where files will be downloaded and built for each release (e.g. "2018-06-19_fullgo") - Need to make into makefile argument
 ### should create new base folder derived from current date, unless base path argument is specified (for example, if incomplete update is continued on later dates)
 ### maybe we should just call this 'target', adhering to GO pipeline then rename after everything's done?
 BASE_PATH ?= $(shell date +%Y-%m-%d)_fullgo
@@ -6,9 +6,10 @@ export FULL_BASE_PATH = $(realpath $(BASE_PATH))
 GAF_FILES_PATH = $(BASE_PATH)/gaf_files
 export FULL_GAF_FILES_PATH = $(realpath $(GAF_FILES_PATH))
 export PWD = $(shell pwd)
+GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
 ########## GAF CREATION ##########
 ### -i property file with go and panther version.
-GAF_PROFILE = "profile.txt"
+GAF_PROFILE = $(BASE_PATH)/profile.txt
 ### -d for the data folder from library
 PTHR_DATA_DIR = "/auto/rcf-proj3/hm/mi/UPL/PANTHER13.1/data/"
 ### -a paint_annotation (from database)
@@ -33,6 +34,7 @@ download_fullgo:
 	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A ".gz" http://geneontology.org/gene-associations/
 	gunzip $(GAF_FILES_PATH)/*.gz
 	wget -P $(BASE_PATH) http://geneontology.org/ontology/go.obo
+	$(MAKE) make_profile
 
 extractfromgoobo:
 	perl scripts/extractfromgoobo.pl -i $(BASE_PATH)/go.obo -o $(BASE_PATH)/inputforGOClassification.tsv > $(BASE_PATH)/obsolete_go_terms.txt
@@ -45,6 +47,12 @@ extractfromgoobo_relation:
 
 write_fullGoMappingPthr_slurm:
 	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr.slurm
+
+get_fullgo_date:
+	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
+
+make_profile:
+	sed 's/GO_VERSION_DATE/$(shell date -r $(shell ls $(FULL_GAF_FILES_PATH)/gene_association.* | head -n 1) +%Y-%m-%d)/g' profile.txt > $(BASE_PATH)/profile.txt
 
 raw_table_count:
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,goanno_wf
@@ -66,7 +74,7 @@ load_raw_go_to_panther:
 
 update_panther_new_tables:
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/go_classification.sql
-	python3 scripts/db_caller.py scripts/sql/panther_go_update/fullgo_version.sql
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/fullgo_version.sql -v $(grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/genelist_agg.sql
 
 switch_panther_table_names:
