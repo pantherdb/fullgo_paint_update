@@ -74,7 +74,7 @@ load_raw_go_to_panther:
 
 update_panther_new_tables:
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/go_classification.sql
-	python3 scripts/db_caller.py scripts/sql/panther_go_update/fullgo_version.sql -v $(grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/fullgo_version.sql -v $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/genelist_agg.sql
 
 switch_panther_table_names:
