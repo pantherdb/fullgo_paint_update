@@ -68,13 +68,13 @@ def clean_query(raw_query, query_variables=None):
     if cleaned_query.lstrip().startswith("--"):
         return None
     statement_var_count = cleaned_query.count("{}")
-    if query_variables:
+    if query_variables and statement_var_count > 0:
         provided_var_count = len(query_variables)
         if statement_var_count == provided_var_count:
             cleaned_query = cleaned_query.format(*query_variables)
         else:
             print("ERROR: Non-matching number of variables in statement ({}) to number of variables provided ({})".format(statement_var_count, provided_var_count))
-            exit()
+            exit() #TODO: Get this to crash the whole make recipe
     elif statement_var_count > 0:
         print(cleaned_query)
         print("ERROR: {} variables detected in statement but no variables provided".format(statement_var_count))
@@ -109,8 +109,8 @@ if __name__ == "__main__":
         query_statements = query_text.split(";")
         query_statements = list(filter(None, query_statements)) # Filter out empty strings
         if query_variables and len(query_statements) > 1:
-            print("ERROR: Shouldn't (yet) use query variables for multi-statement SQL files")
-            exit()
+            print("WARNING: Should be careful using query variables for multi-statement SQL files")
+            # exit()
         for statement in query_statements:
             # Add block if variables and multi-statement
             cleaned_query = clean_query(statement, query_variables=query_variables)
