@@ -32,7 +32,7 @@ and obsolescence_date is null;
 
 -- Update replaced_by for obsoleted terms. Duplicates work for obsoleted terms still existing in obo file but fixes terms that were completely deleted.
 set search_path = panther_upl;
-update go_classification_new gcn set replaced_by = goo.accession
+update go_classification_new gcn set replaced_by_acc = goo.accession
 from goobo_extract goo
 where goo.alt_id = gcn.accession;
 
