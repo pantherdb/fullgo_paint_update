@@ -149,6 +149,15 @@ backup_paint_tables:
 	pg_dump -d Curation -t panther_upl.curation_status --username postgres > curation_status.dump
 	pg_dump -d Curation -t panther_upl.comments --username postgres > comments.dump
 
+refresh_paint_panther_upl:
+	/usr/pgsql-9.4/bin/pg_dumpall -U postgres --roles-only -f /pgres_log/db_roles.dump
+	pg_dump -U postgres -d Curation --schema-only -f /pgres_log/Curation.schema.dump
+	pg_dump -U postgres -d Curation -n panther_upl -f /pgres_log/Curation.panther_upl.dump
+	# in psql on target server: create database "Curation"; # if missing
+	# psql Curation < /pgdata/pgsql/data/db_roles.dump
+	# psql Curation < /pgdata/pgsql/data/Curation.schema.dump
+	# psql Curation < /pgdata/pgsql/data/Curation.panther_upl.dump
+
 switch_paint_table_names:
 	@echo "Counts of paint tables before table switch:"
 	$(MAKE) paint_table_counts
