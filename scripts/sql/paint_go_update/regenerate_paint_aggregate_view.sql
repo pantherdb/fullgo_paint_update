@@ -20,7 +20,7 @@ CREATE MATERIALIZED VIEW panther_upl.paint_aggregate AS
     on pa.annotation_id = pq.annotation_id
     left join qualifier q
     on pq.qualifier_id = q.qualifier_id
-    where pe.obsolescence_date is null and pa.obsolescence_date is null and n.classification_version_sid = 24  and n.OBSOLESCENCE_DATE is null and clf.OBSOLESCENCE_DATE is null
+    where pe.obsolescence_date is null and pa.obsolescence_date is null and n.classification_version_sid = 24  and n.OBSOLESCENCE_DATE is null and clf.OBSOLESCENCE_DATE is null;
 
 ALTER TABLE panther_upl.paint_aggregate
   OWNER TO panther_isp;
@@ -28,3 +28,8 @@ GRANT ALL ON TABLE panther_upl.paint_aggregate TO panther_isp;
 GRANT ALL ON TABLE panther_upl.paint_aggregate TO panther_users;
 GRANT ALL ON TABLE panther_upl.paint_aggregate TO panther_paint;
 GRANT ALL ON TABLE panther_upl.paint_aggregate TO panther_upl;
+
+CREATE INDEX accession
+    ON panther_upl.paint_aggregate USING btree
+    (accession COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
