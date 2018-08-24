@@ -168,6 +168,9 @@ switch_paint_table_names:
 regenerate_go_aggregate_view:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/regenerate_go_aggregate_view.sql
 
+regenerate_paint_aggregate_view:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/regenerate_paint_aggregate_view.sql
+
 reset_paint_table_names:
 	@echo "Counts of paint tables before table switch:"
 	$(MAKE) paint_table_counts
