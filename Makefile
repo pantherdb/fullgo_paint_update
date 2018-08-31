@@ -165,6 +165,10 @@ refresh_paint_panther_upl:
 	# psql Curation < /pgdata/pgsql/data/Curation.schema.dump
 	# psql Curation < /pgdata/pgsql/data/Curation.panther_upl.dump
 
+paint_error_srv_check:
+	perl scripts/paintErrorCheck.pl $ph/famlib/rel/PANTHER13.1 > $(BASE_PATH)/paint_error_check.xml
+	python3 scripts/paint_xml_parser.py $(BASE_PATH)/paint_error_check.xml > $(BASE_PATH)/parsed_paint_srv_results
+
 switch_paint_table_names:
 	@echo "Counts of paint tables before table switch:"
 	$(MAKE) paint_table_counts
