@@ -11,8 +11,11 @@ update paint_evidence_new pen
 set obsoleted_by = 1, obsolescence_date = now() 
 where not exists ( 
     select 1 from go_annotation_new gan 
+    join go_evidence_new gen on gen.annotation_id = gan.annotation_id
+    join confidence_code cc on cc.confidence_code_sid = gen.confidence_code_sid
     where cast(pen.evidence as int) = gan.annotation_id 
     and gan.obsolescence_date is null
+    and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP')
   ) 
   and pen.evidence_type_sid = 46 
   and pen.obsolescence_date is null;
