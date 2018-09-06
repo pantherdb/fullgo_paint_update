@@ -15,7 +15,7 @@ where not exists (
     join confidence_code cc on cc.confidence_code_sid = gen.confidence_code_sid
     where cast(pen.evidence as int) = gan.annotation_id 
     and gan.obsolescence_date is null
-    and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP')
+    and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')
   ) 
   and pen.evidence_type_sid = 46 
   and pen.obsolescence_date is null;
@@ -41,7 +41,7 @@ and ga.annotation_id = ge.annotation_id
 and ga.annotation_id != pe.annotation_id
 and ga.obsolescence_date is null
 and ge.confidence_code_sid = cc.confidence_code_sid
-and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP')) x
+and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')) x
 where x.evidence_id = pen.evidence_id
 and pen.obsolescence_date is not null;
 

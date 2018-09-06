@@ -25,7 +25,7 @@ and n.classification_version_sid = 24
 and n1.classification_version_sid = 24
 and ga.annotation_id = ge.annotation_id
 and ge.confidence_code_sid = cc.confidence_code_sid
-and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP')) x;
+and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')) x;
 
 -- keep the old created_by and creation_date value for the same paint_evidence
 set search_path = 'panther_upl';
