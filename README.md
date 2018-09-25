@@ -44,6 +44,7 @@ make update_paint_paint_evidence
 make update_comments_status
 make switch_paint_table_names
 make regenerate_go_aggregate_view
+make regenerate_paint_aggregate_view
 ```
 
 ## GAF generation
