@@ -163,6 +163,7 @@ refresh_paint_panther_upl:
 	# in psql on target server: create database "Curation"; # if missing
 	# psql Curation < /pgdata/pgsql/data/db_roles.dump
 	# psql Curation < /pgdata/pgsql/data/Curation.schema.dump
+	# Cleaner to DROP SCHEMA panther_upl CASCADE; before loading data dump
 	# psql Curation < /pgdata/pgsql/data/Curation.panther_upl.dump
 
 paint_error_srv_check:
