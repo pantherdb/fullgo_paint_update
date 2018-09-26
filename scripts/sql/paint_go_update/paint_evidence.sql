@@ -44,7 +44,7 @@ and ge.confidence_code_sid = cc.confidence_code_sid
 and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')) x
 where x.evidence_id = pen.evidence_id
 and pen.obsolescence_date is not null
-and pen.obsoleted_by_id = 1;
+and pen.obsoleted_by = 1;
 
 --Update evidence column to correct, non-obsolete GO annotation for PAINT ANCESTOR evidence records and mark un-obsoleted
 set search_path=panther_upl;
@@ -70,7 +70,7 @@ from
 ) x
 where pen.evidence_id = x.evidence_id
 and pen.obsolescence_date is not null
-and pen.obsoleted_by_id = 1;
+and pen.obsoleted_by = 1;
 
 -- Go through the paint-annotation table, and see if this annotation_id is still exist in the paint_evidence table with obsoleted_by column is null, if not, obsolete the paint_annotation entry
 set search_path=panther_upl;
