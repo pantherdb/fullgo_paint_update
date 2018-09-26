@@ -69,7 +69,7 @@ from
   and n1.classification_version_sid = 24
 ) x
 where pen.evidence_id = x.evidence_id
-and pen.obsolescence_date is not null;
+and pen.obsolescence_date is not null
 and pen.obsoleted_by_id = 1;
 
 -- Go through the paint-annotation table, and see if this annotation_id is still exist in the paint_evidence table with obsoleted_by column is null, if not, obsolete the paint_annotation entry

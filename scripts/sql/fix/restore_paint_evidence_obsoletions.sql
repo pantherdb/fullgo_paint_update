@@ -20,9 +20,9 @@ and obs.obsoleted_by != '1'
 group by n.public_id, gc.accession, u.name, obs.obsolescence_date
 order by obs.obsolescence_date;
 
--- Fix for time period #1
+-- Fix for time period #1 - 19 rows?
 update panther_upl.paint_evidence pe
-set pe.obsolescence_date = obs.obsolescence_date, pe.obsoleted_by = obs.obsoleted_by
+set obsolescence_date = obs.obsolescence_date, obsoleted_by = obs.obsoleted_by
 from panther_upl.paint_evidence_obs obs
 join panther_upl.paint_annotation pa on pa.annotation_id = obs.annotation_id
 where obs.annotation_id = pe.annotation_id
@@ -48,9 +48,9 @@ and obs.obsoleted_by != '1'
 group by n.public_id, gc.accession, u.name, obs.obsolescence_date
 order by obs.obsolescence_date;
 
--- Fix for time period #2
+-- Fix for time period #2 - 307 rows?
 update panther_upl.paint_evidence pe
-set pe.obsolescence_date = obs.obsolescence_date, pe.obsoleted_by = obs.obsoleted_by
+set obsolescence_date = obs.obsolescence_date, obsoleted_by = obs.obsoleted_by
 from panther_upl.paint_evidence_obs_hm obs
 join panther_upl.paint_annotation pa on pa.annotation_id = obs.annotation_id
 where obs.annotation_id = pe.annotation_id

@@ -165,6 +165,7 @@ refresh_paint_panther_upl:
 	# psql Curation < /pgdata/pgsql/data/Curation.schema.dump
 	# Cleaner to DROP SCHEMA panther_upl CASCADE; before loading data dump
 	# psql Curation < /pgdata/pgsql/data/Curation.panther_upl.dump
+	# Also need to REFRESH MATERIALIZED VIEW for go_aggregate and paint_aggregate
 
 paint_error_srv_check:
 	perl scripts/paintErrorCheck.pl /home/pmd-02/pdt/pdthomas/panther/famlib/rel/PANTHER13.1 > $(BASE_PATH)/paint_error_check.xml
