@@ -43,7 +43,7 @@ and ga.obsolescence_date is null
 and ge.confidence_code_sid = cc.confidence_code_sid
 and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')) x
 where x.evidence_id = pen.evidence_id
-and pen.obsolescence_date is not null;
+and pen.obsolescence_date is not null
 and pen.obsoleted_by_id = 1;
 
 --Update evidence column to correct, non-obsolete GO annotation for PAINT ANCESTOR evidence records and mark un-obsoleted
