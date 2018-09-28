@@ -7,6 +7,7 @@ use LWP::Simple;
 
 
 my $lib = $ARGV[0];
+my $url = $ARGV[1];
 
 # my $node = $ARGV[1];
 
@@ -41,7 +42,8 @@ foreach my $book (readdir BK){
 	next unless $book =~ /^PTHR\d+$/;
 
 	# my $content = get("http://paintcuration.usc.edu/webservices/family.jsp?searchValue=$book&searchType=SEARCH_TYPE_FAMILY_ANNOTATION_INFO") or die "no such luck\n";
-	my $content = get("http://panthercuratest.usc.edu/webservices/family.jsp?searchValue=$book&searchType=SEARCH_TYPE_AGG_FAMILY_ANNOTATION_INFO") or die "no such luck\n";
+	# my $content = get("http://panthercuratest.usc.edu/webservices/family.jsp?searchValue=$book&searchType=SEARCH_TYPE_AGG_FAMILY_ANNOTATION_INFO") or die "no such luck\n";
+	my $content = get("$url") or die "no such luck\n";
 
 	
 

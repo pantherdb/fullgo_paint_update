@@ -168,7 +168,7 @@ refresh_paint_panther_upl:
 	# Also need to REFRESH MATERIALIZED VIEW for go_aggregate and paint_aggregate
 
 paint_error_srv_check:
-	perl scripts/paintErrorCheck.pl /home/pmd-02/pdt/pdthomas/panther/famlib/rel/PANTHER13.1 > $(BASE_PATH)/paint_error_check.xml
+	perl scripts/paintErrorCheck.pl /home/pmd-02/pdt/pdthomas/panther/famlib/rel/PANTHER13.1 "http://panthercuration.usc.edu/webservices/family.jsp?searchValue=$book&searchType=SEARCH_TYPE_AGG_FAMILY_ANNOTATION_INFO" > $(BASE_PATH)/paint_error_check.xml
 	python3 scripts/paint_xml_parser.py $(BASE_PATH)/paint_error_check.xml > $(BASE_PATH)/parsed_paint_srv_results
 
 switch_paint_table_names:
