@@ -35,6 +35,7 @@ download_fullgo:
 	gunzip $(GAF_FILES_PATH)/*.gz
 	wget -P $(BASE_PATH) http://geneontology.org/ontology/go.obo
 	$(MAKE) make_profile
+	$(MAKE) make_readme
 
 extractfromgoobo:
 	perl scripts/extractfromgoobo.pl -i $(BASE_PATH)/go.obo -o $(BASE_PATH)/inputforGOClassification.tsv > $(BASE_PATH)/obsolete_go_terms.txt
@@ -60,6 +61,9 @@ get_fullgo_date:
 
 make_profile:
 	sed 's/GO_VERSION_DATE/$(shell date -r $(shell ls $(FULL_GAF_FILES_PATH)/gene_association.* | head -n 1) +%Y-%m-%d)/g' profile.txt > $(BASE_PATH)/profile.txt
+
+make_readme:
+	echo "GO source files downloaded on $(shell date +%Y-%m-%d)" > $(BASE_PATH)/README
 
 raw_table_count:
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,goanno_wf
@@ -90,6 +94,10 @@ switch_panther_table_names:
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/switch_table_names.sql
 	@echo "Counts of panther tables after data load:"
 	$(MAKE) panther_table_count
+	$(MAKE) record_db_import_date
+
+record_db_import_date:
+	echo "Data imported into the PANTHER database on $(shell date +%Y-%m-%d)" | tee -a $(BASE_PATH)/README
 
 check_dups:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql
@@ -217,3 +225,4 @@ repair_gaf_symbols:
 	wget ftp://ftp.pombase.org/nightly_update/misc/allNames.tsv -O $(BASE_PATH)/resources/allNames.tsv
 	wget ftp://ftp.pombase.org/nightly_update/misc/sysID2product.tsv -O $(BASE_PATH)/resources/sysID2product.tsv
 	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p $(BASE_PATH)/resources/allNames.tsv -d $(BASE_PATH)/resources/sysID2product.tsv > $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf
+	cp $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf $(IBA_DIR)/gene_association.paint_pombase.gaf
