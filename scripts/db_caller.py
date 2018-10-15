@@ -60,7 +60,7 @@ def format_results(results, delimiter=";"):
             else:
                 val = str(val)
             vals.append(val)
-        formatted_results.append(";".join(vals))
+        formatted_results.append(delimiter.join(vals))
     return formatted_results
 
 def clean_query(raw_query, query_variables=None):

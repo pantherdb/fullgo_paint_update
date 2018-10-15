@@ -29,7 +29,8 @@ where not exists (
   and gc.accession = gw.go_acc 
   and gn.node_id = gan.node_id 
   and gc.classification_id = gan.classification_id
-  );
+  )
+and gan.obsolescence_date is null;
 
 --for go_annotation entry with obsoleted go term, but no replaced go term, obsolete the go_annotation entry
 set search_path = panther_upl;
@@ -38,7 +39,8 @@ set obsoleted_by = 1, obsolescence_date = now()
 from go_classification_new gcn 
 where gan.classification_id = gcn.classification_id 
 and gcn.obsolescence_date is not null 
-and gcn.replaced_by_acc is null;
+and gcn.replaced_by_acc is null
+and gan.obsolescence_date is null;
 
 --for go_annotation entry with go term replaced by another go term, change the classification_id to that of the new go term
 set search_path = panther_upl;
