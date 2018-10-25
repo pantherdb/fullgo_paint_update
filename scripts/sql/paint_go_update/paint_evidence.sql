@@ -87,3 +87,21 @@ where pa.annotation_id not in (
   and pa.annotation_id = pe.annotation_id 
   and pe.evidence_type_sid = 46 
   and pa.obsolescence_date is null;
+
+-- Spit out list of unobsoleted IBDs before update below
+set search_path=panther_upl;
+select count(distinct(pan.annotation_id)) from  paint_annotation_new pan
+join paint_evidence_new pen on pen.annotation_id = pan.annotation_id
+where pan.obsolescence_date is not null
+and pan.obsoleted_by = 1
+and pen.obsolescence_date is null;
+
+-- If paint_annotation is obsolete (by update pipeline) and associated, non-obsolete paint_evidence exists, then un-obsolete paint_annotation.
+set search_path=panther_upl;
+update paint_annotation_new pan
+set obsoleted_by = null, obsolescence_date = null
+from paint_evidence_new pen
+where pen.annotation_id = pan.annotation_id
+and pan.obsolescence_date is not null
+and pan.obsoleted_by = 1
+and pen.obsolescence_date is null;
