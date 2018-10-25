@@ -22,7 +22,7 @@
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:d:G:t:c:T:e:vVh') || &usage();
+getopts('o:i:a:q:g:d:G:t:u:c:T:e:vVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
