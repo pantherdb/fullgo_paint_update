@@ -20,6 +20,8 @@ ANNOT_QUALIFIER = paint_annotation_qualifier
 GO_AGG = go_aggregate
 ### -t TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
 TAIR_MAP = "/auto/rcf-proj3/hm/mi/PAINT/Analysis/TAIR10_TAIRlocusaccessionID_AGI_mapping.txt"
+### -u Mapping to support "TAIR=locus" long IDs
+ARAPORT_MAP = "resources/uniprot_to_araport_map.tsv"
 ### -c evidence (from database)
 EVIDENCE = paint_evidence
 ### -T organism_taxon
@@ -30,6 +32,7 @@ GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_b
 IBA_DIR = $(BASE_PATH)/IBA_GAFs
 
 download_fullgo:
+	# Need to separate wgets from gunzip so processing can be done on compute nodes
 	mkdir -p $(GAF_FILES_PATH)
 	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A ".gz" http://geneontology.org/gene-associations/
 	gunzip $(GAF_FILES_PATH)/*.gz
@@ -203,7 +206,7 @@ reset_paint_table_names:
 
 create_gafs: paint_annotation paint_evidence paint_annotation_qualifier go_aggregate organism_taxon	# must run from tcsh shell
 	mkdir $(IBA_DIR)
-	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_DAT) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
+	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_DAT) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
 	$(MAKE) repair_gaf_symbols
 
 paint_annotation:

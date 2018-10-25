@@ -31,6 +31,7 @@ $annotation = $opt_a if ($opt_a); # -a for annotation file
 $go_aggregate = $opt_g if ($opt_g); # -g for go_aggregate file
 $qualifier = $opt_q if ($opt_q);  # -q for qualifier file
 $tair = $opt_t if ($opt_t);       # -t for the TAIR ID lookup file
+$araport = $opt_u if ($opt_u);    # -u for the UniProt-to-Araport ID lookup file
 $evidence = $opt_c if ($opt_c);   # -c for evidence file
 $taxon = $opt_T if ($opt_T);      # -T for the taxon file
 $gene_dat = $opt_G if ($opt_G);   # -G for the gene.dat file in DB load folder
@@ -74,6 +75,18 @@ while (my $line=<TA>){
     $tair{$agi}=$locus;
 }
 close (TA);
+
+###############################
+# Parse Uniprot-to-Araport ID lookup file
+###############################
+my %araport;   # atg and locus ID lookup file.
+open (AR, $araport);
+while (my $line=<AR>){
+    chomp $line;
+    my ($uniprotid, $agi, $rest)=split(/\t/, $line);
+    $araport{$uniprotid}=$agi;
+}
+close (AR);
 
 #################################
 # Parse the taxon file
@@ -176,6 +189,12 @@ foreach my $file (@files){
                     $shortId = $geneId;
                 }elsif ($geneId=~/^TAIR/){
                     $geneId=~s/^\w+\://;
+                    if ($geneId eq 'locus'){
+                        $proteinId=~s/^\w+\://;
+                        if (defined $araport{$proteinId}){
+                            $geneId = $araport{$proteinId};
+                        }
+                    }
                     if (defined $tair{$geneId}){
                         my $locus = $tair{$geneId};
                         $shortId="TAIR:locus:$locus";
