@@ -31,13 +31,15 @@ my $url = $ARGV[1];
 
 
 
-opendir BK, "$lib/books";
+# opendir BK, "$lib/books";
+open (BK, $lib);
+while (my $book = <BK>){
+    chomp $book;
 
 
 
 
-
-foreach my $book (readdir BK){
+# foreach my $book (readdir BK){
 
 	next unless $book =~ /^PTHR\d+$/;
 
@@ -52,6 +54,6 @@ foreach my $book (readdir BK){
 	print "$content\n"; 
 
 }
-
+close (BK);
 
 
