@@ -17,7 +17,6 @@ where not exists (
     and gan.obsolescence_date is null
     and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')
   ) 
-  and pen.evidence_type_sid = 46 
   and pen.obsolescence_date is null;
 
 --Update evidence column to correct, non-obsolete GO annotation for PAINT EXP evidence records and mark un-obsoleted
