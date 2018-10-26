@@ -41,6 +41,7 @@ make switch_evidence_to_pmid
 make delete_incorrect_go_annot_qualifiers
 make update_paint_paint_annotation
 make update_paint_paint_evidence
+make update_paint_paint_annot_qualifier
 make update_comments_status
 make switch_paint_table_names
 make regenerate_go_aggregate_view

@@ -127,6 +127,9 @@ update_paint_paint_annotation:
 update_paint_paint_evidence:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/paint_evidence.sql
 
+update_paint_paint_annot_qualifier:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/paint_annotation_qualifier.sql
+
 update_comments_status:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_term_obsoleted.sql
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_term_not_obsoleted.sql

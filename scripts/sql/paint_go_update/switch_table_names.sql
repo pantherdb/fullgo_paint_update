@@ -14,6 +14,8 @@ ALTER TABLE paint_annotation RENAME TO paint_annotation_old;
 ALTER TABLE paint_annotation_new RENAME TO paint_annotation;
 ALTER TABLE paint_evidence RENAME TO paint_evidence_old;
 ALTER TABLE paint_evidence_new RENAME TO paint_evidence;
+ALTER TABLE paint_annotation_qualifier RENAME TO paint_annotation_qualifier_old;
+ALTER TABLE paint_annotation_qualifier_new RENAME TO paint_annotation_qualifier;
 ALTER TABLE curation_status RENAME TO curation_status_old;
 ALTER TABLE curation_status_new RENAME TO curation_status;
 ALTER TABLE comments RENAME TO comments_old;
