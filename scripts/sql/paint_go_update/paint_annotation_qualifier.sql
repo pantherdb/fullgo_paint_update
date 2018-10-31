@@ -1,3 +1,4 @@
+set search_path = panther_upl;
 ALTER TABLE paint_annotation_qualifier_old RENAME TO paint_annotation_qualifier_new;
 truncate table paint_annotation_qualifier_new;
 insert into paint_annotation_qualifier_new select * from paint_annotation_qualifier;

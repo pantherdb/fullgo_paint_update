@@ -4,6 +4,7 @@
 #SBATCH --mem=96gb
 #SBATCH --account=lc_pdt
 #SBATCH --partition=thomas
+#SBATCH --mail-type=END,FAIL
 
 source /home/pmd-02/pdt/pdthomas/panther/cshrc.panther
 
