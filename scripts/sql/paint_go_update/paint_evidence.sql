@@ -26,20 +26,22 @@ set evidence = x.go_annotation_id, obsolescence_date = null, obsoleted_by = null
 from
 (select distinct ga.annotation_id go_annotation_id, pa.annotation_id paint_annotation_id, pe.evidence_id
 from
-(select parent_node_acc, unnest(string_to_array(child_leaf_node_acc, ',')) as leaf from node_all_leaves) pl, paint_annotation_new pa, node n, node n1, go_annotation_new ga, go_evidence_new ge, confidence_code cc, paint_evidence_new pe
-where pa.node_id = n.node_id
-and n.accession = pl.parent_node_acc
-and n1.node_id = ga.node_id
-and n1.accession = pl.leaf
-and pa.classification_id = ga.classification_id
-and pa.annotation_id = pe.annotation_id
-and pe.evidence_type_sid = 46
+(select parent_node_acc, unnest(string_to_array(child_leaf_node_acc, ',')) as leaf from node_all_leaves) pl
+join node n on n.accession = pl.parent_node_acc
+join node n1 on n1.accession = pl.leaf
+join paint_annotation pa on pa.node_id = n.node_id
+join go_annotation ga on ga.node_id = n1.node_id and ga.classification_id = pa.classification_id
+join paint_evidence pe on pe.annotation_id = pa.annotation_id and cast(pe.evidence as int) = ga.annotation_id
+join go_evidence ge on ge.annotation_id = ga.annotation_id
+join confidence_code cc on cc.confidence_code_sid = ge.confidence_code_sid
+left join go_annotation_qualifier gaq on gaq.annotation_id = ga.annotation_id
+left join paint_annotation_qualifier paq on paq.annotation_id = pa.annotation_id
+where pe.evidence_type_sid = 46
 and n.classification_version_sid = 24
 and n1.classification_version_sid = 24
-and ga.annotation_id = ge.annotation_id
 and ga.annotation_id != pe.annotation_id
 and ga.obsolescence_date is null
-and ge.confidence_code_sid = cc.confidence_code_sid
+and (gaq.qualifier_id = paq.qualifier_id or (gaq.annotation_qualifier_id is null and paq.annotation_qualifier_id is null))
 and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')) x
 where x.evidence_id = pen.evidence_id
 and pen.obsolescence_date is not null
