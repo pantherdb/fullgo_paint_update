@@ -29,12 +29,12 @@ from
 (select parent_node_acc, unnest(string_to_array(child_leaf_node_acc, ',')) as leaf from node_all_leaves) pl
 join node n on n.accession = pl.parent_node_acc
 join node n1 on n1.accession = pl.leaf
-join paint_annotation pa on pa.node_id = n.node_id
-join go_annotation ga on ga.node_id = n1.node_id and ga.classification_id = pa.classification_id
-join paint_evidence pe on pe.annotation_id = pa.annotation_id and cast(pe.evidence as int) = ga.annotation_id
-join go_evidence ge on ge.annotation_id = ga.annotation_id
+join paint_annotation_new pa on pa.node_id = n.node_id
+join go_annotation_new ga on ga.node_id = n1.node_id and ga.classification_id = pa.classification_id
+join paint_evidence_new pe on pe.annotation_id = pa.annotation_id and cast(pe.evidence as int) = ga.annotation_id
+join go_evidence_new ge on ge.annotation_id = ga.annotation_id
 join confidence_code cc on cc.confidence_code_sid = ge.confidence_code_sid
-left join go_annotation_qualifier gaq on gaq.annotation_id = ga.annotation_id
+left join go_annotation_qualifier_new gaq on gaq.annotation_id = ga.annotation_id
 left join paint_annotation_qualifier paq on paq.annotation_id = pa.annotation_id
 where pe.evidence_type_sid = 46
 and n.classification_version_sid = 24
