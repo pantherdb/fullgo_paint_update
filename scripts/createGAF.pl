@@ -466,6 +466,11 @@ foreach my $annotation_id (keys %annotation){
                         $not_genes{$gene}=1;
                     }
                 }
+            }elsif (defined $leaf{$an_n}){
+                my $leaf_gene = $leaf{$an_n};
+                if ($confidence_code =~/IKR|IRD/){
+                    $not_genes{$leaf_gene}=1;
+                }
             }else{
                 print STDERR "No leaf genes found for $ptn_n.\n";
             }
