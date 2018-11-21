@@ -35,7 +35,9 @@ download_fullgo:
 	# Need to separate wgets from gunzip so processing can be done on compute nodes
 	mkdir -p $(GAF_FILES_PATH)
 	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A ".gz" http://geneontology.org/gene-associations/
-	gunzip $(GAF_FILES_PATH)/*.gz
+	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
+	sbatch $(BASE_PATH)/gunzip_gafs.slurm
+	# gunzip $(GAF_FILES_PATH)/*.gz
 	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/go.obo
 	$(MAKE) make_profile
 	$(MAKE) make_readme
