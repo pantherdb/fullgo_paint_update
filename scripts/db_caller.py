@@ -11,6 +11,7 @@ parser.add_argument("query_filename")
 parser.add_argument("-v", "--query_variables", type=str, required=False, help="comma-delimited, ordered list of values to replace variables in SQL script.\
                                                 Only use query variables for single query SQL files, otherwise managing these gets tricky due to the per-statement cleaning step.")
 parser.add_argument("-o", "--rows_outfile", help="Write result rows to specified filename.")
+parser.add_argument("-d", "--delimiter", help="column delimiter to display in query output.")
 
 with open("config/config.yaml") as f:
     cfg = yaml.load(f)
@@ -117,7 +118,11 @@ if __name__ == "__main__":
             if cleaned_query:
                 start_time = datetime.datetime.now()
                 results = exec_query(con, cleaned_query + ";")
-                for r in format_results(results):
+                if args.delimiter:
+                    formatted_results = format_results(results, delimiter=args.delimiter)
+                else:
+                    formatted_results = format_results(results)
+                for r in formatted_results:
                     if rows_outfile:
                         rows_outfile.write("{}\n".format(r))
                     else:

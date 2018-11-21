@@ -160,6 +160,7 @@ paint_table_counts:
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther_upl,comments
 
 backup_paint_tables:
+	# Use /usr/pgsql-9.6/bin/pg_dump on 207.151.20.155. There's a version mismatch with pg_dump in path.
 	pg_dump -d Curation -t panther_upl.go_classification --username postgres > go_classification.dump
 	pg_dump -d Curation -t panther_upl.go_classification_relationship --username postgres > go_classification_relationship.dump
 	pg_dump -d Curation -t panther_upl.go_evidence --username postgres > go_evidence.dump
