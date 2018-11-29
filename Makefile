@@ -32,12 +32,10 @@ GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_b
 IBA_DIR = $(BASE_PATH)/IBA_GAFs
 
 download_fullgo:
-	# Need to separate wgets from gunzip so processing can be done on compute nodes
 	mkdir -p $(GAF_FILES_PATH)
 	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A ".gz" http://geneontology.org/gene-associations/
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
-	# gunzip $(GAF_FILES_PATH)/*.gz
 	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/go.obo
 	$(MAKE) make_profile
 	$(MAKE) make_readme
@@ -51,8 +49,9 @@ extractfromgoobo_relation:
 	perl scripts/extractfromgoobo_relation.pl -i $(BASE_PATH)/go.obo -o $(BASE_PATH)/goparentchild.tsv
 	wc -l $(BASE_PATH)/goparentchild.tsv
 
-write_fullGoMappingPthr_slurm:
+submit_fullGoMappingPthr_slurm:
 	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr.slurm
+	sbatch $(BASE_PATH)/fullGoMappingPthr.slurm
 
 generate_go_hierarchy:
 	wget -P $(BASE_PATH) ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_gcrp.gaf.gz
@@ -60,6 +59,10 @@ generate_go_hierarchy:
 	perl scripts/FindAllParents.pl $(BASE_PATH)/goparentchild.tsv $(BASE_PATH)/AllParentsofGOTerms.txt
 	perl scripts/printHierarchy.pl $(BASE_PATH)/AllParentsofGOTerms.txt $(BASE_PATH)/FinalChildParent-Hierarchy.dat
 	perl scripts/hierarchyfinalstep.pl $(BASE_PATH) # Need to slurm this
+
+format_taxon_term_table:
+	# Download taxon_term_table file from current.go.org and run python scripts
+	@echo "Under construction"
 
 get_fullgo_date:
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2

@@ -14,12 +14,12 @@ To execute the current existing workflow:
 make download_fullgo
 make extractfromgoobo
 make extractfromgoobo_relation
-make write_fullGoMappingPthr_slurm
+make submit_fullGoMappingPthr_slurm
 ``` 
 
 * `download_fullgo` will download all current GAF and GO.obo files from GO ftp server. This also creates the base folder ("YYYY-MM-DD_fullgo/") where the update files will live.
 * `extractfromgoobo` and `extractfromgoobo_relation` parse out the ontology terms and term relationships, respectively.
-* `write_fullGoMappingPthr_slurm` is a convenience thing that creates a slurm batch script to run `scripts/fullGoMappingPthr.pl` on the USC HPC. This script maps the GAF gene product IDs to Panther IDs.
+* `submit_fullGoMappingPthr_slurm` will create a slurm batch script to run `scripts/fullGoMappingPthr.pl` on the USC HPC and then submit it. This script maps the GAF gene product IDs to Panther IDs.
 
 Once the input files `inputforGOClassification.tsv`, `goparentchild.tsv`, and `Pthr_GO.tsv` are generated, they're SCP'd over to the Panther DB server to be copied into staging tables. The following commands will then load the data into Panther and update the aggregation table:
 ```
