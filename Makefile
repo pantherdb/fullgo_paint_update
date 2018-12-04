@@ -7,6 +7,20 @@ GAF_FILES_PATH = $(BASE_PATH)/gaf_files
 export FULL_GAF_FILES_PATH = $(realpath $(GAF_FILES_PATH))
 export PWD = $(shell pwd)
 GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
+
+### PANTHER 13.1 ###
+# export PANTHER_VERSION = "13.1"
+# export PANTHER_VERSION_DATE = "20180203"
+# export IDENTIFIER_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat"
+# export GENE_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
+# export TAXON_ID_PATH = "scripts/pthr13_code_taxId.txt"
+### PANTHER 14.0 ###
+export PANTHER_VERSION = "14.0"
+export PANTHER_VERSION_DATE = "20181203"
+export IDENTIFIER_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat"
+export GENE_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
+export TAXON_ID_PATH = "scripts/pthr14_code_taxId.txt"
+
 ########## GAF CREATION ##########
 ### -i property file with go and panther version.
 GAF_PROFILE = $(BASE_PATH)/profile.txt
@@ -62,13 +76,21 @@ generate_go_hierarchy:
 
 format_taxon_term_table:
 	# Download taxon_term_table file from current.go.org and run python scripts
+	# To run gaferencer:
+	#  export SBT_OPTS="-Xmx128G"
+	#  sbt
+	#  run taxa --contexts resources/go_context.jsonld --ontfile true resources/go-plus.owl resources/paint_taxons.txt new_table_file
+	#  exit
+	# Process new_table_file:
+	#  python3 taxon_to_oscode.py
+	#  python3 taxon_validate.py
 	@echo "Under construction"
 
 get_fullgo_date:
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
 
 make_profile:
-	sed 's/GO_VERSION_DATE/$(shell date -r $(shell ls $(FULL_GAF_FILES_PATH)/gene_association.* | head -n 1) +%Y-%m-%d)/g' profile.txt > $(BASE_PATH)/profile.txt
+	sed 's/GO_VERSION_DATE/$(shell date -r $(shell ls $(FULL_GAF_FILES_PATH)/gene_association.* | head -n 1) +%Y-%m-%d)/g' profile.txt | envsubst > $(BASE_PATH)/profile.txt
 
 make_readme:
 	echo "GO source files downloaded on $(shell date +%Y-%m-%d)" > $(BASE_PATH)/README
