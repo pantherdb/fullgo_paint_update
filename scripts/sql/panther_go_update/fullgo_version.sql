@@ -5,5 +5,5 @@ Truncate table fullgo_version_new;
 INSERT INTO fullgo_version_new(
         go_annotation_format_version, go_annotation_release_date, panther_version, 
         panther_release_date)
-VALUES ('1.2', to_date('{}','YYYYMMDD'), '13.1', 
-        to_date('20180203','YYYYMMDD'));
+VALUES ('1.2', to_date('{go_release_date}','YYYYMMDD'), '{panther_version}', 
+        to_date('{panther_version_date}','YYYYMMDD'));

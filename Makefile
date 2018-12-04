@@ -113,9 +113,14 @@ load_raw_go_to_panther:
 	@echo "Counts of raw tables after data load:"
 	$(MAKE) raw_table_count
 
+test_keyed_variables:
+	python3 test_keyed_variables.py -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "panther_version": "$(PANTHER_VERSION)", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
+	# python3 test_keyed_variables.py -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
+	# python3 test_keyed_variables.py -v panther,go_classification
+
 update_panther_new_tables:
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/go_classification.sql
-	python3 scripts/db_caller.py scripts/sql/panther_go_update/fullgo_version.sql -v $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/fullgo_version.sql -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "panther_version": "$(PANTHER_VERSION)", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/genelist_agg.sql
 
 switch_panther_table_names:

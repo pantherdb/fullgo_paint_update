@@ -1,5 +1,6 @@
 import psycopg2
 import yaml
+import json
 import argparse
 import datetime
 from os import path
@@ -24,6 +25,7 @@ host = chosen_df["host"]
 dbname = chosen_df["dbname"]
 username = chosen_df["username"]
 pword = chosen_df["pword"]
+db_version = chosen_df.get("db_version")
 
 def get_connection():
     con = psycopg2.connect("dbname = {} user={} host={} password={}".format(dbname,
@@ -64,18 +66,30 @@ def format_results(results, delimiter=";"):
         formatted_results.append(delimiter.join(vals))
     return formatted_results
 
+def handle_config_variables(raw_query):
+    cleaned_query = raw_query
+    if "{load_dir}" in cleaned_query:
+        load_dir = chosen_df.get("load_dir")
+        cleaned_query = cleaned_query.replace("{load_dir}", load_dir)
+    return cleaned_query
+
 def clean_query(raw_query, query_variables=None):
     cleaned_query = raw_query
     if cleaned_query.lstrip().startswith("--"):
         return None
+    cleaned_query = handle_config_variables(cleaned_query)
     statement_var_count = cleaned_query.count("{}")
-    if query_variables and statement_var_count > 0:
-        provided_var_count = len(query_variables)
-        if statement_var_count == provided_var_count:
-            cleaned_query = cleaned_query.format(*query_variables)
-        else:
-            print("ERROR: Non-matching number of variables in statement ({}) to number of variables provided ({})".format(statement_var_count, provided_var_count))
-            exit() #TODO: Get this to crash the whole make recipe
+    if query_variables:
+        if query_variables.__class__ == dict:
+            cleaned_query = cleaned_query.format(**query_variables)
+        elif statement_var_count > 0:
+            # query_variables is likely a list
+            provided_var_count = len(query_variables)
+            if statement_var_count == provided_var_count:
+                cleaned_query = cleaned_query.format(*query_variables)
+            else:
+                print("ERROR: Non-matching number of variables in statement ({}) to number of variables provided ({})".format(statement_var_count, provided_var_count))
+                exit() #TODO: Get this to crash the whole make recipe
     elif statement_var_count > 0:
         print(cleaned_query)
         print("ERROR: {} variables detected in statement but no variables provided".format(statement_var_count))
@@ -95,7 +109,10 @@ if __name__ == "__main__":
     qfile = args.query_filename
     query_variables = None
     if args.query_variables:
-        query_variables = args.query_variables.split(",")
+        try:
+            query_variables = json.loads(args.query_variables)
+        except json.decoder.JSONDecodeError:
+            query_variables = args.query_variables.split(",")
     if not path.isfile(qfile):
         print("ERROR: No such query file '{}'.".format(qfile))
         exit()
