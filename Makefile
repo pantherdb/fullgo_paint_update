@@ -15,11 +15,11 @@ GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f
 # export GENE_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
 # export TAXON_ID_PATH = "scripts/pthr13_code_taxId.txt"
 ### PANTHER 14.0 ###
-export PANTHER_VERSION = "14.0"
-export PANTHER_VERSION_DATE = "20181203"
-export IDENTIFIER_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat"
-export GENE_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
-export TAXON_ID_PATH = "scripts/pthr14_code_taxId.txt"
+export PANTHER_VERSION = 14.0
+export PANTHER_VERSION_DATE = 20181203
+export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/identifier.dat
+export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/gene.dat
+export TAXON_ID_PATH = scripts/pthr14_code_taxId.txt
 
 ########## GAF CREATION ##########
 ### -i property file with go and panther version.
