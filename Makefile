@@ -68,11 +68,13 @@ submit_fullGoMappingPthr_slurm:
 	sbatch $(BASE_PATH)/fullGoMappingPthr.slurm
 
 generate_go_hierarchy:
-	wget -P $(BASE_PATH) ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_gcrp.gaf.gz
-	gunzip $(BASE_PATH)/goa_uniprot_gcrp.gaf.gz
-	perl scripts/FindAllParents.pl $(BASE_PATH)/goparentchild.tsv $(BASE_PATH)/AllParentsofGOTerms.txt
-	perl scripts/printHierarchy.pl $(BASE_PATH)/AllParentsofGOTerms.txt $(BASE_PATH)/FinalChildParent-Hierarchy.dat
-	perl scripts/hierarchyfinalstep.pl $(BASE_PATH) # Need to slurm this
+	# wget -P $(BASE_PATH) ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_gcrp.gaf.gz
+	# gunzip $(BASE_PATH)/goa_uniprot_gcrp.gaf.gz
+	envsubst < scripts/hierarchyfinalstep.slurm > $(BASE_PATH)/hierarchyfinalstep.slurm
+	sbatch $(BASE_PATH)/hierarchyfinalstep.slurm
+	# perl scripts/FindAllParents.pl $(BASE_PATH)/goparentchild.tsv $(BASE_PATH)/AllParentsofGOTerms.txt
+	# perl scripts/printHierarchy.pl $(BASE_PATH)/AllParentsofGOTerms.txt $(BASE_PATH)/FinalChildParent-Hierarchy.dat
+	# perl scripts/hierarchyfinalstep.pl $(BASE_PATH) # Need to slurm this
 
 format_taxon_term_table:
 	# Download taxon_term_table file from current.go.org and run python scripts
