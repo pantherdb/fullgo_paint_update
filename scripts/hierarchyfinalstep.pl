@@ -18,7 +18,7 @@ open GONM, "<$dir/Pthr_GO.tsv" or die $!;
 open GO, "<$dir/inputforGOClassification.tsv" or die $!;
 open EC, "<$dir/../scripts/Paint_Evidence_Codes" or die $!;
 # open GAF, "<$dir/goa_uniprot_gcrp.gaf" or die $!;
-opendir GAF, "<$dir/gaf_files" or die $!;
+opendir(GAF, "$dir/gaf_files") or die $!;
 #open CP, "<child-parents.txt" or die $!;
 open FN1, ">$dir/GOWithHierarchy-BP.dat" or die $!;
 open FN2, ">$dir/GOWithHierarchy-MF.dat" or die $!;
