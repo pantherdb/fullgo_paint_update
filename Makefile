@@ -1,7 +1,7 @@
 ### Working directory where files will be downloaded and built for each release (e.g. "2018-06-19_fullgo") - Need to make into makefile argument
 ### should create new base folder derived from current date, unless base path argument is specified (for example, if incomplete update is continued on later dates)
 ### maybe we should just call this 'target', adhering to GO pipeline then rename after everything's done?
-BASE_PATH ?= $(shell date +%Y-%m-%d)_fullgo
+export BASE_PATH ?= $(shell date +%Y-%m-%d)_fullgo
 export FULL_BASE_PATH = $(realpath $(BASE_PATH))
 GAF_FILES_PATH = $(BASE_PATH)/gaf_files
 export FULL_GAF_FILES_PATH = $(realpath $(GAF_FILES_PATH))
