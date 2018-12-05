@@ -17,7 +17,8 @@ open CP, "<$dir/FinalChildParent-Hierarchy.dat" or die $!;
 open GONM, "<$dir/Pthr_GO.tsv" or die $!;
 open GO, "<$dir/inputforGOClassification.tsv" or die $!;
 open EC, "<$dir/../scripts/Paint_Evidence_Codes" or die $!;
-open GAF, "<$dir/goa_uniprot_gcrp.gaf" or die $!;
+# open GAF, "<$dir/goa_uniprot_gcrp.gaf" or die $!;
+opendir GAF, "<$dir/gaf_files" or die $!;
 #open CP, "<child-parents.txt" or die $!;
 open FN1, ">$dir/GOWithHierarchy-BP.dat" or die $!;
 open FN2, ">$dir/GOWithHierarchy-MF.dat" or die $!;
@@ -64,27 +65,33 @@ close(EC);
 #close(CP);
 my %gevi;
 my %refre;
-while (<GAF>){
-	 next if /^!/;
-	 chomp($_);
-	 my ($db1,$gid,$sym,$qa,$goacc,$xref,$ev_code,$with,$type,$a1,$a2,$a3,$a4,$date,$db,$a5,$a6) = split('\t');
-	 $ev_code =~ s/^\s+|\s+$//g;
-	 next unless (exists $evCode{$ev_code});
-	 chomp($gid,$with,$xref,$ev_code,$date,$db);
-	 $gid =~ s/^\s+|\s+$//g;
-	 $with =~ s/^\s+|\s+$//g;
-	 $xref =~ s/^\s+|\s+$//g;
-	 $ev_code =~ s/^\s+|\s+$//g;
-	 $with =~ s/^\s+|\s+$//g;
-	 $date =~ s/^\s+|\s+$//g;
-	 $db =~ s/^\s+|\s+$//g;
-	 
-	 my $ref1=$with."\t".$xref."\t".$date."\t".$db;
-	 #print "$gid\t$goacc\t$ev_code\t$ref1\n";
-	 $refre{"$gid"."$goacc"."$ev_code"}=$ref1;
-	
-} 
-close(GAF);
+for my $gaf (readdir GAF) {
+	next if $file =~ /^\.\.?$/;
+	print "working on $gaf\n";
+	open (GAF_LINE, "$dir/gaf_files/$gaf");
+	print STDERR "Parsing file: $gaf";
+	while (<GAF_LINE>){
+		next if /^!/;
+		chomp($_);
+		my ($db1,$gid,$sym,$qa,$goacc,$xref,$ev_code,$with,$type,$a1,$a2,$a3,$a4,$date,$db,$a5,$a6) = split('\t');
+		$ev_code =~ s/^\s+|\s+$//g;
+		next unless (exists $evCode{$ev_code});
+		chomp($gid,$with,$xref,$ev_code,$date,$db);
+		$gid =~ s/^\s+|\s+$//g;
+		$with =~ s/^\s+|\s+$//g;
+		$xref =~ s/^\s+|\s+$//g;
+		$ev_code =~ s/^\s+|\s+$//g;
+		$with =~ s/^\s+|\s+$//g;
+		$date =~ s/^\s+|\s+$//g;
+		$db =~ s/^\s+|\s+$//g;
+		
+		my $ref1=$with."\t".$xref."\t".$date."\t".$db;
+		#print "$gid\t$goacc\t$ev_code\t$ref1\n";
+		$refre{"$gid"."$goacc"."$ev_code"}=$ref1;
+		
+	} 
+	close(GAF);
+}
 
 while (<GONM>) 
 	 {
