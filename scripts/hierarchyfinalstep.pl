@@ -69,7 +69,7 @@ for my $gaf (readdir GAF) {
 	next if $file =~ /^\.\.?$/;
 	print "working on $gaf\n";
 	open (GAF_LINE, "$dir/gaf_files/$gaf");
-	print STDERR "Parsing file: $gaf";
+	print STDERR "Parsing file: $gaf\n";
 	while (<GAF_LINE>){
 		next if /^!/;
 		chomp($_);

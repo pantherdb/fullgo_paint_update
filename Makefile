@@ -142,6 +142,7 @@ check_dups:
 update_paint_go_classification:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification.sql
 	# python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql	# Check for dups in relationship table?
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/fullgo_version.sql -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "panther_version": "$(PANTHER_VERSION)", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
 
 regen_go_classification_relationship:	# Incorporated into go_classification.sql, so shouldn't need to be run ever again
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_relationship.sql
