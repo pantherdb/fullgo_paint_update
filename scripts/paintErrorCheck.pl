@@ -47,7 +47,19 @@ while (my $book = <BK>){
 	$new_url =~ s/book_var/$book/g;
 	# my $content = get("http://paintcuration.usc.edu/webservices/family.jsp?searchValue=$book&searchType=SEARCH_TYPE_FAMILY_ANNOTATION_INFO") or die "no such luck\n";
 	# my $content = get("http://panthercuratest.usc.edu/webservices/family.jsp?searchValue=$book&searchType=SEARCH_TYPE_AGG_FAMILY_ANNOTATION_INFO") or die "no such luck\n";
-	my $content = get($new_url) or die "no such luck\n";
+	my $content = undef;
+	my $attempt_count = 0;
+	while (!defined $content){
+		$content = get($new_url);
+		if (!defined $content){
+			# Stretch this out
+			sleep(2);
+		}
+		$attempt_count++;
+		if ($attempt_count eq 10){
+			die "no such luck\n";
+		}
+	}
 
 	
 
