@@ -67,6 +67,10 @@ submit_fullGoMappingPthr_slurm:
 	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr.slurm
 	sbatch $(BASE_PATH)/fullGoMappingPthr.slurm
 
+gaf2pmid_slurm:
+	envsubst < scripts/gaf2pmid.slurm > $(BASE_PATH)/gaf2pmid.slurm
+	sbatch $(BASE_PATH)/gaf2pmid.slurm
+
 generate_go_hierarchy:
 	# wget -P $(BASE_PATH) ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_gcrp.gaf.gz
 	# gunzip $(BASE_PATH)/goa_uniprot_gcrp.gaf.gz
