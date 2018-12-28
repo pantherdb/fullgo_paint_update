@@ -7,19 +7,21 @@ GAF_FILES_PATH = $(BASE_PATH)/gaf_files
 export FULL_GAF_FILES_PATH = $(realpath $(GAF_FILES_PATH))
 export PWD = $(shell pwd)
 GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
+export PANTHER_VERSION ?= 14.0
 
+ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
-# export PANTHER_VERSION = "13.1"
-# export PANTHER_VERSION_DATE = "20180203"
-# export IDENTIFIER_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat"
-# export GENE_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
-# export TAXON_ID_PATH = "scripts/pthr13_code_taxId.txt"
+export PANTHER_VERSION_DATE = "20180203"
+export IDENTIFIER_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat"
+export GENE_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
+export TAXON_ID_PATH = "scripts/pthr13_code_taxId.txt"
+else
 ### PANTHER 14.0 ###
-export PANTHER_VERSION = 14.0
 export PANTHER_VERSION_DATE = 20181203
 export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/identifier.dat
 export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr14_code_taxId.txt
+endif
 
 ########## GAF CREATION ##########
 ### -i property file with go and panther version.
@@ -41,9 +43,12 @@ EVIDENCE = paint_evidence
 ### -T organism_taxon
 TAXON = organism_taxon
 ### -G gene.dat in the DBload folder
-GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
+# GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
 ### -o output IBA gaf file folder
 IBA_DIR = $(BASE_PATH)/IBA_GAFs
+
+test_cond:
+	@echo $(PANTHER_VERSION_DATE)
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH)
@@ -70,6 +75,11 @@ submit_fullGoMappingPthr_slurm:
 gaf2pmid_slurm:
 	envsubst < scripts/gaf2pmid.slurm > $(BASE_PATH)/gaf2pmid.slurm
 	sbatch $(BASE_PATH)/gaf2pmid.slurm
+	# sed -e 's/^/http:\/\/amigo.geneontology.org\/amigo\/reference\//' $(BASE_PATH)/gaf2pmid_results > $(BASE_PATH)/gaf2pmid_result_urls
+
+linkout_upload:
+	envsubst < scripts/upload_links_to_pubmed.sh > $(BASE_PATH)/upload_links_to_pubmed.sh
+	./$(BASE_PATH)/upload_links_to_pubmed.sh
 
 generate_go_hierarchy:
 	# wget -P $(BASE_PATH) ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_gcrp.gaf.gz
@@ -250,7 +260,7 @@ reset_paint_table_names:
 
 create_gafs: paint_annotation paint_evidence paint_annotation_qualifier go_aggregate organism_taxon	# must run from tcsh shell
 	mkdir $(IBA_DIR)
-	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_DAT) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
+	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_PATH) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
 	$(MAKE) repair_gaf_symbols
 
 paint_annotation:
