@@ -13,6 +13,7 @@ parser.add_argument("-v", "--query_variables", type=str, required=False, help="c
                                                 Only use query variables for single query SQL files, otherwise managing these gets tricky due to the per-statement cleaning step.")
 parser.add_argument("-o", "--rows_outfile", help="Write result rows to specified filename.")
 parser.add_argument("-d", "--delimiter", help="column delimiter to display in query output.")
+parser.add_argument("-n", "--no_header_footer", action='store_const', const=True, help="No header or footer will be included in query result output")
 
 with open("config/config.yaml") as f:
     cfg = yaml.load(f)
@@ -34,7 +35,7 @@ def get_connection():
                                                                             pword))
     return con
 
-def exec_query(connection, query):
+def exec_query(connection, query, omit_header=None):
     cursor = connection.cursor()
     try:
         cursor.execute(query)
@@ -42,7 +43,8 @@ def exec_query(connection, query):
         print(query)
         print(e.__class__.__name__, ":", e.diag.message_primary)
         raise e
-    print(cursor.query.decode("utf-8"))
+    if omit_header is None:
+        print(cursor.query.decode("utf-8"))
     try:
         res = cursor.fetchall()
         colnames = [desc[0] for desc in cursor.description]
@@ -134,7 +136,7 @@ if __name__ == "__main__":
             cleaned_query = clean_query(statement, query_variables=query_variables)
             if cleaned_query:
                 start_time = datetime.datetime.now()
-                results = exec_query(con, cleaned_query + ";")
+                results = exec_query(con, cleaned_query + ";", omit_header=args.no_header_footer)
                 if args.delimiter:
                     formatted_results = format_results(results, delimiter=args.delimiter)
                 else:
@@ -144,9 +146,10 @@ if __name__ == "__main__":
                         rows_outfile.write("{}\n".format(r))
                     else:
                         print(r)
-                if len(results) > 0:    # Display row count unless insert, update, set, etc.
-                    print("Rows returned:", len(results) - 1)
-                print("Execution time:", datetime.datetime.now() - start_time, "- Host:", host, "- DB:", dbname)
+                if args.no_header_footer is None:
+                    if len(results) > 0:    # Display row count unless insert, update, set, etc.
+                        print("Rows returned:", len(results) - 1)
+                    print("Execution time:", datetime.datetime.now() - start_time, "- Host:", host, "- DB:", dbname)
         con.commit()
         con.close()
     if rows_outfile:
