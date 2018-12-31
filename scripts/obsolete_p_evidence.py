@@ -6,6 +6,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-g', '--exp_annot_file')
 parser.add_argument('-p', '--paint_ev_file')
 
+NOT_QUALIFIER_ID = '62114966'
+
 # paint_evidences = PaintEvidence.objects.filter(obsolescence_date=None)
 # print("# of non-obsolete paint evidence records = {}".format(len(paint_evidences)))
 
@@ -64,9 +66,19 @@ for ev in paint_evs:
             paint_qualifiers = list(filter(None, paint_qualifiers))
             # print(go_qualifiers)
             # print(paint_qualifiers)
-            if paint_qualifiers != go_qualifiers:
-                # print("Nope")
+            # Check for difference in NOTs
+            # if len(paint_qualifiers) > 1 or len(go_qualifiers) > 1:
+            #     print(paint_qualifiers)
+            #     print(go_qualifiers)
+            #     break
+            if NOT_QUALIFIER_ID in paint_qualifiers and NOT_QUALIFIER_ID not in go_qualifiers:
+                print(ev_id)
                 evidence_ids_to_obsolete.append(ev_id)
+            elif NOT_QUALIFIER_ID in go_qualifiers and NOT_QUALIFIER_ID not in paint_qualifiers:
+                print(ev_id)
+                evidence_ids_to_obsolete.append(ev_id)
+            # elif paint_qualifiers != go_qualifiers:
+            #     evidence_ids_to_obsolete.append(ev_id)
             else:
                 # print("We good")
                 do_nothing = 1
@@ -77,5 +89,5 @@ for ev in paint_evs:
 evidence_ids_to_obsolete = list(set(evidence_ids_to_obsolete))
 print("# of evidence_ids to obsolete: {}".format(len(evidence_ids_to_obsolete)))
 
-for e in evidence_ids_to_obsolete[0:10]:
-    print(e)
+# for e in evidence_ids_to_obsolete[0:10]:
+#     print(e)
