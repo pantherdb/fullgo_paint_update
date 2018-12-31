@@ -11,7 +11,7 @@ insert into go_annotation_new(annotation_id, node_id, classification_id, annotat
   from (
     select distinct gn.node_id, gc.classification_id 
     from gene_node gn 
-    join gene g on g.gene_id = gn.gene_id and g.classification_version_sid = 24 
+    join gene g on g.gene_id = gn.gene_id and g.classification_version_sid = {classification_version_sid} 
     join goanno_wf gw on g.primary_ext_acc = gw.geneid 
     join go_classification_new gc on gc.accession = gw.go_acc 
     where not exists  (select 1 from go_annotation_new gan where gn.node_id = gan.node_id and gc.classification_id = gan.classification_id and gan.obsolescence_date is null)
@@ -24,7 +24,7 @@ set obsoleted_by = 1, obsolescence_date = now()
 where not exists (
   select 1 from gene_node gn, gene g, goanno_wf gw, go_classification_new gc 
   where g.gene_id = gn.gene_id 
-  and g.classification_version_sid = 24 
+  and g.classification_version_sid = {classification_version_sid} 
   and g.primary_ext_acc = gw.geneid 
   and gc.accession = gw.go_acc 
   and gn.node_id = gan.node_id 

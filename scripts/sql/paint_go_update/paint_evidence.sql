@@ -37,8 +37,8 @@ join confidence_code cc on cc.confidence_code_sid = ge.confidence_code_sid
 left join go_annotation_qualifier_new gaq on gaq.annotation_id = ga.annotation_id
 left join paint_annotation_qualifier paq on paq.annotation_id = pa.annotation_id
 where pe.evidence_type_sid = 46
-and n.classification_version_sid = 24
-and n1.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
+and n1.classification_version_sid = {classification_version_sid}
 and ga.annotation_id != pe.annotation_id
 and ga.obsolescence_date is null
 and (gaq.qualifier_id = paq.qualifier_id or (gaq.annotation_qualifier_id is null and paq.annotation_qualifier_id is null))
@@ -66,8 +66,8 @@ from
   and pan1.obsolescence_date is null
   and pan.annotation_id = pe.annotation_id
   and pe.evidence_type_sid = 47
-  and n.classification_version_sid = 24
-  and n1.classification_version_sid = 24
+  and n.classification_version_sid = {classification_version_sid}
+  and n1.classification_version_sid = {classification_version_sid}
 ) x
 where pen.evidence_id = x.evidence_id
 and pen.obsolescence_date is not null
