@@ -75,7 +75,7 @@ def handle_config_variables(raw_query):
         cleaned_query = cleaned_query.replace("{load_dir}", load_dir)
     if "{classification_version_sid}" in cleaned_query:
         classification_version_sid = chosen_df.get("classification_version_sid")
-        cleaned_query = cleaned_query.replace("{classification_version_sid}", classification_version_sid)
+        cleaned_query = cleaned_query.replace("{classification_version_sid}", str(classification_version_sid))
     return cleaned_query
 
 def clean_query(raw_query, query_variables=None):
