@@ -11,10 +11,10 @@ export PANTHER_VERSION ?= 14.0
 
 ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
-export PANTHER_VERSION_DATE = "20180203"
-export IDENTIFIER_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat"
-export GENE_PATH = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
-export TAXON_ID_PATH = "scripts/pthr13_code_taxId.txt"
+export PANTHER_VERSION_DATE = 20180203
+export IDENTIFIER_PATH = /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat
+export GENE_PATH = /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat
+export TAXON_ID_PATH = scripts/pthr13_code_taxId.txt
 else
 ### PANTHER 14.0 ###
 export PANTHER_VERSION_DATE = 20181203
@@ -46,9 +46,6 @@ TAXON = organism_taxon
 # GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
 ### -o output IBA gaf file folder
 IBA_DIR = $(BASE_PATH)/IBA_GAFs
-
-test_cond:
-	@echo $(PANTHER_VERSION_DATE)
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH)
@@ -82,13 +79,8 @@ linkout_upload:
 	./$(BASE_PATH)/upload_links_to_pubmed.sh
 
 generate_go_hierarchy:
-	# wget -P $(BASE_PATH) ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_gcrp.gaf.gz
-	# gunzip $(BASE_PATH)/goa_uniprot_gcrp.gaf.gz
 	envsubst < scripts/hierarchyfinalstep.slurm > $(BASE_PATH)/hierarchyfinalstep.slurm
 	sbatch $(BASE_PATH)/hierarchyfinalstep.slurm
-	# perl scripts/FindAllParents.pl $(BASE_PATH)/goparentchild.tsv $(BASE_PATH)/AllParentsofGOTerms.txt
-	# perl scripts/printHierarchy.pl $(BASE_PATH)/AllParentsofGOTerms.txt $(BASE_PATH)/FinalChildParent-Hierarchy.dat
-	# perl scripts/hierarchyfinalstep.pl $(BASE_PATH) # Need to slurm this
 
 format_taxon_term_table:
 	# Download taxon_term_table file from current.go.org and run python scripts
@@ -128,11 +120,6 @@ load_raw_go_to_panther:
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/load_raw_go.sql
 	@echo "Counts of raw tables after data load:"
 	$(MAKE) raw_table_count
-
-test_keyed_variables:
-	python3 test_keyed_variables.py -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "panther_version": "$(PANTHER_VERSION)", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
-	# python3 test_keyed_variables.py -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
-	# python3 test_keyed_variables.py -v panther,go_classification
 
 update_panther_new_tables:
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/go_classification.sql
@@ -175,6 +162,11 @@ update_paint_paint_annotation:
 
 update_paint_paint_evidence:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/paint_evidence.sql
+
+update_paint_paint_evidence_new:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/update_paint_evidence/get_exp_annots.sql > $(BASE_PATH)/resources/exp_annots.txt
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/update_paint_evidence/get_paint_evs.sql > $(BASE_PATH)/resources/paint_evs.txt
+	python3 scripts/obsolete_p_evidence.py -g $(BASE_PATH)/resources/exp_annots.txt -p $(BASE_PATH)/resources/paint_evs.txt
 
 update_paint_paint_annot_qualifier:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/paint_annotation_qualifier.sql
