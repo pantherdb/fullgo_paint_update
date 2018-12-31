@@ -14,8 +14,8 @@ and gc.accession = gcn.accession
 and gcn.replaced_by_acc is not null
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24
-and n.classification_version_sid = 24
+and c.classification_version_sid = {classification_version_sid}
+and n.classification_version_sid = {classification_version_sid}
 and c.classification_id = cs.classification_id
 and cs.status_type_sid = cst.status_type_sid;
 
@@ -35,8 +35,8 @@ and gc.accession = gcn.accession
 and gcn.replaced_by_acc is not null
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24
-and n.classification_version_sid = 24;
+and c.classification_version_sid = {classification_version_sid}
+and n.classification_version_sid = {classification_version_sid};
 
 -- record the information, insert into comments_new table
 set search_path = panther_upl;
@@ -47,8 +47,8 @@ update comments_new cm
 set remark = cm.remark || '\n' || current_date || ': ' || gc.accession || ' is obsoleted and replaced by ' || gcn.replaced_by_acc || ' so the annotion to ' || n.public_id || ' is updated with new GO term.\n'
 from paint_annotation pa, classification c,
 go_classification_new gcn, go_classification gc, node n
-where c.classification_version_sid = 24
-and n.classification_version_sid = 24
+where c.classification_version_sid = {classification_version_sid}
+and n.classification_version_sid = {classification_version_sid}
 and c.depth = 5
 and c.classification_id = cm.classification_id
 and split_part(n.accession,':',1)=c.accession
@@ -56,7 +56,7 @@ and pa.node_id = n.node_id
 and pa.classification_id = gc.classification_id
 and gc.accession = gcn.accession
 and gcn.replaced_by_acc is not null
-and n.classification_version_sid = 24;
+and n.classification_version_sid = {classification_version_sid};
 
 ------ ii.	No “replaced_by” tag. Simply obsolete the annotation. Mark the family as “Require paint review”. In the comments table, record the term obsoleted and the PTN IDs
 
@@ -82,8 +82,8 @@ and gcn.obsolescence_date is not null
 and gcn.replaced_by_acc is null
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24
-and n.classification_version_sid = 24;
+and c.classification_version_sid = {classification_version_sid}
+and n.classification_version_sid = {classification_version_sid};
 
 -- record the information in comments table
 
@@ -96,8 +96,8 @@ and pa.classification_id = gc.classification_id
 and gc.accession = gcn.accession
 and gcn.obsolescence_date is not null
 and gcn.replaced_by_acc is null
-and n.classification_version_sid = 24
-and c.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
+and c.classification_version_sid = {classification_version_sid}
 and c.depth = 5
 and c.classification_id = cm.classification_id
 and split_part(n.accession,':',1)=c.accession;
@@ -112,8 +112,8 @@ and pa.classification_id = gc.classification_id
 and gc.accession = gcn.accession
 and gcn.obsolescence_date is not null
 and gcn.replaced_by_acc is null
-and n.classification_version_sid = 24
-and c.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
+and c.classification_version_sid = {classification_version_sid}
 and c.depth = 5
 and split_part(n.accession,':',1)=c.accession
 and not exists (select 1 from comments_new cm where c.classification_id = cm.classification_id);

@@ -15,10 +15,10 @@ and pe.evidence_type_sid = 46
 and pa.obsolescence_date > '2018-09-26'
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
-and n.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24;
+and c.classification_version_sid = {classification_version_sid};
 
 --update curation_status_new table for the families with paint_annotation lost all evidence leaf annotations to 'Require paint review'
 set search_path = panther_upl;
@@ -38,10 +38,10 @@ and pe.evidence_type_sid = 46
 and pa.obsolescence_date > '2018-09-26' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
-and n.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24
+and c.classification_version_sid = {classification_version_sid}
 ) x;
 
 -- record the information in comments table
@@ -62,18 +62,18 @@ and pe.evidence_type_sid = 46
 and pa.obsolescence_date > '2018-09-26' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
-and n.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24
+and c.classification_version_sid = {classification_version_sid}
 and pa.classification_id = gc.classification_id
 and cast(pe.evidence as integer) = ga.annotation_id
 and ga.node_id = n1.node_id
 and ga.classification_id = gc1.classification_id
 and n1.node_id = pn.node_id
 and pn.protein_id = p.protein_id
-and n1.classification_version_sid = 24
-and p.classification_version_sid = 24) y
+and n1.classification_version_sid = {classification_version_sid}
+and p.classification_version_sid = {classification_version_sid}) y
 where cm.classification_id = y.classification_id;
 
 set search_path = panther_upl;
@@ -94,18 +94,18 @@ and pe.evidence_type_sid = 46
 and pa.obsolescence_date > '2018-09-26' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
-and n.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24
+and c.classification_version_sid = {classification_version_sid}
 and pa.classification_id = gc.classification_id
 and cast(pe.evidence as integer) = ga.annotation_id
 and ga.node_id = n1.node_id
 and ga.classification_id = gc1.classification_id
 and n1.node_id = pn.node_id
 and pn.protein_id = p.protein_id
-and n1.classification_version_sid = 24
-and p.classification_version_sid = 24
+and n1.classification_version_sid = {classification_version_sid}
+and p.classification_version_sid = {classification_version_sid}
 group by c.classification_id
 ) x
 where cm.classification_id = x.classification_id;
@@ -128,18 +128,18 @@ and pe.evidence_type_sid = 46
 and pa.obsolescence_date > '2018-09-26' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
-and n.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24
+and c.classification_version_sid = {classification_version_sid}
 and pa.classification_id = gc.classification_id
 and cast(pe.evidence as integer) = ga.annotation_id
 and ga.node_id = n1.node_id
 and ga.classification_id = gc1.classification_id
 and n1.node_id = pn.node_id
 and pn.protein_id = p.protein_id
-and n1.classification_version_sid = 24
-and p.classification_version_sid = 24
+and n1.classification_version_sid = {classification_version_sid}
+and p.classification_version_sid = {classification_version_sid}
 group by c.classification_id
 ) x
 where not exists (select 1 from comments_new cm where x.classification_id = cm.classification_id);

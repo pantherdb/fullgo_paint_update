@@ -21,7 +21,7 @@ CREATE MATERIALIZED VIEW panther_upl.go_aggregate AS
   JOIN panther_upl.evidence_type et ON gpe.evidence_type_sid::numeric = et.evidence_type_sid::numeric 
   LEFT JOIN panther_upl.go_annotation_qualifier gpq ON gpa.annotation_id = gpq.annotation_id 
   LEFT JOIN panther_upl.qualifier q ON gpq.qualifier_id = q.qualifier_id::numeric 
-  WHERE n.classification_version_sid::numeric = 24::numeric AND n.obsolescence_date IS NULL AND clf.obsolescence_date IS NULL WITH DATA;  
+  WHERE n.classification_version_sid::numeric = {classification_version_sid}::numeric AND n.obsolescence_date IS NULL AND clf.obsolescence_date IS NULL WITH DATA;  
 
 ALTER TABLE panther_upl.go_aggregate
   OWNER TO panther_isp;

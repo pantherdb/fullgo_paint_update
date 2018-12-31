@@ -32,10 +32,10 @@ where pa.classification_id = gc.classification_id
 and gc.accession = x.alt_acc
 and x.accession = gc1.accession
 and pa.node_id = n.node_id
-and n.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24) y;
+and c.classification_version_sid = {classification_version_sid}) y;
 
 --record the information in comments table
 set search_path = panther_upl;
@@ -50,10 +50,10 @@ where pa.classification_id = gc.classification_id
 and gc.accession = x.alt_acc
 and x.accession = gc1.accession
 and pa.node_id = n.node_id
-and n.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24) y
+and c.classification_version_sid = {classification_version_sid}) y
 where cm.classification_id = y.classification_id;
 
 insert into comments_new (comment_id, classification_id, protein_id, remark, created_by, creation_date, obsoleted_by, obsolescence_date, node_id)
@@ -67,10 +67,10 @@ where pa.classification_id = gc.classification_id
 and gc.accession = x.alt_acc
 and x.accession = gc1.accession
 and pa.node_id = n.node_id
-and n.classification_version_sid = 24
+and n.classification_version_sid = {classification_version_sid}
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
-and c.classification_version_sid = 24) y
+and c.classification_version_sid = {classification_version_sid}) y
 where not exists (select 1 from comments_new cm where y.classification_id = cm.classification_id);
 
 --replace the go term classification_id in paint_annotation_new table that are alt_id of another primary go term with the classification_id of the primary go term
@@ -83,7 +83,7 @@ where pan.classification_id = gc.classification_id
 and gc.accession = x.alt_acc
 and x.accession = gc1.accession
 and pan.node_id = n.node_id
-and n.classification_version_sid = 24;
+and n.classification_version_sid = {classification_version_sid};
 
 ------ ii.	It is not a secondary ID. This means the GO id simply disappears, which should never happen. Need to contact GO.
 
