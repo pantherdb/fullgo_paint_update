@@ -1,23 +1,17 @@
---copy data to new table to be updated, old table serve as a backup, try to keep the evidence_id that didn't change
-set search_path = panther_upl;
---due to the _fix table switcheroos the _new tables will always be hanging around
-ALTER TABLE paint_evidence_old RENAME TO paint_evidence_new;
-truncate table paint_evidence_new;
-insert into paint_evidence_new select * from paint_evidence;
-
 --Go through the paint_evidence table, for all evidence type as 46 (paint EXP), the evidence can be forwardly tracked to go_annotation entries with obsolescence_date as null in full GO annotation table. If not, mark the evidence as obsoleted.
-set search_path = panther_upl;
-update paint_evidence_new pen 
-set obsoleted_by = 1, obsolescence_date = now() 
-where not exists ( 
-    select 1 from go_annotation_new gan 
-    join go_evidence_new gen on gen.annotation_id = gan.annotation_id
-    join confidence_code cc on cc.confidence_code_sid = gen.confidence_code_sid
-    where cast(pen.evidence as int) = gan.annotation_id 
-    and gan.obsolescence_date is null
-    and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')
-  ) 
-  and pen.obsolescence_date is null;
+-- Now handled in python script (paint_evidence.py)
+-- set search_path = panther_upl;
+-- update paint_evidence_new pen 
+-- set obsoleted_by = 1, obsolescence_date = now() 
+-- where not exists ( 
+--     select 1 from go_annotation_new gan 
+--     join go_evidence_new gen on gen.annotation_id = gan.annotation_id
+--     join confidence_code cc on cc.confidence_code_sid = gen.confidence_code_sid
+--     where cast(pen.evidence as int) = gan.annotation_id 
+--     and gan.obsolescence_date is null
+--     and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')
+--   ) 
+--   and pen.obsolescence_date is null;
 
 --Update evidence column to correct, non-obsolete GO annotation for PAINT EXP evidence records and mark un-obsoleted
 set search_path=panther_upl;

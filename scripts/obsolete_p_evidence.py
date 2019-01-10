@@ -1,4 +1,4 @@
-# from paintdb.models import PaintEvidence, GoAnnotation, GoEvidence
+from paintdb.models import PaintEvidence, GoAnnotation, GoEvidence
 import csv
 import argparse
 
@@ -72,10 +72,10 @@ for ev in paint_evs:
             #     print(go_qualifiers)
             #     break
             if NOT_QUALIFIER_ID in paint_qualifiers and NOT_QUALIFIER_ID not in go_qualifiers:
-                print(ev_id)
+                # print(ev_id)
                 evidence_ids_to_obsolete.append(ev_id)
             elif NOT_QUALIFIER_ID in go_qualifiers and NOT_QUALIFIER_ID not in paint_qualifiers:
-                print(ev_id)
+                # print(ev_id)
                 evidence_ids_to_obsolete.append(ev_id)
             # elif paint_qualifiers != go_qualifiers:
             #     evidence_ids_to_obsolete.append(ev_id)

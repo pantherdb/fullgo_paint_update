@@ -1,2 +1,11 @@
+atomicwrites==1.1.5
+attrs==18.1.0
+Django==2.1.4
+more-itertools==4.2.0
+pluggy==0.6.0
 psycopg2==2.7.4
+py==1.5.4
+pytest==3.6.3
+pytz==2018.7
 PyYAML==3.12
+six==1.11.0

@@ -163,12 +163,16 @@ update_paint_paint_annotation:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/paint_annotation.sql
 
 update_paint_paint_evidence:
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/paint_evidence_init.sql
+	python3 scripts/db_caller.py -n scripts/sql/paint_go_update/update_paint_evidence/get_exp_annots.sql > $(BASE_PATH)/resources/exp_annots.txt
+	python3 scripts/db_caller.py -n scripts/sql/paint_go_update/update_paint_evidence/get_paint_evs.sql > $(BASE_PATH)/resources/paint_evs.txt
+	./paintdb/manage.py paint_evidence $(BASE_PATH)/resources/exp_annots.txt $(BASE_PATH)/resources/paint_evs.txt
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/paint_evidence.sql
 
 update_paint_paint_evidence_new:
 	python3 scripts/db_caller.py -n scripts/sql/paint_go_update/update_paint_evidence/get_exp_annots.sql > $(BASE_PATH)/resources/exp_annots.txt
 	python3 scripts/db_caller.py -n scripts/sql/paint_go_update/update_paint_evidence/get_paint_evs.sql > $(BASE_PATH)/resources/paint_evs.txt
-	python3 scripts/obsolete_p_evidence.py -g $(BASE_PATH)/resources/exp_annots.txt -p $(BASE_PATH)/resources/paint_evs.txt
+	./paintdb/manage.py paint_evidence $(BASE_PATH)/resources/exp_annots.txt $(BASE_PATH)/resources/paint_evs.txt
 
 update_paint_paint_annot_qualifier:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/paint_annotation_qualifier.sql
