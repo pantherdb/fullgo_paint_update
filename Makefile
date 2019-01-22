@@ -119,7 +119,7 @@ panther_table_count:
 load_raw_go_to_panther:
 	@echo "Counts of raw tables before data load:"
 	$(MAKE) raw_table_count
-	python3 scripts/db_caller.py scripts/sql/panther_go_update/load_raw_go.sql
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/load_raw_go.sql -v '{"panther_version": "$(PANTHER_VERSION)"}'
 	@echo "Counts of raw tables after data load:"
 	$(MAKE) raw_table_count
 
