@@ -15,24 +15,29 @@ parser.add_argument("-o", "--rows_outfile", help="Write result rows to specified
 parser.add_argument("-d", "--delimiter", help="column delimiter to display in query output.")
 parser.add_argument("-n", "--no_header_footer", action='store_const', const=True, help="No header or footer will be included in query result output")
 
-with open("config/config.yaml") as f:
-    cfg = yaml.load(f)
+class DBCallerConfig:
+    def __init__(self, config_path="config/config.yaml"):
 
-for df in cfg["DB_DEFINITIONS"]["value"]:
-    if df["id"] == cfg["DB_DEFINITION"]["value"]:
-        chosen_df = df
+        with open(config_path) as f:
+            cfg = yaml.load(f)
 
-host = chosen_df["host"]
-dbname = chosen_df["dbname"]
-username = chosen_df["username"]
-pword = chosen_df["pword"]
-db_version = chosen_df.get("db_version")
+        for df in cfg["DB_DEFINITIONS"]["value"]:
+            if df["id"] == cfg["DB_DEFINITION"]["value"]:
+                chosen_df = df
 
-def get_connection():
-    con = psycopg2.connect("dbname = {} user={} host={} password={}".format(dbname,
-                                                                            username,
-                                                                            host,
-                                                                            pword))
+        self.host = chosen_df["host"]
+        self.dbname = chosen_df["dbname"]
+        self.username = chosen_df["username"]
+        self.pword = chosen_df["pword"]
+        self.db_version = chosen_df.get("db_version")
+        self.load_dir = chosen_df.get("load_dir")
+        self.classification_version_sid = chosen_df.get("classification_version_sid")
+
+def get_connection(config):
+    con = psycopg2.connect("dbname = {} user={} host={} password={}".format(config.dbname,
+                                                                            config.username,
+                                                                            config.host,
+                                                                            config.pword))
     return con
 
 def exec_query(connection, query, omit_header=None):
@@ -68,21 +73,21 @@ def format_results(results, delimiter=";"):
         formatted_results.append(delimiter.join(vals))
     return formatted_results
 
-def handle_config_variables(raw_query):
+def handle_config_variables(raw_query, config):
     cleaned_query = raw_query
     if "{load_dir}" in cleaned_query:
-        load_dir = chosen_df.get("load_dir")
-        cleaned_query = cleaned_query.replace("{load_dir}", load_dir)
+        # load_dir = chosen_df.get("load_dir")
+        cleaned_query = cleaned_query.replace("{load_dir}", config.load_dir)
     if "{classification_version_sid}" in cleaned_query:
-        classification_version_sid = chosen_df.get("classification_version_sid")
-        cleaned_query = cleaned_query.replace("{classification_version_sid}", str(classification_version_sid))
+        # classification_version_sid = chosen_df.get("classification_version_sid")
+        cleaned_query = cleaned_query.replace("{classification_version_sid}", str(config.classification_version_sid))
     return cleaned_query
 
-def clean_query(raw_query, query_variables=None):
+def clean_query(raw_query, config, query_variables=None):
     cleaned_query = raw_query
     if cleaned_query.lstrip().startswith("--"):
         return None
-    cleaned_query = handle_config_variables(cleaned_query)
+    cleaned_query = handle_config_variables(cleaned_query, config)
     statement_var_count = cleaned_query.count("{}")
     if query_variables:
         if query_variables.__class__ == dict:
@@ -112,6 +117,7 @@ def clean_file(raw_file_text):
 if __name__ == "__main__":
     args = parser.parse_args()
     qfile = args.query_filename
+    config = DBCallerConfig()
     query_variables = None
     if args.query_variables:
         try:
@@ -125,7 +131,7 @@ if __name__ == "__main__":
     if args.rows_outfile:
         rows_outfile = open(args.rows_outfile, "w+")
     with open(qfile) as qf:
-        con = get_connection()
+        con = get_connection(config)
         query_text = qf.read()
         results = []
         query_text = clean_file(query_text)
@@ -136,7 +142,7 @@ if __name__ == "__main__":
             # exit()
         for statement in query_statements:
             # Add block if variables and multi-statement
-            cleaned_query = clean_query(statement, query_variables=query_variables)
+            cleaned_query = clean_query(statement, config, query_variables=query_variables)
             if cleaned_query:
                 start_time = datetime.datetime.now()
                 results = exec_query(con, cleaned_query + ";", omit_header=args.no_header_footer)
