@@ -14,5 +14,5 @@ perl $PWD/scripts/fullGoMappingPthr.pl \
 -i $IDENTIFIER_PATH \
 -g $GENE_PATH \
 -o $FULL_BASE_PATH/go.obo \
--w $FULL_BASE_PATH/Pthr_GO.tsv \
--e $FULL_BASE_PATH/PthrGOLog.txt
+-w $FULL_BASE_PATH/Pthr_GO_$PANTHER_VERSION.tsv \
+-e $FULL_BASE_PATH/PthrGOLog_$PANTHER_VERSION.txt

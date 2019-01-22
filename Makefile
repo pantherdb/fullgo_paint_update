@@ -66,8 +66,8 @@ extractfromgoobo_relation:
 	wc -l $(BASE_PATH)/goparentchild.tsv
 
 submit_fullGoMappingPthr_slurm:
-	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr.slurm
-	sbatch $(BASE_PATH)/fullGoMappingPthr.slurm
+	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr_$(PANTHER_VERSION).slurm
+	sbatch $(BASE_PATH)/fullGoMappingPthr_$(PANTHER_VERSION).slurm
 
 gaf2pmid_slurm:
 	envsubst < scripts/gaf2pmid.slurm > $(BASE_PATH)/gaf2pmid.slurm
