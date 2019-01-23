@@ -158,7 +158,7 @@ if __name__ == "__main__":
                 if args.no_header_footer is None:
                     if len(results) > 0:    # Display row count unless insert, update, set, etc.
                         print("Rows returned:", len(results) - 1)
-                    print("Execution time:", datetime.datetime.now() - start_time, "- Host:", host, "- DB:", dbname)
+                    print("Execution time:", datetime.datetime.now() - start_time, "- Host:", config.host, "- DB:", config.dbname)
         con.commit()
         con.close()
     if rows_outfile:
