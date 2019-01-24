@@ -1,5 +1,5 @@
 Truncate table panther.goanno_wf;
-Copy panther.goanno_wf from '{load_dir}Pthr_GO.tsv'
+Copy panther.goanno_wf from '{load_dir}Pthr_GO_{panther_version}.tsv'
 with null as '';
 
 Truncate table panther.goobo_extract;

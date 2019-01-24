@@ -3,7 +3,7 @@
 ### maybe we should just call this 'target', adhering to GO pipeline then rename after everything's done?
 export BASE_PATH ?= $(shell date +%Y-%m-%d)_fullgo
 export FULL_BASE_PATH = $(realpath $(BASE_PATH))
-GAF_FILES_PATH = $(BASE_PATH)/gaf_files
+export GAF_FILES_PATH = $(BASE_PATH)/gaf_files
 export FULL_GAF_FILES_PATH = $(realpath $(GAF_FILES_PATH))
 export PWD = $(shell pwd)
 GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
@@ -66,8 +66,8 @@ extractfromgoobo_relation:
 	wc -l $(BASE_PATH)/goparentchild.tsv
 
 submit_fullGoMappingPthr_slurm:
-	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr.slurm
-	sbatch $(BASE_PATH)/fullGoMappingPthr.slurm
+	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr_$(PANTHER_VERSION).slurm
+	sbatch $(BASE_PATH)/fullGoMappingPthr_$(PANTHER_VERSION).slurm
 
 gaf2pmid_slurm:
 	envsubst < scripts/gaf2pmid.slurm > $(BASE_PATH)/gaf2pmid.slurm
@@ -119,7 +119,7 @@ panther_table_count:
 load_raw_go_to_panther:
 	@echo "Counts of raw tables before data load:"
 	$(MAKE) raw_table_count
-	python3 scripts/db_caller.py scripts/sql/panther_go_update/load_raw_go.sql
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/load_raw_go.sql -v '{"panther_version": "$(PANTHER_VERSION)"}'
 	@echo "Counts of raw tables after data load:"
 	$(MAKE) raw_table_count
 
