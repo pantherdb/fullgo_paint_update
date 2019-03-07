@@ -75,7 +75,7 @@ gaf2pmid_slurm:
 	# sed -e 's/^/http:\/\/amigo.geneontology.org\/amigo\/reference\//' $(BASE_PATH)/gaf2pmid_results > $(BASE_PATH)/gaf2pmid_result_urls
 
 linkout_upload:
-	grep 'PUBMED_HOST\|PUBMED_USERID\|PUBMED_PWORD' config/config.yaml | sed -e 's/:[^:\/\/]/="/g;s/$$/"/g;s/ *=/=/g' > $(BASE_PATH)/pubmed_upload_vars.sh
+	grep 'PUBMED_HOST\|PUBMED_USERID\|PUBMED_PWORD' config/config.yaml | sed -e 's/:[^:\/\/]/="/g;s/$$/"/g;s/ *=/=/g' > $(BASE_PATH)/pubmed_upload_vars.txt
 	cat $(BASE_PATH)/pubmed_upload_vars.txt scripts/upload_links_to_pubmed.sh > $(BASE_PATH)/upload_links_to_pubmed.sh
 	chmod 744 $(BASE_PATH)/upload_links_to_pubmed.sh
 	./$(BASE_PATH)/upload_links_to_pubmed.sh
