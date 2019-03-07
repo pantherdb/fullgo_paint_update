@@ -5,6 +5,6 @@ cd holdings
 ls
 EOT
 
-# get GO.uid
-# put $FULL_BASE_PATH/gaf2pmid_results
-# rename gaf2pmid_results GO.uid
+get GO.uid
+put $FULL_BASE_PATH/gaf2pmid_results
+rename gaf2pmid_results GO.uid

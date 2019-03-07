@@ -28,3 +28,7 @@ DB_DEFINITIONS:
       pword: "clever_password"
       load_dir: "/path/to/psql/data/"
       classification_version_sid: 25
+
+PUBMED_HOST: ftp-private.ncbi.nlm.nih.gov
+PUBMED_USERID: username
+PUBMED_PWORD: great_password
