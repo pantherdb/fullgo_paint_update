@@ -7,7 +7,7 @@ export GAF_FILES_PATH = $(BASE_PATH)/gaf_files
 export FULL_GAF_FILES_PATH = $(realpath $(GAF_FILES_PATH))
 export PWD = $(shell pwd)
 GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
-export PANTHER_VERSION ?= 14.0
+export PANTHER_VERSION ?= 14.1
 
 ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
@@ -15,12 +15,17 @@ export PANTHER_VERSION_DATE = 20180203
 export IDENTIFIER_PATH = /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat
 export GENE_PATH = /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr13_code_taxId.txt
-else
+else ifeq ($(PANTHER_VERSION),14.0)
 ### PANTHER 14.0 ###
 export PANTHER_VERSION_DATE = 20181203
 export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/identifier.dat
 export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr14_code_taxId.txt
+else
+export PANTHER_VERSION_DATE = 20190312
+export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/identifier.dat
+export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/gene.dat
+export TAXON_ID_PATH = scripts/pthr14_1_code_taxId.txt
 endif
 
 ########## GAF CREATION ##########
