@@ -7,7 +7,7 @@ export GAF_FILES_PATH = $(BASE_PATH)/gaf_files
 export FULL_GAF_FILES_PATH = $(realpath $(GAF_FILES_PATH))
 export PWD = $(shell pwd)
 GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
-export PANTHER_VERSION ?= 14.1
+export PANTHER_VERSION ?= 13.1
 
 ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
@@ -54,10 +54,11 @@ IBA_DIR = $(BASE_PATH)/IBA_GAFs
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH)
-	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A ".gz" http://geneontology.org/gene-associations/
+	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A "gaf.gz" http://current.geneontology.org/annotations/
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/go.obo
+	sleep 5
 	$(MAKE) make_profile
 	$(MAKE) make_readme
 
@@ -105,7 +106,7 @@ get_fullgo_date:
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
 
 make_profile:
-	sed 's/GO_VERSION_DATE/$(shell date -r $(shell ls $(FULL_GAF_FILES_PATH)/gene_association.* | head -n 1) +%Y-%m-%d)/g' profile.txt | envsubst > $(BASE_PATH)/profile.txt
+	sed 's/GO_VERSION_DATE/$(shell date -r $(shell ls $(FULL_GAF_FILES_PATH)/*.gaf | head -n 1) +%Y-%m-%d)/g' profile.txt | envsubst > $(BASE_PATH)/profile.txt
 
 make_readme:
 	echo "GO source files downloaded on $(shell date +%Y-%m-%d)" > $(BASE_PATH)/README
