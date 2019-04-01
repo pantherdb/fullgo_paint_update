@@ -49,7 +49,7 @@ my $panther_version;
 #  Parse the profile file
 #############################
 
-open (FH, $inFile);
+open (FH, $inFile) or die "Could not open file $inFile\n";
 while (my $line = <FH>){
     chomp $line;
     my @array = split(/\t/, $line);
@@ -68,7 +68,7 @@ print STDERR "PANTHER version is $panther_version\n";
 # Parse TAIR ID lookup file
 ###############################
 my %tair;   # atg and locus ID lookup file.
-open (TA, $tair);
+open (TA, $tair) or die "Could not open file $tair\n";
 while (my $line=<TA>){
     chomp $line;
     my ($locus, $agi)=split(/\t/, $line);
@@ -80,7 +80,7 @@ close (TA);
 # Parse Uniprot-to-Araport ID lookup file
 ###############################
 my %araport;   # atg and locus ID lookup file.
-open (AR, $araport);
+open (AR, $araport) or die "Could not open file $araport\n";
 while (my $line=<AR>){
     chomp $line;
     my ($uniprotid, $agi, $rest)=split(/\t/, $line);
@@ -93,7 +93,7 @@ close (AR);
 #################################
 
 my %taxon;
-open (TA, $taxon);
+open (TA, $taxon) or die "Could not open file $taxon\n";
 while (my $line=<TA>){
     chomp $line;
     
@@ -110,7 +110,7 @@ close (TA);
 my $node = "$data/node.dat";   # from PANTHER version.
 my %ptn_an;
 my %an_ptn;
-open (FH, $node);
+open (FH, $node) or die "Could not open file $node\n";
 #my $header=<FH>;
 while (my $line=<FH>){
     chomp $line;
@@ -229,7 +229,7 @@ foreach my $file (@files){
 #################################
 
 my %qualifier;
-open (QA, $qualifier);
+open (QA, $qualifier) or die "Could not open file $qualifier\n";
 while (my $line = <QA>){
     chomp $line;
     my ($annotation_id, $qual)=split(/\;/, $line);
@@ -245,7 +245,7 @@ close (QA);
 ##################################
 
 my %experimental_seqs;
-open (GA, $go_aggregate);
+open (GA, $go_aggregate) or die "Could not open file $go_aggregate\n";
 while (my $line=<GA>){
     chomp $line;
     my ($annotation_id, $an, $go, $type, $evidence_id, $evidence, $confidence, $qualifier)=split(/\;/, $line);
@@ -264,7 +264,7 @@ close (GA);
 
 my %gene_symbol;
 my %gene_def;
-open (GD, $gene_dat);
+open (GD, $gene_dat) or die "Could not open file $gene_dat\n";
 while (my $line=<GD>){
     chomp $line;
     my ($longId, $def, $symbol, $id)=split(/\t/, $line);
@@ -282,7 +282,7 @@ close (GD);
 ##########################################
 
 my %annotation;
-open (PA, $annotation);
+open (PA, $annotation) or die "Could not open file $annotation\n";
 while (my $line=<PA>){
     chomp $line;
     
@@ -312,7 +312,7 @@ foreach my $id (keys %annotation){
 my %with;
 my %nots;
 my %confidence_codes;
-open (EV, $evidence);
+open (EV, $evidence) or die "Could not open file $evidence\n";
 while (my $line=<EV>){
     chomp $line;
     my ($annotation_id, $evidence, $type, $confidence_code)=split(/\;/, $line);
