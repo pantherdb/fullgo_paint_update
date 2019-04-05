@@ -2,7 +2,7 @@
 #use strict;
 
 use Getopt::Std;
-getopts('m');
+getopts('m:v');
 
 my %pthr;
 my %pgos;
@@ -15,6 +15,7 @@ my %golist;
 
 my $dir = $ARGV[0];
 my $mapping = $opt_m if ($opt_m);
+my $pthr_version = $opt_v if ($opt_v);
 
 #open REF, "<$dir/withRefValuesfrom_gene_association" or die $!;
 open CP, "<$dir/FinalChildParent-Hierarchy.dat" or die $!;
@@ -24,9 +25,9 @@ open EC, "<$dir/../scripts/Paint_Evidence_Codes" or die $!;
 # open GAF, "<$dir/goa_uniprot_gcrp.gaf" or die $!;
 opendir(GAF, "$dir/gaf_files") or die $!;
 #open CP, "<child-parents.txt" or die $!;
-open FN1, ">$dir/GOWithHierarchy-BP.dat" or die $!;
-open FN2, ">$dir/GOWithHierarchy-MF.dat" or die $!;
-open FN3, ">$dir/GOWithHierarchy-CC.dat" or die $!;
+open FN1, ">$dir/GOWithHierarchy-BP-$pthr_version.dat" or die $!;
+open FN2, ">$dir/GOWithHierarchy-MF-$pthr_version.dat" or die $!;
+open FN3, ">$dir/GOWithHierarchy-CC-$pthr_version.dat" or die $!;
 print FN1 "SequenceID\tGOHierarchy\tEvidenceCode\tWith\tReference\tDate\tDB\n";
 print FN2 "SequenceID\tGOHierarchy\tEvidenceCode\tWith\tReference\tDate\tDB\n";
 print FN3 "SequenceID\tGOHierarchy\tEvidenceCode\tWith\tReference\tDate\tDB\n";
