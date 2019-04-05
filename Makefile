@@ -98,7 +98,7 @@ format_taxon_term_table:
 	#  run taxa --contexts resources/go_context.jsonld --ontfile true resources/go-plus.owl resources/paint_taxons.txt new_table_file
 	#  exit
 	# Process new_table_file:
-	#  python3 taxon_to_oscode.py
+	#  python3 taxon_to_oscode.py -t new_table_file -s resources/paint_taxons_14.txt
 	#  python3 taxon_validate.py
 	@echo "Under construction"
 
@@ -258,7 +258,7 @@ reset_paint_table_names:
 
 # update_taxon_constraints_file:
 
-create_gafs: paint_annotation paint_evidence paint_annotation_qualifier go_aggregate organism_taxon	# must run from tcsh shell
+create_gafs: paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
 	mkdir $(IBA_DIR)
 	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_PATH) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
 	$(MAKE) repair_gaf_symbols
@@ -283,3 +283,6 @@ repair_gaf_symbols:
 	wget ftp://ftp.pombase.org/nightly_update/misc/sysID2product.tsv -O $(BASE_PATH)/resources/sysID2product.tsv
 	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p $(BASE_PATH)/resources/allNames.tsv -d $(BASE_PATH)/resources/sysID2product.tsv > $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf
 	cp $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf $(IBA_DIR)/gene_association.paint_pombase.gaf
+
+push_gafs_to_ftp:
+	@echo "Needs to be implemented"
