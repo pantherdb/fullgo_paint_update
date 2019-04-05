@@ -1,6 +1,9 @@
 #!/usr/bin/perl-w 
 #use strict;
 
+use Getopt::Std;
+getopts('m');
+
 my %pthr;
 my %pgos;
 my %gopar;
@@ -11,10 +14,11 @@ my %wevi;
 my %golist;
 
 my $dir = $ARGV[0];
+my $mapping = $opt_m if ($opt_m);
 
 #open REF, "<$dir/withRefValuesfrom_gene_association" or die $!;
 open CP, "<$dir/FinalChildParent-Hierarchy.dat" or die $!;
-open GONM, "<$dir/Pthr_GO.tsv" or die $!;
+open GONM, "<$dir/$mapping" or die $!;
 open GO, "<$dir/inputforGOClassification.tsv" or die $!;
 open EC, "<$dir/../scripts/Paint_Evidence_Codes" or die $!;
 # open GAF, "<$dir/goa_uniprot_gcrp.gaf" or die $!;

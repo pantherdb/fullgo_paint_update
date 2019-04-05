@@ -87,8 +87,8 @@ linkout_upload:
 	./$(BASE_PATH)/upload_links_to_pubmed.sh
 
 generate_go_hierarchy:
-	envsubst < scripts/hierarchyfinalstep.slurm > $(BASE_PATH)/hierarchyfinalstep.slurm
-	sbatch $(BASE_PATH)/hierarchyfinalstep.slurm
+	envsubst < scripts/hierarchyfinalstep.slurm > $(BASE_PATH)/hierarchyfinalstep_$(PANTHER_VERSION).slurm
+	sbatch $(BASE_PATH)/hierarchyfinalstep_$(PANTHER_VERSION).slurm
 
 format_taxon_term_table:
 	# Download taxon_term_table file from current.go.org and run python scripts
