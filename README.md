@@ -14,7 +14,7 @@ To execute the current existing workflow:
 make download_fullgo
 make extractfromgoobo
 make extractfromgoobo_relation
-make submit_fullGoMappingPthr_slurm
+make submit_fullGoMappingPthrHierarchy_slurm
 ``` 
 
 * `download_fullgo` will download all current GAF and GO.obo files from GO ftp server. This also creates the base folder ("YYYY-MM-DD_fullgo/") where the update files will live.

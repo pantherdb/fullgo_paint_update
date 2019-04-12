@@ -75,6 +75,10 @@ submit_fullGoMappingPthr_slurm:
 	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr_$(PANTHER_VERSION).slurm
 	sbatch $(BASE_PATH)/fullGoMappingPthr_$(PANTHER_VERSION).slurm
 
+submit_fullGoMappingPthrHierarchy_slurm:
+	envsubst < scripts/fullGoMappingPthrHierarchy.slurm > $(BASE_PATH)/fullGoMappingPthrHierarchy_$(PANTHER_VERSION).slurm
+	sbatch $(BASE_PATH)/fullGoMappingPthrHierarchy_$(PANTHER_VERSION).slurm
+
 gaf2pmid_slurm:
 	envsubst < scripts/gaf2pmid.slurm > $(BASE_PATH)/gaf2pmid.slurm
 	sbatch $(BASE_PATH)/gaf2pmid.slurm
