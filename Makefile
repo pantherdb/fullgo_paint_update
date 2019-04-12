@@ -102,8 +102,9 @@ format_taxon_term_table:
 	#  run taxa --contexts resources/go_context.jsonld --ontfile true resources/go-plus.owl resources/paint_taxons.txt new_table_file
 	#  exit
 	# Process new_table_file:
-	#  python3 scripts/taxon_to_oscode.py -t new_table_file -s resources/paint_taxons_14.txt
-	#  python3 scripts/taxon_validate.py
+	#  python3 scripts/taxon_to_oscode.py -t new_table_file -s resources/paint_taxons_14_1.txt -o taxon_term_table_converted
+	#  python3 scripts/taxon_validate.py -t taxon_term_table_converted -p resources/species_pthr13_annot.nhx -o TaxonConstraintsLookup.txt
+	#  python3 scripts/taxon_validate.py -t taxon_term_table_converted -p resources/species_pthr14_annot_redo.nhx -s resources/panther14slim_terms.txt -o TaxonConstraintsLookup14Slim.txt
 	@echo "Under construction"
 
 get_fullgo_date:

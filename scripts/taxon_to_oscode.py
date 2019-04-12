@@ -25,6 +25,7 @@ SELECT DISTINCT ?o FROM <http://purl.obolibrary.org/obo/merged/NCBITAXON> WHERE 
 parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--taxon_term_table")
 parser.add_argument("-s", "--species_taxons")
+parser.add_argument("-o", "--outfile")
 args = parser.parse_args()
 
 # Command-ify this script to separate slurm from no-slurm (internet-required)
@@ -32,7 +33,7 @@ args = parser.parse_args()
 # Download or locate RefProt readme
 
 # Get all taxonID-to-OSCode mappings from ref prot
-with open("resources/README") as rf:
+with open("resources/RefProt_README") as rf:
     taxon_to_os = {}
     oscodes = []
     for l in rf.readlines():
@@ -43,10 +44,12 @@ with open("resources/README") as rf:
                 # if l_bits[1] == "99287":
                 taxon_to_os["NCBITaxon:{}".format(l_bits[1])] = l_bits[2]
                 oscodes.append(l_bits[2])
+    # 85003 reassigned to 1760 for Actinobacteria
+    taxon_to_os["NCBITaxon:85003"] = "Actinobacteria"
 
 # query or locate list of paint_taxons - pretty much the taxons passed into gaferencer
 
-# Get list of taxon IDs used to generate taxon_term_table
+# Get taxon ID-to-taxon name lookup used to generate taxon_term_table.
 sparql = SPARQLWrapper("http://sparql.hegroup.org/sparql")
 sparql.setReturnFormat(JSON)
 with open(args.species_taxons) as pf:
@@ -55,24 +58,21 @@ with open(args.species_taxons) as pf:
         taxon_id = l.rstrip()
         taxons_to_convert.append(taxon_id)
         if taxon_id not in taxon_to_os:
-            # print(taxon_id)
-            # thing = run_sparql(query.format(taxon_id.split(":")[1]))
             sparql.setQuery(query.format(taxon_id.split(":")[1]))
             thing = sparql.query().convert()
             thing = thing['results']['bindings']
             for r in thing:
                 curiefy(r)
-            # print(thing)
             taxon_name = ""
             if len(thing) > 0:
                 taxon_name = thing[0]['o']['value']
-                # print(taxon_name)
                 taxon_to_os[taxon_id] = taxon_name
                 if taxon_name == "Bacillus <bacterium>":
                     taxon_to_os[taxon_id] = "Bacillus"
-            if taxon_id == "NCBITaxon:85003":
-                # 85003 reassigned to 1760 for Actinobacteria
-                taxon_to_os[taxon_id] = "Actinobacteria"
+                if taxon_name == "Theria <Mammalia>":
+                    taxon_to_os[taxon_id] = "Theria"
+                if taxon_name == "Mesangiospermae":
+                    taxon_to_os[taxon_id] = "Mesangiosperma"
 
 # Locate
 
@@ -109,12 +109,13 @@ with open(args.taxon_term_table) as t3f:
         new_header = h
         if h.startswith("NCBITaxon:") and h in taxon_to_os:
             new_header = taxon_to_os[h]
-        print(new_header)
+        # print(new_header)
         new_headers.append(new_header)
     table_lines[0] = "{}\n".format("\t".join(new_headers))
     # os.system("sed -i \"1s/.*/{}/\" taxon_term_table".format("\t".join(new_headers))) # Mac and Linux sed cmds are incompatible
 
-t3c = open("taxon_term_table_converted", "w+")
+# t3c = open("taxon_term_table_converted", "w+")
+t3c = open(args.outfile, "w+")
 t3c.writelines(table_lines)
 t3c.close()
 

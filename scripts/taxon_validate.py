@@ -6,6 +6,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--output_file")
 parser.add_argument("-s", "--slim_terms")
 parser.add_argument("-t", "--taxon_term_table")
+parser.add_argument("-p", "--panther_tree_nhx")
 args = parser.parse_args()
 
 # taxon_term_file = "taxon_term_table_converted"
@@ -40,7 +41,8 @@ if args.slim_terms:
 
 taxon_indexes = {}
 term_constraint_lists = {}
-with open(taxon_term_file) as t3f:
+# with open(taxon_term_file) as t3f:
+with open(args.taxon_term_table) as t3f:
     header = t3f.readline().rstrip()
     headers = header.split("\t")
     index_count = 0
@@ -84,7 +86,8 @@ def find_taxon_clade(taxon_name, root_clade):
                 return result
 
 # Parse species_tree
-tree = next(Phylo.parse("resources/species_pthr13_annot.nhx","newick"))
+# tree = next(Phylo.parse("resources/species_pthr13_annot.nhx","newick"))
+tree = next(Phylo.parse(args.panther_tree_nhx,"newick"))
 tree.clade.name = extract_clade_name(tree.clade.comment)
 name_children(tree.clade)
 
@@ -92,7 +95,7 @@ def validate_taxon_term(taxon, term):
     # node_path[-2] won't work for LUCA. LUCA should equal NCBITaxon:131567 for "cellular organisms".
     # Need to rerun gaferencer to include this taxon, then convert "cellular organisms" header to "LUCA" in
     # taxon_to_oscode.py
-    print(taxon)
+    # print(taxon)
     while taxon in MADEUP_SPECIES and taxon != "LUCA":
         # print(taxon)
         # Get parent of taxon - handy BioPython trick
