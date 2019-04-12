@@ -1,7 +1,18 @@
 import csv
 import subprocess
 import os
-from ontobio.sparql.sparql_ontol_utils import run_sparql
+import argparse
+# from ontobio.sparql.sparql_ontol_utils import run_sparql
+from SPARQLWrapper import SPARQLWrapper, JSON
+from prefixcommons.curie_util import contract_uri
+
+# Stealing from ontobio.sparql.sparql_ontol_utils:
+def curiefy(r):
+    for (k,v) in r.items():
+        if v['type'] == 'uri':
+            curies = contract_uri(v['value'])
+            if len(curies)>0:
+                r[k]['value'] = curies[0]
 
 query = """
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -10,6 +21,11 @@ SELECT DISTINCT ?o FROM <http://purl.obolibrary.org/obo/merged/NCBITAXON> WHERE 
     <http://purl.obolibrary.org/obo/NCBITaxon_{}> rdfs:label ?o
 }}
 """
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-t", "--taxon_term_table")
+parser.add_argument("-s", "--species_taxons")
+args = parser.parse_args()
 
 # Command-ify this script to separate slurm from no-slurm (internet-required)
 
@@ -31,14 +47,21 @@ with open("resources/README") as rf:
 # query or locate list of paint_taxons - pretty much the taxons passed into gaferencer
 
 # Get list of taxon IDs used to generate taxon_term_table
-with open("resources/paint_taxons.txt") as pf:
+sparql = SPARQLWrapper("http://sparql.hegroup.org/sparql")
+sparql.setReturnFormat(JSON)
+with open(args.species_taxons) as pf:
     taxons_to_convert = []
     for l in pf.readlines():
         taxon_id = l.rstrip()
         taxons_to_convert.append(taxon_id)
         if taxon_id not in taxon_to_os:
             # print(taxon_id)
-            thing = run_sparql(query.format(taxon_id.split(":")[1]))
+            # thing = run_sparql(query.format(taxon_id.split(":")[1]))
+            sparql.setQuery(query.format(taxon_id.split(":")[1]))
+            thing = sparql.query().convert()
+            thing = thing['results']['bindings']
+            for r in thing:
+                curiefy(r)
             # print(thing)
             taxon_name = ""
             if len(thing) > 0:
@@ -75,7 +98,7 @@ with open("taxon_to_oscode.tsv", "w+") as outf:
         except:
             print("OS code missing for {}".format(t))
 
-with open("taxon_term_table") as t3f:
+with open(args.taxon_term_table) as t3f:
     # Fix header of taxon_term_table
     # table_header = subprocess.getoutput("head -n 1 taxon_term_table")
     table_lines = t3f.readlines()

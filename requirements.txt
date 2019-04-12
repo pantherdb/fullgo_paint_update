@@ -1,2 +1,5 @@
 psycopg2==2.7.4
 PyYAML==3.12
+biopython==1.72
+prefixcommons==0.1.7
+SPARQLWrapper==1.8.2

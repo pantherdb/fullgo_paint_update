@@ -1,7 +1,15 @@
 from Bio import Phylo
 import csv
+import argparse
 
-taxon_term_file = "taxon_term_table_converted"
+parser = argparse.ArgumentParser()
+parser.add_argument("-o", "--output_file")
+parser.add_argument("-s", "--slim_terms")
+parser.add_argument("-t", "--taxon_term_table")
+args = parser.parse_args()
+
+# taxon_term_file = "taxon_term_table_converted"
+taxon_term_file = "TaxonConstraintsLookup.txt"
 
 MADEUP_SPECIES = [
     "Saccharomycetaceae-Candida",
@@ -18,8 +26,17 @@ MADEUP_SPECIES = [
     "Opisthokonta",
     "Excavates",
     "Unikonts",
+    "Artiodactyla",
     "LUCA"
 ]
+
+slim_terms = []
+if args.slim_terms:
+    # Get list of slim terms to filter for
+    slim_file = open(args.slim_terms)
+    for t in slim_file.readlines():
+        slim_terms.append(t.rstrip())
+    slim_file.close()
 
 taxon_indexes = {}
 term_constraint_lists = {}
@@ -34,7 +51,8 @@ with open(taxon_term_file) as t3f:
     for l in t3f.readlines():
         cols = l.split("\t")
         go_term = cols[0]
-        term_constraint_lists[go_term] = cols[1:len(cols)]
+        if len(slim_terms) == 0 or go_term in slim_terms:
+            term_constraint_lists[go_term] = cols[1:len(cols)]
 
 print("taxon_indexes: {}".format(len(taxon_indexes)))
 print("term_constraint_lists: {}".format(len(term_constraint_lists)))
@@ -106,7 +124,8 @@ def validate_taxon_term(taxon, term):
 def append_madeup_species_to_table():
     # List hyphenated species
     # Reconstruct entire table file
-    with open("new_table_file", "w+") as nf:
+    # with open("new_table_file", "w+") as nf:
+    with open(args.output_file, "w+") as nf:
         writer = csv.writer(nf, delimiter="\t")
         header = ["GOterm"]
         out_rows = []
@@ -125,4 +144,8 @@ def append_madeup_species_to_table():
 
         writer.writerow(header)
         for otv in out_term_values:
-            writer.writerow(out_term_values[otv])
+            if len(slim_terms) == 0 or otv in slim_terms:
+                writer.writerow(out_term_values[otv])
+
+if __name__ == "__main__":
+    append_madeup_species_to_table()
