@@ -263,10 +263,13 @@ reset_paint_table_names:
 
 # update_taxon_constraints_file:
 
-create_gafs: paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
-	mkdir $(IBA_DIR)
+create_gafs: setup_directories paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
 	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_PATH) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
 	$(MAKE) repair_gaf_symbols
+
+setup_directories:
+	mkdir -p $(BASE_PATH)/resources
+	mkdir -p $(IBA_DIR)
 
 paint_annotation:
 	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql -o $(BASE_PATH)/resources/$(ANNOT)

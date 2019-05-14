@@ -73,6 +73,8 @@ with open(args.species_taxons) as pf:
                     taxon_to_os[taxon_id] = "Theria"
                 if taxon_name == "Mesangiospermae":
                     taxon_to_os[taxon_id] = "Mesangiosperma"
+                if taxon_name == "Bacteria":
+                    taxon_to_os[taxon_id] = "Eubacteria"
 
 # Locate
 

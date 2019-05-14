@@ -19,5 +19,5 @@ perl $PWD/scripts/fullGoMappingPthrHierarchy.pl \
 -o $FULL_BASE_PATH/go.obo \
 -w $FULL_BASE_PATH/Pthr_GO_$PANTHER_VERSION.tsv \
 -e $FULL_BASE_PATH/PthrGOLog_$PANTHER_VERSION.txt \
--d $FULL_BASE_PATH/
+-d $FULL_BASE_PATH/ \
 -P $PANTHER_VERSION
