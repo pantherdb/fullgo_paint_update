@@ -32,6 +32,8 @@ MADEUP_SPECIES = [
     "LUCA"
 ]
 
+THE_REST = []
+
 def extract_clade_name(clade_comment):
     if clade_comment is None:
         clade_comment = ""
@@ -100,7 +102,7 @@ class TaxonTermValidator:
         # Need to rerun gaferencer to include this taxon, then convert "cellular organisms" header to "LUCA" in
         # taxon_to_oscode.py
         # print(taxon)
-        while taxon in MADEUP_SPECIES and taxon != "LUCA":
+        while taxon in MADEUP_SPECIES + THE_REST and taxon != "LUCA":
             # print(taxon)
             # Get parent of taxon - handy BioPython trick
             taxon_clade = find_taxon_clade(taxon, self.tree.clade)
@@ -136,7 +138,7 @@ def append_madeup_species_to_table(validator : TaxonTermValidator, output_file):
         writer = csv.writer(nf, delimiter="\t")
         header = ["GOterm"]
         out_term_values = {}
-        for tk in list(validator.taxon_indexes.keys()) + MADEUP_SPECIES:
+        for tk in list(validator.taxon_indexes.keys()) + MADEUP_SPECIES + THE_REST:
             header.append(tk)
             for term in validator.term_constraint_lists:
                 if validator.validate_taxon_term(tk, term):
@@ -153,8 +155,17 @@ def append_madeup_species_to_table(validator : TaxonTermValidator, output_file):
             if len(validator.slim_terms) == 0 or otv in validator.slim_terms:
                 writer.writerow(out_term_values[otv])
 
+
+def get_all_species_from_tree(validator : TaxonTermValidator):
+    for c in validator.tree.find_clades():
+        if len(c.name) > 0 and c.name not in list(validator.taxon_indexes.keys()) + MADEUP_SPECIES + THE_REST:
+            THE_REST.append(c.name)
+    # print(THE_REST)
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    validator = TaxonTermValidator(args.taxon_term_table, args.panther_tree_nhx)
+    validator = TaxonTermValidator(args.taxon_term_table, args.panther_tree_nhx, args.slim_terms)
+    get_all_species_from_tree(validator)
     append_madeup_species_to_table(validator, args.output_file)

@@ -30,6 +30,14 @@ args = parser.parse_args()
 
 # Command-ify this script to separate slurm from no-slurm (internet-required)
 
+EXCEPTION_NAME_REPLACEMENTS = {
+    "Bacillus <bacterium>": "Bacillus",
+    "Theria <Mammalia>": "Theria",
+    "Mesangiospermae": "Mesangiosperma",
+    "Bacteria": "Eubacteria",
+    "BOP clade": "BEP_clade"
+}
+
 # Download or locate RefProt readme
 
 # Get all taxonID-to-OSCode mappings from ref prot
@@ -67,14 +75,8 @@ with open(args.species_taxons) as pf:
             if len(thing) > 0:
                 taxon_name = thing[0]['o']['value']
                 taxon_to_os[taxon_id] = taxon_name
-                if taxon_name == "Bacillus <bacterium>":
-                    taxon_to_os[taxon_id] = "Bacillus"
-                if taxon_name == "Theria <Mammalia>":
-                    taxon_to_os[taxon_id] = "Theria"
-                if taxon_name == "Mesangiospermae":
-                    taxon_to_os[taxon_id] = "Mesangiosperma"
-                if taxon_name == "Bacteria":
-                    taxon_to_os[taxon_id] = "Eubacteria"
+                if taxon_name in EXCEPTION_NAME_REPLACEMENTS:
+                    taxon_to_os[taxon_id] = EXCEPTION_NAME_REPLACEMENTS[taxon_name]
 
 # Locate
 
