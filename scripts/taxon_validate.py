@@ -37,16 +37,30 @@ THE_REST = []
 def extract_clade_name(clade_comment):
     if clade_comment is None:
         clade_comment = ""
-    new_comment = clade_comment.replace("&&NHX:S=", "")
+    ### Name-parsing should be more robust
+    new_comment = ""
+    comment_bits = clade_comment.split(":")
+    for b in comment_bits:
+        if b.startswith("S="):
+            new_comment = b.replace("S=", "")
+            break
+    # Also grab ID
+    an_id = ""
+    for b in comment_bits:
+        if b.startswith("ID="):
+            an_id = b.replace("ID=", "")
+            break
+    ###
+    new_comment = new_comment.replace("&&NHX:S=", "")
     new_comment = new_comment.replace("&&NXH:S=", "")
     if new_comment == "Opisthokonts":
         new_comment = "Opisthokonta"
-    return new_comment
+    return new_comment, an_id
 
 def name_children(parent_clade):
     # print(parent_clade.name)
     for child in parent_clade.clades:
-        child.name = extract_clade_name(child.comment)
+        child.name, child.id = extract_clade_name(child.comment)
         if len(child.clades) > 0:
             name_children(child)
 
@@ -94,7 +108,7 @@ class TaxonTermValidator:
 
         # Parse species_tree
         self.tree = next(Phylo.parse(panther_tree_nhx, "newick"))
-        self.tree.clade.name = extract_clade_name(self.tree.clade.comment)
+        self.tree.clade.name, self.tree.clade.id = extract_clade_name(self.tree.clade.comment)
         name_children(self.tree.clade)
 
     def validate_taxon_term(self, taxon, term):
