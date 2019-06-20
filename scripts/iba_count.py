@@ -18,14 +18,16 @@ a_data = {
     "data_title": "PTHR 13.1",
     "classification_version_sid": 24,
     "table_name_suffix": "_v13_1", # not really needed for this
-    "iba_gaf_path": "2019-06-17_fullgo_13_1/IBA_GAFs"
+    "iba_gaf_path": "2019-06-17_fullgo_13_1/IBA_GAFs",
+    "node_dat_path": "/home/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/node.dat"
 }
 # 14.1
 b_data = {
     "data_title": "PTHR 14.1",
     "classification_version_sid": 26,
     "table_name_suffix": "", # not really needed for this
-    "iba_gaf_path": "2019-06-17_fullgo_14_1/IBA_GAFs"
+    "iba_gaf_path": "2019-06-17_fullgo_14_1/IBA_GAFs",
+    "node_dat_path": "/auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/node.dat"
 }
 
 def query_ds_by_ptn_and_term(ds, ptn, term):
@@ -81,11 +83,18 @@ def get_family_for_ptn_from_db(node_ptn, cls_ver_id):
     if len(results) > 1:  # Col header always included
         return results[1][0]
 
+def get_family_for_ptn_from_file(node_ptn, node_dat_path):
+    # Grep file?
+    cmd = "grep {node_ptn} {node_dat_path} | cut -f1 | cut -d \":\" -f1".format(node_ptn=node_ptn, node_dat_path=node_dat_path)
+    # PTHR28113:AN0   PTN001999359    ROOT    SPECIATION      0
+
+
 
 def get_family_for_ptn(node_ptn, cls_ver_id):
     cls_to_fams = FAM_LOOKUP.get(node_ptn)
     if cls_to_fams is None:
-        family = get_family_for_ptn_from_db(node_ptn, cls_ver_id)  # This takes too long
+        # family = get_family_for_ptn_from_db(node_ptn, cls_ver_id)  # This takes too long
+        family = get_family_for_ptn_from_file(node_ptn, node_date_path)
         cls_to_fams = {cls_ver_id: family}
         FAM_LOOKUP[node_ptn] = cls_to_fams
         return family
@@ -117,22 +126,24 @@ if __name__ == "__main__":
     writer.writerow(headers)
     
     for n in ibd_nodes_a:
-        family_a = get_family_for_ptn(n, a_data["classification_version_sid"])
         for term in ibd_nodes_a[n]:
             a_term_count = query_ds_by_ptn_and_term(ibd_nodes_a, n, term)
             # Now check B to see if entry for same PTN and term
             family_b, b_term_count = None, None
             if n in ibd_nodes_b and term in ibd_nodes_b[n]:
-                family_b = get_family_for_ptn(n, b_data["classification_version_sid"])
                 b_term_count = query_ds_by_ptn_and_term(ibd_nodes_b, n, term)
-            row_vals = [family_a, family_b, n, term, a_term_count, b_term_count]
-            try:
-                print(row_vals)
-                writer.writerow(row_vals)
-            except:
-                print(row_vals)
-                print("\t".join(row_vals))
-        break
+            # Only print if A != B? Maybe don't care about non-changes?
+            if (a_term_count != b_term_count and b_term_count is not None) or b_term_count is None:
+                family_a = get_family_for_ptn(n, a_data["classification_version_sid"])
+                family_b = get_family_for_ptn(n, b_data["classification_version_sid"])
+                row_vals = [family_a, family_b, n, term, a_term_count, b_term_count]
+                try:
+                    print(row_vals)
+                    writer.writerow(row_vals)
+                except:
+                    print(row_vals)
+                    print("\t".join(row_vals))
+        # break
     # After A is exhaustively checked, go through B, skipping entries where already matching A by node AND term.
     for n in ibd_nodes_b:
         family_b = get_family_for_ptn(n, b_data["classification_version_sid"])
@@ -145,7 +156,7 @@ if __name__ == "__main__":
                 row_vals = [None, family_b, n, term, None, b_term_count]
                 print(row_vals)
                 writer.writerow(row_vals)
-        break
+        # break
 
     outf.close()
 # Keep list of 

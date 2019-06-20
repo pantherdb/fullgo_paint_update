@@ -294,3 +294,6 @@ repair_gaf_symbols:
 
 push_gafs_to_ftp:
 	@echo "Needs to be implemented"
+
+leaf_species_list:
+	python3 scripts/db_caller.py -n scripts/sql/util/leaf_species_list.sql
