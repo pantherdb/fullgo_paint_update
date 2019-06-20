@@ -83,33 +83,55 @@ def get_family_for_ptn_from_db(node_ptn, cls_ver_id):
     if len(results) > 1:  # Col header always included
         return results[1][0]
 
-def get_family_for_ptn_from_file(node_ptn, node_dat_path):
-    # Grep file?
-    cmd = "grep {node_ptn} {node_dat_path} | cut -f1 | cut -d \":\" -f1".format(node_ptn=node_ptn, node_dat_path=node_dat_path)
-    # PTHR28113:AN0   PTN001999359    ROOT    SPECIATION      0
+# def get_family_for_ptn_from_file(node_ptn, node_dat_path):
+#     # Grep file? Nah.
+#     # cmd = "grep {node_ptn} {node_dat_path} | cut -f1 | cut -d \":\" -f1".format(node_ptn=node_ptn, node_dat_path=node_dat_path)
+#     # PTHR28113:AN0   PTN001999359    ROOT    SPECIATION      0
+#     looku
 
 
 
 def get_family_for_ptn(node_ptn, cls_ver_id):
-    cls_to_fams = FAM_LOOKUP.get(node_ptn)
-    if cls_to_fams is None:
-        # family = get_family_for_ptn_from_db(node_ptn, cls_ver_id)  # This takes too long
-        family = get_family_for_ptn_from_file(node_ptn, node_date_path)
-        cls_to_fams = {cls_ver_id: family}
-        FAM_LOOKUP[node_ptn] = cls_to_fams
-        return family
-    else:
-        family = FAM_LOOKUP[node_ptn].get(cls_ver_id)
-        if family is None:
-            family = get_family_for_ptn_from_db(node_ptn, cls_ver_id)
-            FAM_LOOKUP[node_ptn][cls_ver_id] = family
-        return family
+    # cls_to_fams = FAM_LOOKUP.get(node_ptn)
+    return FAM_LOOKUP[cls_ver_id].get(node_ptn)
+    # if cls_to_fams is None:
+    #     # family = get_family_for_ptn_from_db(node_ptn, cls_ver_id)  # This takes too long
+    #     family = get_family_for_ptn_from_file(node_ptn, node_dat_path)
+    #     cls_to_fams = {cls_ver_id: family}
+    #     FAM_LOOKUP[node_ptn] = cls_to_fams
+    #     return family
+    # else:
+    #     family = FAM_LOOKUP[node_ptn].get(cls_ver_id)
+    #     if family is None:
+    #         family = get_family_for_ptn_from_db(node_ptn, cls_ver_id)
+    #         FAM_LOOKUP[node_ptn][cls_ver_id] = family
+    #     return family
 
+def parse_and_load_node(lookup, cls_ver_id, node_dat_path):
+    lookup[cls_ver_id] = {}
+    with open(node_dat_path) as af:
+        for l in af.readlines():
+            bits = l.split("\t")
+            acc = bits[0]
+            fam = acc.split(":")[0]
+            ptn = bits[1]
+            lookup[cls_ver_id][ptn] = fam
+    return lookup
+
+def load_fam_lookup(lookup):
+    lookup = parse_and_load_node(lookup, a_data["classification_version_sid"], a_data["node_dat_path"])
+    if a_data["node_dat_path"] == b_data["node_dat_path"]:
+        lookup[b_data["classification_version_sid"]] = lookup[a_data["classification_version_sid"]]
+    else:
+        lookup = parse_and_load_node(lookup, b_data["classification_version_sid"], b_data["node_dat_path"])
+    return lookup
 
 if __name__ == "__main__":
     outfile = "iba_count_diff.tsv"
     outf = open(outfile, "w+")
     writer = csv.writer(outf, delimiter="\t")
+
+    FAM_LOOKUP = load_fam_lookup(FAM_LOOKUP)
 
     ibd_nodes_a = get_ibd_counts_from_dir(a_data["iba_gaf_path"])
     ibd_nodes_b = get_ibd_counts_from_dir(b_data["iba_gaf_path"])
