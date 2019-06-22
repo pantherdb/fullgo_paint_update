@@ -1,6 +1,7 @@
 import csv
 import os
-from pthr_db_caller.db_caller import DBCaller
+import datetime
+from scripts.publish_google_sheet import SheetPublishHandler, Sheet
 
 # Diff lookups for versions?
 FAM_LOOKUP = {}
@@ -72,16 +73,15 @@ def get_ibd_counts_from_dir(dir_path):
     return ibd_nodes
 
 
-caller = DBCaller()
 
-def get_family_for_ptn_from_db(node_ptn, cls_ver_id):
-    # Call DB
-    query = """
-    select split_part(n.accession,':',1) from panther_upl.node n where n.classification_version_sid = {} and n.public_id = '{}';
-    """.format(cls_ver_id, node_ptn)
-    results = caller.run_cmd_line_args(query.rstrip(), no_header_footer=True)
-    if len(results) > 1:  # Col header always included
-        return results[1][0]
+# def get_family_for_ptn_from_db(node_ptn, cls_ver_id):
+#     # Call DB
+#     query = """
+#     select split_part(n.accession,':',1) from panther_upl.node n where n.classification_version_sid = {} and n.public_id = '{}';
+#     """.format(cls_ver_id, node_ptn)
+#     results = caller.run_cmd_line_args(query.rstrip(), no_header_footer=True)
+#     if len(results) > 1:  # Col header always included
+#         return results[1][0]
 
 # def get_family_for_ptn_from_file(node_ptn, node_dat_path):
 #     # Grep file? Nah.
@@ -92,20 +92,7 @@ def get_family_for_ptn_from_db(node_ptn, cls_ver_id):
 
 
 def get_family_for_ptn(node_ptn, cls_ver_id):
-    # cls_to_fams = FAM_LOOKUP.get(node_ptn)
     return FAM_LOOKUP[cls_ver_id].get(node_ptn)
-    # if cls_to_fams is None:
-    #     # family = get_family_for_ptn_from_db(node_ptn, cls_ver_id)  # This takes too long
-    #     family = get_family_for_ptn_from_file(node_ptn, node_dat_path)
-    #     cls_to_fams = {cls_ver_id: family}
-    #     FAM_LOOKUP[node_ptn] = cls_to_fams
-    #     return family
-    # else:
-    #     family = FAM_LOOKUP[node_ptn].get(cls_ver_id)
-    #     if family is None:
-    #         family = get_family_for_ptn_from_db(node_ptn, cls_ver_id)
-    #         FAM_LOOKUP[node_ptn][cls_ver_id] = family
-    #     return family
 
 def parse_and_load_node(lookup, cls_ver_id, node_dat_path):
     lookup[cls_ver_id] = {}
@@ -130,6 +117,8 @@ if __name__ == "__main__":
     outfile = "iba_count_diff.tsv"
     outf = open(outfile, "w+")
     writer = csv.writer(outf, delimiter="\t")
+    handler = SheetPublishHandler()
+    sheet = Sheet(title="{}-iba_count".format(datetime.date.today().isoformat()))
 
     FAM_LOOKUP = load_fam_lookup(FAM_LOOKUP)
 
@@ -144,8 +133,9 @@ if __name__ == "__main__":
         a_data["data_title"], 
         b_data["data_title"]
     ]
-    print("\t".join(headers))
+    # print("\t".join(headers))
     writer.writerow(headers)
+    sheet.append_row(headers)
     
     for n in ibd_nodes_a:
         for term in ibd_nodes_a[n]:
@@ -159,13 +149,10 @@ if __name__ == "__main__":
                 family_a = get_family_for_ptn(n, a_data["classification_version_sid"])
                 family_b = get_family_for_ptn(n, b_data["classification_version_sid"])
                 row_vals = [family_a, family_b, n, term, a_term_count, b_term_count]
-                try:
-                    print(row_vals)
-                    writer.writerow(row_vals)
-                except:
-                    print(row_vals)
-                    print("\t".join(row_vals))
-        # break
+                # print(row_vals)
+                writer.writerow(row_vals)
+                sheet.append_row(row_vals)
+
     # After A is exhaustively checked, go through B, skipping entries where already matching A by node AND term.
     for n in ibd_nodes_b:
         family_b = get_family_for_ptn(n, b_data["classification_version_sid"])
@@ -176,30 +163,9 @@ if __name__ == "__main__":
             else:
                 b_term_count = query_ds_by_ptn_and_term(ibd_nodes_b, n, term)
                 row_vals = [None, family_b, n, term, None, b_term_count]
-                print(row_vals)
+                # print(row_vals)
                 writer.writerow(row_vals)
-        # break
+                sheet.append_row(row_vals)
 
     outf.close()
-# Keep list of 
-
-# Possible scenarios
-# 1. IBD node in both A and B
-#   Fun scenario:
-# ibd_nodes_a = {
-#     "PTN12345678": {
-#         "GO:123456": 34,
-#         "GO:456432": 10
-#     }
-# }
-# ibd_nodes_b = {
-#     "PTN12345678": {
-#         "GO:123456": 34,
-#     }
-# }
-# 2. IBD node in A only
-# 3. IBD node in B only
-
-# What if PTN col was for leaf PTN?
-# - If GO term included, wouldn't count be 1 for each line?
-# -- If yes, lose GO term. Maybe different report.
+    handler.publish_sheet(sheet)
