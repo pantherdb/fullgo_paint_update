@@ -20,9 +20,13 @@ class SheetRow:
     def to_dict(self):
         rows_dict = {"values": []}
         for v in self.values:
+            if v.__class__ == int:
+                value_type_field = "numberValue"
+            else:
+                value_type_field = "stringValue"
             rows_dict["values"].append({
                         "userEnteredValue": {
-                            "stringValue": v
+                            value_type_field: v
                             }
                         })
         return rows_dict
@@ -96,6 +100,7 @@ def main():
     sheet = Sheet(title='test sheet')
     sheet.append_row(["whatup"])
     sheet.append_row(["sup", "yee", "yo"])
+    sheet.append_row(["test num", 34, 6])
 
     handler.publish_sheet(sheet)
 
