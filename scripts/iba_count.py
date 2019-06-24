@@ -1,7 +1,7 @@
 import csv
 import os
 import datetime
-from scripts.publish_google_sheet import SheetPublishHandler, Sheet
+from util.publish_google_sheet import SheetPublishHandler, Sheet
 
 # Diff lookups for versions?
 FAM_LOOKUP = {}
