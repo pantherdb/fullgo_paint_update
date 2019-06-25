@@ -7,7 +7,7 @@ export GAF_FILES_PATH = $(BASE_PATH)/gaf_files
 export FULL_GAF_FILES_PATH = $(realpath $(GAF_FILES_PATH))
 export PWD = $(shell pwd)
 GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
-export PANTHER_VERSION ?= 13.1
+export PANTHER_VERSION ?= 14.1
 
 ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
@@ -15,6 +15,8 @@ export PANTHER_VERSION_DATE = 20180203
 export IDENTIFIER_PATH = /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat
 export GENE_PATH = /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr13_code_taxId.txt
+export NODE_PATH = /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/node.dat
+export TREE_NODES_DIR = /auto/rcf-proj3/hm/mi/UPL/PANTHER13.1/data/treeNodes
 else ifeq ($(PANTHER_VERSION),14.0)
 ### PANTHER 14.0 ###
 export PANTHER_VERSION_DATE = 20181203
@@ -26,13 +28,15 @@ export PANTHER_VERSION_DATE = 20190312
 export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/identifier.dat
 export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr14_1_code_taxId.txt
+export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/node.dat
+export TREE_NODES_DIR = /auto/rcf-proj3/hm/mi/UPL/PANTHER13.1/data/treeNodes
 endif
 
 ########## GAF CREATION ##########
 ### -i property file with go and panther version.
 GAF_PROFILE = $(BASE_PATH)/profile.txt
 ### -d for the data folder from library
-PTHR_DATA_DIR = "/auto/rcf-proj3/hm/mi/UPL/PANTHER13.1/data/"
+# PTHR_DATA_DIR = "/auto/rcf-proj3/hm/mi/UPL/PANTHER13.1/data/"
 ### -a paint_annotation (from database)
 ANNOT = paint_annotation
 ### -q paint_annotation_qualifier (from database)
@@ -264,7 +268,7 @@ reset_paint_table_names:
 # update_taxon_constraints_file:
 
 create_gafs: setup_directories paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
-	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -d $(PTHR_DATA_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_PATH) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
+	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -n $(NODE_PATH) -N $(TREE_NODES_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_PATH) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
 	$(MAKE) repair_gaf_symbols
 
 setup_directories:

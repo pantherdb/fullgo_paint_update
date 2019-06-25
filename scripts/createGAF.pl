@@ -22,11 +22,13 @@
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:d:G:t:u:c:T:e:vVh') || &usage();
+getopts('o:i:a:q:g:n:N:G:t:u:c:T:e:vVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
-$data = $opt_d if ($opt_d);       # -d for the data folder from library
+# $data = $opt_d if ($opt_d);       # -d for the data folder from library
+$node_dat = $opt_n if ($opt_n);       # -d for the data folder from library
+$treeNodes_dir = $opt_N if ($opt_N);       # -d for the data folder from library
 $annotation = $opt_a if ($opt_a); # -a for annotation file
 $go_aggregate = $opt_g if ($opt_g); # -g for go_aggregate file
 $qualifier = $opt_q if ($opt_q);  # -q for qualifier file
@@ -107,7 +109,7 @@ close (TA);
 # This is to generate the ptn to AN lookup hashes
 ###################################################
 
-my $node = "$data/node.dat";   # from PANTHER version.
+my $node = $node_dat;   # from PANTHER version.
 my %ptn_an;
 my %an_ptn;
 open (FH, $node) or die "Could not open file $node\n";
@@ -128,7 +130,7 @@ close (FH);
 # Parse treeNodes files
 ###################################
 
-my $tree = "$data/treeNodes";
+my $tree = $treeNodes_dir;
 opendir (TREE, $tree);
 my @files = readdir TREE;
 close (TREE);
