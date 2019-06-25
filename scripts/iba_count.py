@@ -143,7 +143,12 @@ if __name__ == "__main__":
     outf = open(outfile, "w+")
     writer = csv.writer(outf, delimiter="\t")
     handler = SheetPublishHandler()
-    sheet = Sheet(title="{}-iba_count".format(datetime.date.today().isoformat()))
+    sheet_title = "{}-iba_count".format(datetime.date.today().isoformat())
+    if args.mods_only:
+        sheet_title += "_mods_only"
+    else:
+        sheet_title += "_all"
+    sheet = Sheet(title=sheet_title)
 
     FAM_LOOKUP = load_fam_lookup(FAM_LOOKUP)
 
