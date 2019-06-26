@@ -62,7 +62,7 @@ IBA_DIR = $(BASE_PATH)/IBA_GAFs
 ### gen_iba_gaf_yamls variables ###
 export GAF_GEN_A_DATA_TITLE = Before  # Before GO update - fullgo_version before table switch? Get from DB?
 export GAF_GEN_A_CLS_VER_ID = $(CLS_VER_ID)  # 26
-export GAF_GEN_A_IBA_DIR = $(BASE_PATH)/IBA_GAFs_preupdate
+export GAF_GEN_A_IBA_DIR = $(BASE_PATH)/preupdate_data/IBA_GAFs
 export GAF_GEN_B_DATA_TITLE = After  # After GO update
 export GAF_GEN_B_CLS_VER_ID = $(CLS_VER_ID)  # 26
 export GAF_GEN_B_IBA_DIR = $(IBA_DIR)
@@ -278,9 +278,14 @@ reset_paint_table_names:
 
 # update_taxon_constraints_file:
 
+setup_preupdate_data:
+	mkdir -p $(GAF_GEN_A_IBA_DIR)
+	mkdir -p $(BASE_PATH)/preupdate_data/resources
+	# Then run queries to populate resources
+
 # Run this after both GAF sets generated
 gen_iba_gaf_yamls:
-	mkdir -p $(GAF_GEN_A_IBA_DIR)
+	# Need to query "before" resource files (go_aggregate, paint_annotation, etc.)
 	envsubst < resources/iba_gaf_gen_a.yaml > $(BASE_PATH)/iba_gaf_gen_a.yaml
 	envsubst < resources/iba_gaf_gen_b.yaml > $(BASE_PATH)/iba_gaf_gen_b.yaml
 
