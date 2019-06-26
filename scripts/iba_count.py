@@ -3,6 +3,7 @@ import os
 import datetime
 import argparse
 from util.publish_google_sheet import SheetPublishHandler, Sheet
+from util.pthr_data import MOD_ORGS
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-m', '--mods_only', action='store_const', const=True)
@@ -16,21 +17,6 @@ FAM_LOOKUP = {}
 #         26: "PTHR14567",
 #     }
 # }
-
-MOD_ORGS = [
-    "taxon:3702",	    # arabidopsis
-    "taxon:6239",	    # nematode_worm
-    "taxon:7955",	    # zebrafish
-    "taxon:44689",	    # dictyostelium
-    "taxon:7227",	    # fruit_fly
-    "taxon:227321",	    # aspergillus
-    "taxon:83333",	    # e_coli
-    "taxon:9031",	    # chicken
-    "taxon:10090",	    # mouse
-    "taxon:10116",      # rat
-    "taxon:559292",	    # budding_yeast
-    "taxon:284812"	    # fission_yeast
-]
 
 # A/B comparison data needed:
 # 13.1
