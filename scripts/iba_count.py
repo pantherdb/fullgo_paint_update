@@ -1,7 +1,11 @@
 import csv
 import os
 import datetime
+import argparse
 from util.publish_google_sheet import SheetPublishHandler, Sheet
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-m', '--mods_only', action='store_const', const=True)
 
 # Diff lookups for versions?
 FAM_LOOKUP = {}
@@ -12,6 +16,21 @@ FAM_LOOKUP = {}
 #         26: "PTHR14567",
 #     }
 # }
+
+MOD_ORGS = [
+    "taxon:3702",	    # arabidopsis
+    "taxon:6239",	    # nematode_worm
+    "taxon:7955",	    # zebrafish
+    "taxon:44689",	    # dictyostelium
+    "taxon:7227",	    # fruit_fly
+    "taxon:227321",	    # aspergillus
+    "taxon:83333",	    # e_coli
+    "taxon:9031",	    # chicken
+    "taxon:10090",	    # mouse
+    "taxon:10116",      # rat
+    "taxon:559292",	    # budding_yeast
+    "taxon:284812"	    # fission_yeast
+]
 
 # A/B comparison data needed:
 # 13.1
@@ -47,13 +66,17 @@ def query_ds_by_ptn_and_term(ds, ptn, term):
 #         "GO:123456": 23,
 #     }
 # }
-def get_ibd_counts_from_dir(dir_path):
+def get_ibd_counts_from_dir(dir_path, mods_only=None):
     ibd_nodes = {}
     for gaf in os.listdir(dir_path):
         gaf_f = open("{}/{}".format(dir_path, gaf))
         for l in gaf_f.readlines():
             if not l.startswith("!"):
                 parts = l.split("\t")
+                if mods_only:
+                    taxon = parts[12]
+                    if taxon not in MOD_ORGS:
+                        continue
                 go_term = parts[4]
                 with_from = parts[7]
                 with_froms = with_from.split("|")
@@ -114,16 +137,23 @@ def load_fam_lookup(lookup):
     return lookup
 
 if __name__ == "__main__":
+    args = parser.parse_args()
+
     outfile = "iba_count_diff.tsv"
     outf = open(outfile, "w+")
     writer = csv.writer(outf, delimiter="\t")
     handler = SheetPublishHandler()
-    sheet = Sheet(title="{}-iba_count".format(datetime.date.today().isoformat()))
+    sheet_title = "{}-iba_count".format(datetime.date.today().isoformat())
+    if args.mods_only:
+        sheet_title += "_mods_only"
+    else:
+        sheet_title += "_all"
+    sheet = Sheet(title=sheet_title)
 
     FAM_LOOKUP = load_fam_lookup(FAM_LOOKUP)
 
-    ibd_nodes_a = get_ibd_counts_from_dir(a_data["iba_gaf_path"])
-    ibd_nodes_b = get_ibd_counts_from_dir(b_data["iba_gaf_path"])
+    ibd_nodes_a = get_ibd_counts_from_dir(a_data["iba_gaf_path"], args.mods_only)
+    ibd_nodes_b = get_ibd_counts_from_dir(b_data["iba_gaf_path"], args.mods_only)
 
     headers = [
         "{} family".format(a_data["data_title"]), 
