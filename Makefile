@@ -12,6 +12,7 @@ export PANTHER_VERSION ?= 14.1
 ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
 export PANTHER_VERSION_DATE = 20180203
+export CLS_VER_ID = 24
 export IDENTIFIER_PATH = /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/identifier.dat
 export GENE_PATH = /auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr13_code_taxId.txt
@@ -20,16 +21,18 @@ export TREE_NODES_DIR = /auto/rcf-proj3/hm/mi/UPL/PANTHER13.1/data/treeNodes
 else ifeq ($(PANTHER_VERSION),14.0)
 ### PANTHER 14.0 ###
 export PANTHER_VERSION_DATE = 20181203
+export CLS_VER_ID = 25
 export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/identifier.dat
 export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr14_code_taxId.txt
 else
 export PANTHER_VERSION_DATE = 20190312
+export CLS_VER_ID = 26
 export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/identifier.dat
 export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr14_1_code_taxId.txt
 export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/node.dat
-export TREE_NODES_DIR = /auto/rcf-proj3/hm/mi/UPL/PANTHER13.1/data/treeNodes
+export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/treeNodes
 endif
 
 ########## GAF CREATION ##########
@@ -55,6 +58,14 @@ TAXON = organism_taxon
 # GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
 ### -o output IBA gaf file folder
 IBA_DIR = $(BASE_PATH)/IBA_GAFs
+
+### gen_iba_gaf_yamls variables ###
+export GAF_GEN_A_DATA_TITLE = Before  # Before GO update - fullgo_version before table switch? Get from DB?
+export GAF_GEN_A_CLS_VER_ID = $(CLS_VER_ID)  # 26
+export GAF_GEN_A_IBA_DIR = $(BASE_PATH)/IBA_GAFs_preupdate
+export GAF_GEN_B_DATA_TITLE = After  # After GO update
+export GAF_GEN_B_CLS_VER_ID = $(CLS_VER_ID)  # 26
+export GAF_GEN_B_IBA_DIR = $(IBA_DIR)
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH)
@@ -266,6 +277,12 @@ reset_paint_table_names:
 	$(MAKE) paint_table_counts
 
 # update_taxon_constraints_file:
+
+# Run this after both GAF sets generated
+gen_iba_gaf_yamls:
+	mkdir -p $(GAF_GEN_A_IBA_DIR)
+	envsubst < resources/iba_gaf_gen_a.yaml > $(BASE_PATH)/iba_gaf_gen_a.yaml
+	envsubst < resources/iba_gaf_gen_b.yaml > $(BASE_PATH)/iba_gaf_gen_b.yaml
 
 create_gafs: setup_directories paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
 	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -n $(NODE_PATH) -N $(TREE_NODES_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_PATH) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
