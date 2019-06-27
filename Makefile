@@ -128,6 +128,10 @@ get_fullgo_date:
 make_profile:
 	sed 's/GO_VERSION_DATE/$(shell date -r $(shell ls $(FULL_GAF_FILES_PATH)/*.gaf | head -n 1) +%Y-%m-%d)/g' profile.txt | envsubst > $(BASE_PATH)/profile.txt
 
+make_profile_from_db:
+	# query DB table fullgo_version - likely w/ python
+	python3 scripts/make_profile_from_db.py $(BASE_PATH)/profile.txt
+
 make_readme:
 	echo "GO source files downloaded on $(shell date +%Y-%m-%d)" > $(BASE_PATH)/README
 
@@ -282,6 +286,7 @@ setup_preupdate_data:
 	# mkdir -p $(GAF_GEN_A_IBA_DIR)
 	# mkdir -p $(BASE_PATH)/preupdate_data/resources
 	# Then run queries to populate resources
+	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data make_profile_from_db
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data create_gafs
 
 # Run this after both GAF sets generated
