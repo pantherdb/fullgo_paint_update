@@ -279,9 +279,10 @@ reset_paint_table_names:
 # update_taxon_constraints_file:
 
 setup_preupdate_data:
-	mkdir -p $(GAF_GEN_A_IBA_DIR)
-	mkdir -p $(BASE_PATH)/preupdate_data/resources
+	# mkdir -p $(GAF_GEN_A_IBA_DIR)
+	# mkdir -p $(BASE_PATH)/preupdate_data/resources
 	# Then run queries to populate resources
+	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data create_gafs
 
 # Run this after both GAF sets generated
 gen_iba_gaf_yamls:
