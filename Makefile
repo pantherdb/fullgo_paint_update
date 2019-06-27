@@ -37,27 +37,27 @@ endif
 
 ########## GAF CREATION ##########
 ### -i property file with go and panther version.
-GAF_PROFILE = $(BASE_PATH)/profile.txt
+export GAF_PROFILE = $(BASE_PATH)/profile.txt
 ### -d for the data folder from library
 # PTHR_DATA_DIR = "/auto/rcf-proj3/hm/mi/UPL/PANTHER13.1/data/"
 ### -a paint_annotation (from database)
-ANNOT = paint_annotation
+export ANNOT = paint_annotation
 ### -q paint_annotation_qualifier (from database)
-ANNOT_QUALIFIER = paint_annotation_qualifier
+export ANNOT_QUALIFIER = paint_annotation_qualifier
 ### -g go_aggregate (from database)
-GO_AGG = go_aggregate
+export GO_AGG = go_aggregate
 ### -t TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
-TAIR_MAP = "/auto/rcf-proj3/hm/mi/PAINT/Analysis/TAIR10_TAIRlocusaccessionID_AGI_mapping.txt"
+export TAIR_MAP = /auto/rcf-proj3/hm/mi/PAINT/Analysis/TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
 ### -u Mapping to support "TAIR=locus" long IDs
-ARAPORT_MAP = "resources/uniprot_to_araport_map_gaf.tsv"
+export ARAPORT_MAP = resources/uniprot_to_araport_map_gaf.tsv
 ### -c evidence (from database)
-EVIDENCE = paint_evidence
+export EVIDENCE = paint_evidence
 ### -T organism_taxon
-TAXON = organism_taxon
+export TAXON = organism_taxon
 ### -G gene.dat in the DBload folder
 # GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
 ### -o output IBA gaf file folder
-IBA_DIR = $(BASE_PATH)/IBA_GAFs
+export IBA_DIR = $(BASE_PATH)/IBA_GAFs
 
 ### gen_iba_gaf_yamls variables ###
 export GAF_GEN_A_DATA_TITLE = Before  # Before GO update - fullgo_version before table switch? Get from DB?
@@ -283,10 +283,9 @@ reset_paint_table_names:
 # update_taxon_constraints_file:
 
 setup_preupdate_data:
-	# mkdir -p $(GAF_GEN_A_IBA_DIR)
-	# mkdir -p $(BASE_PATH)/preupdate_data/resources
-	# Then run queries to populate resources
+	# Retain previous GO version for accuracy
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data make_profile_from_db
+	# Generate IBA GAFs from preupdate data - call before table name switch
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data create_gafs
 
 # Run this after both GAF sets generated
@@ -295,9 +294,12 @@ gen_iba_gaf_yamls:
 	envsubst < resources/iba_gaf_gen_a.yaml > $(BASE_PATH)/iba_gaf_gen_a.yaml
 	envsubst < resources/iba_gaf_gen_b.yaml > $(BASE_PATH)/iba_gaf_gen_b.yaml
 
-create_gafs: setup_directories paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
-	( perl scripts/createGAF.pl -i $(GAF_PROFILE) -n $(NODE_PATH) -N $(TREE_NODES_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_PATH) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
-	$(MAKE) repair_gaf_symbols
+create_gafs: # setup_directories pombe_sources paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
+	# Slurm this
+	envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
+	sbatch $(BASE_PATH)/createGAF.slurm
+	# ( perl scripts/createGAF.pl -i $(GAF_PROFILE) -n $(NODE_PATH) -N $(TREE_NODES_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_PATH) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
+	# $(MAKE) repair_gaf_symbols
 
 setup_directories:
 	mkdir -p $(BASE_PATH)/resources
@@ -318,11 +320,14 @@ go_aggregate:
 organism_taxon:
 	python3 scripts/db_caller.py scripts/sql/organism_taxon.sql -o $(BASE_PATH)/resources/$(TAXON)
 
-repair_gaf_symbols:
+pombe_sources:
 	wget ftp://ftp.pombase.org/nightly_update/misc/allNames.tsv -O $(BASE_PATH)/resources/allNames.tsv
 	wget ftp://ftp.pombase.org/nightly_update/misc/sysID2product.tsv -O $(BASE_PATH)/resources/sysID2product.tsv
-	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p $(BASE_PATH)/resources/allNames.tsv -d $(BASE_PATH)/resources/sysID2product.tsv > $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf
-	cp $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf $(IBA_DIR)/gene_association.paint_pombase.gaf
+
+# Now in createGAF.slurm
+repair_gaf_symbols:
+	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p $(BASE_PATH)/resources/allNames.tsv -d $(BASE_PATH)/resources/sysID2product.tsv > $(IBA_DIR)/gene_association.paint_pombase.gaf
+	# cp $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf $(IBA_DIR)/gene_association.paint_pombase.gaf
 
 push_gafs_to_ftp:
 	@echo "Needs to be implemented"

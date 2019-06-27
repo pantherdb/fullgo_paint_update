@@ -43,6 +43,8 @@ make update_paint_paint_annotation
 make update_paint_paint_evidence
 make update_paint_paint_annot_qualifier
 make update_comments_status
+make setup_preupdate_data
+make gen_iba_gaf_yamls
 make switch_paint_table_names
 make regenerate_go_aggregate_view
 make regenerate_paint_aggregate_view
