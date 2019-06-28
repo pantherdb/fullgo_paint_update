@@ -7,7 +7,8 @@ import yaml
 import datetime
 
 parser = argparse.ArgumentParser()
-# parser.add_argument('outfile')
+parser.add_argument('-a', '--a_yaml')
+parser.add_argument('-b', '--b_yaml')
 parser.add_argument('-r', '--reload_data', action="store_const", const=True)
 args = parser.parse_args()
 
@@ -77,10 +78,13 @@ if __name__ == "__main__":
     sheet.append_row(headers)
     ALL_FAMS.sort()
     for f in ALL_FAMS:
-        row = [f, ver_a.get(f), ver_b.get(f)]
-        writer.writerow(row)
-        sheet.append_row(row)
-        # break
+        fa_count = ver_a.get(f)
+        fb_count = ver_b.get(f)
+        # Only print differences
+        if fa_count != fb_count:
+            row = [f, fa_count, fb_count]
+            writer.writerow(row)
+            sheet.append_row(row)
 
     out_f.close()
     handler.publish_sheet(sheet)
