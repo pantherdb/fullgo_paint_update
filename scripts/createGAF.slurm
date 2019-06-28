@@ -19,4 +19,5 @@
 -G $GENE_PATH \
 -o $IBA_DIR > $BASE_PATH/IBD ) > $BASE_PATH/err
 
-perl scripts/fix_pombe_symbol.pl -i $IBA_DIR/gene_association.paint_pombase.gaf -p $BASE_PATH/resources/allNames.tsv -d $BASE_PATH/resources/sysID2product.tsv > $IBA_DIR/gene_association.paint_pombase.gaf
+perl scripts/fix_pombe_symbol.pl -i $IBA_DIR/gene_association.paint_pombase.gaf -p $BASE_PATH/resources/allNames.tsv -d $BASE_PATH/resources/sysID2product.tsv > $BASE_PATH/gene_association.paint_pombase.fixed.gaf
+cp $BASE_PATH/gene_association.paint_pombase.fixed.gaf $IBA_DIR/gene_association.paint_pombase.gaf

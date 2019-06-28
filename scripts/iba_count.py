@@ -23,23 +23,6 @@ FAM_LOOKUP = {}
 
 A_DATA = None
 B_DATA = None
-# A/B comparison data needed:
-# # 13.1
-# a_data = {
-#     "data_title": "PTHR 13.1",
-#     "classification_version_sid": 24,
-#     "table_name_suffix": "_v13_1", # not really needed for this
-#     "iba_gaf_path": "2019-06-17_fullgo_13_1/IBA_GAFs",
-#     "node_dat_path": "/home/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/node.dat"
-# }
-# # 14.1
-# b_data = {
-#     "data_title": "PTHR 14.1",
-#     "classification_version_sid": 26,
-#     "table_name_suffix": "", # not really needed for this
-#     "iba_gaf_path": "2019-06-17_fullgo_14_1/IBA_GAFs",
-#     "node_dat_path": "/auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/node.dat"
-# }
 
 
 def query_ds_by_ptn_and_term(ds, ptn, term):
@@ -88,24 +71,6 @@ def get_ibd_counts_from_dir(dir_path, mods_only=None):
     return ibd_nodes
 
 
-
-# def get_family_for_ptn_from_db(node_ptn, cls_ver_id):
-#     # Call DB
-#     query = """
-#     select split_part(n.accession,':',1) from panther_upl.node n where n.classification_version_sid = {} and n.public_id = '{}';
-#     """.format(cls_ver_id, node_ptn)
-#     results = caller.run_cmd_line_args(query.rstrip(), no_header_footer=True)
-#     if len(results) > 1:  # Col header always included
-#         return results[1][0]
-
-# def get_family_for_ptn_from_file(node_ptn, node_dat_path):
-#     # Grep file? Nah.
-#     # cmd = "grep {node_ptn} {node_dat_path} | cut -f1 | cut -d \":\" -f1".format(node_ptn=node_ptn, node_dat_path=node_dat_path)
-#     # PTHR28113:AN0   PTN001999359    ROOT    SPECIATION      0
-#     looku
-
-
-
 def get_family_for_ptn(node_ptn, cls_ver_id):
     return FAM_LOOKUP[cls_ver_id].get(node_ptn)
 
@@ -120,6 +85,7 @@ def parse_and_load_node(lookup, cls_ver_id, node_dat_path):
             lookup[cls_ver_id][ptn] = fam
     return lookup
 
+
 def load_fam_lookup(lookup):
     lookup = parse_and_load_node(lookup, A_DATA["classification_version_sid"], A_DATA["node_dat_path"])
     if A_DATA["node_dat_path"] == B_DATA["node_dat_path"]:
@@ -127,6 +93,7 @@ def load_fam_lookup(lookup):
     else:
         lookup = parse_and_load_node(lookup, B_DATA["classification_version_sid"], B_DATA["node_dat_path"])
     return lookup
+
 
 if __name__ == "__main__":
     args = parser.parse_args()

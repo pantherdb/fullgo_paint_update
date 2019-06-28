@@ -2,3 +2,4 @@ data_title: $GAF_GEN_B_DATA_TITLE
 classification_version_sid: $GAF_GEN_B_CLS_VER_ID
 iba_gaf_path: $GAF_GEN_B_IBA_DIR
 node_dat_path: $NODE_PATH
+table_name: $PAINT_ANNOT_B_TABLE

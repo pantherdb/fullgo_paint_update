@@ -67,6 +67,10 @@ export GAF_GEN_B_DATA_TITLE = After  # After GO update
 export GAF_GEN_B_CLS_VER_ID = $(CLS_VER_ID)  # 26
 export GAF_GEN_B_IBA_DIR = $(IBA_DIR)
 
+### PAINT annotation table version variables ###
+export PAINT_ANNOT_A_TABLE = paint_annotation_old
+export PAINT_ANNOT_B_TABLE = paint_annotation
+
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH)
 	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A "gaf.gz" http://current.geneontology.org/annotations/
@@ -294,12 +298,10 @@ gen_iba_gaf_yamls:
 	envsubst < resources/iba_gaf_gen_a.yaml > $(BASE_PATH)/iba_gaf_gen_a.yaml
 	envsubst < resources/iba_gaf_gen_b.yaml > $(BASE_PATH)/iba_gaf_gen_b.yaml
 
-create_gafs: # setup_directories pombe_sources paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
+create_gafs: setup_directories pombe_sources paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
 	# Slurm this
 	envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
 	sbatch $(BASE_PATH)/createGAF.slurm
-	# ( perl scripts/createGAF.pl -i $(GAF_PROFILE) -n $(NODE_PATH) -N $(TREE_NODES_DIR) -a $(BASE_PATH)/resources/$(ANNOT) -q $(BASE_PATH)/resources/$(ANNOT_QUALIFIER) -g $(BASE_PATH)/resources/$(GO_AGG) -t $(TAIR_MAP) -u $(ARAPORT_MAP) -c $(BASE_PATH)/resources/$(EVIDENCE) -T $(BASE_PATH)/resources/$(TAXON) -G $(GENE_PATH) -o $(IBA_DIR) > $(BASE_PATH)/IBD ) > $(BASE_PATH)/err
-	# $(MAKE) repair_gaf_symbols
 
 setup_directories:
 	mkdir -p $(BASE_PATH)/resources
@@ -328,6 +330,11 @@ pombe_sources:
 repair_gaf_symbols:
 	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p $(BASE_PATH)/resources/allNames.tsv -d $(BASE_PATH)/resources/sysID2product.tsv > $(IBA_DIR)/gene_association.paint_pombase.gaf
 	# cp $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf $(IBA_DIR)/gene_association.paint_pombase.gaf
+
+run_reports:
+	python3 scripts/iba_count.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml
+	python3 scripts/iba_count.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml --mods_only
+	python3 scripts/version_paint_annot_counts.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml --reload_data
 
 push_gafs_to_ftp:
 	@echo "Needs to be implemented"
