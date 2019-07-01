@@ -26,7 +26,7 @@ set evidence = x.go_annotation_id, obsolescence_date = null, obsoleted_by = null
 from
 (select distinct ga.annotation_id go_annotation_id, pa.annotation_id paint_annotation_id, pe.evidence_id
 from
-(select parent_node_acc, unnest(string_to_array(child_leaf_node_acc, ',')) as leaf from node_all_leaves) pl
+(select parent_node_acc, unnest(string_to_array(child_leaf_node_acc, ',')) as leaf from node_all_leaves_v14_1) pl
 join node n on n.accession = pl.parent_node_acc
 join node n1 on n1.accession = pl.leaf
 join paint_annotation_new pa on pa.node_id = n.node_id
@@ -56,7 +56,7 @@ from
   select distinct pan.annotation_id child_paint_annotation_id, pan1.annotation_id ancestor_paint_annotation_id, pe.evidence_id
   from
   (
-    select child_node_acc, unnest(string_to_array(ancestor_node_acc, ',')) as ancestor from node_all_ancestors
+    select child_node_acc, unnest(string_to_array(ancestor_node_acc, ',')) as ancestor from node_all_ancestors_v14_1
   ) ca, paint_annotation_new pan, node n, node n1, paint_annotation_new pan1, paint_evidence_new pe
   where pan.node_id = n.node_id
   and n.accession = ca.child_node_acc
