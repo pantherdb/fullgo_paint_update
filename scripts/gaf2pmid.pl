@@ -78,6 +78,7 @@ my %pmids = map { $_ => 1 } @pmids;
 
 for my $id (keys %pmids){
 
-	print "http://amigo.geneontology.org/amigo/reference/$id\n";
+	# print "http://amigo.geneontology.org/amigo/reference/$id\n";
+	print "$id\n";
 
 }
