@@ -68,14 +68,18 @@ if __name__ == "__main__":
 
     # Write this sucka out
     handler = SheetPublishHandler()
-    sheet_title = "{}-version_paint_annot_counts".format(datetime.date.today().isoformat())
+    date_str = datetime.date.today().isoformat()
+    sheet_title = "{}-ibd_count".format(date_str)
     sheet = Sheet(title=sheet_title)
+    zero_sheet_title = "{}_families_lost_all_annotations".format(date_str)
+    zero_sheet = Sheet(title=zero_sheet_title)
     outfile = "{}.tsv".format(sheet_title)
     out_f = open(outfile, "w+")
     writer = csv.writer(out_f, delimiter="\t")
     headers = ["Family", A_DATA["data_title"], B_DATA["data_title"]]
     writer.writerow(headers)
     sheet.append_row(headers)
+    zero_sheet.append_row(headers)
     ALL_FAMS.sort()
     for f in ALL_FAMS:
         fa_count = ver_a.get(f)
@@ -85,6 +89,9 @@ if __name__ == "__main__":
             row = [f, fa_count, fb_count]
             writer.writerow(row)
             sheet.append_row(row)
+            if fb_count is None or fb_count == 0:
+                zero_sheet.append_row(row)
 
     out_f.close()
     handler.publish_sheet(sheet)
+    handler.publish_sheet(zero_sheet)
