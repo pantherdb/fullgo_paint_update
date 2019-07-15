@@ -214,6 +214,9 @@ update_comments_status:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_term_not_obsoleted.sql
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_lost_leaf_annots.sql	### SET CORRECT DATE IN THIS SCRIPT BEFORE RUNNING (SHOULD BE DATE OF paint_annotation TABLE UPDATE)
 
+obsolete_redundant_ibds:
+	python3 scripts/obsolete_redundant_ibds.py -l /home/pmd-02/pdt/pdthomas/panther/famlib/rel/PANTHER$(PANTHER_VERSION) -s _new
+
 switch_evidence_to_pmid:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/switch_evidence_to_pmid.sql
 
@@ -289,6 +292,7 @@ reset_paint_table_names:
 # update_taxon_constraints_file:
 
 setup_preupdate_data:
+	mkdir -p $(BASE_PATH)/preupdate_data
 	# Retain previous GO version for accuracy
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data make_profile_from_db
 	# Generate IBA GAFs from preupdate data - call before table name switch
