@@ -17,6 +17,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-l', 'library_path')
 parser.add_argument('-s', 'table_suffix')
+parser.add_argument('-c', 'cachefile')
 
 args = parser.parse_args()
 
@@ -53,8 +54,8 @@ and pea.confidence_code_sid = 15  -- IBD
 and (paq.qualifier_id = paaq.qualifier_id or (paq.qualifier_id is null and paaq.qualifier_id is null));
 """.format(table_suffix=TABLE_SUFFIX)
 
-cachefile = "resources/sql/cache/obsolete_redundant_ibds.txt"
-ibd_results = CALLER.run_cmd_line_args(QUERY.rstrip(), no_header_footer=True, rows_outfile=cachefile)
+# cachefile = "resources/sql/cache/obsolete_redundant_ibds.txt"
+ibd_results = CALLER.run_cmd_line_args(QUERY.rstrip(), no_header_footer=True, rows_outfile=args.cachefile)
 red_ibds = ibd_results[1:]  # skip header row
 
 # with open(cachefile) as rf:

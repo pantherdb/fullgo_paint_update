@@ -214,8 +214,9 @@ update_comments_status:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_term_not_obsoleted.sql
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_lost_leaf_annots.sql	### SET CORRECT DATE IN THIS SCRIPT BEFORE RUNNING (SHOULD BE DATE OF paint_annotation TABLE UPDATE)
 
-obsolete_redundant_ibds:
-	python3 scripts/obsolete_redundant_ibds.py -l /home/pmd-02/pdt/pdthomas/panther/famlib/rel/PANTHER$(PANTHER_VERSION) -s _new
+obsolete_redundant_ibds: setup_directories
+	mkdir -p $(BASE_PATH)/resources/sql/cache
+	python3 scripts/obsolete_redundant_ibds.py -l /home/pmd-02/pdt/pdthomas/panther/famlib/rel/PANTHER$(PANTHER_VERSION) -s _new -c $(BASE_PATH)/resources/sql/cache/obsolete_redundant_ibds.txt
 
 switch_evidence_to_pmid:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/switch_evidence_to_pmid.sql
