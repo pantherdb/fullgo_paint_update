@@ -15,9 +15,9 @@ import csv
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-l', 'library_path')
-parser.add_argument('-s', 'table_suffix')
-parser.add_argument('-c', 'cachefile')
+parser.add_argument('library_path')
+parser.add_argument('table_suffix')
+parser.add_argument('cachefile')
 
 args = parser.parse_args()
 
