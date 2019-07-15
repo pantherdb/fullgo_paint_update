@@ -157,7 +157,7 @@ for ibd in red_ibds:
             comments_for_fam = add_comment(comments_for_fam, family, comment)
 
             change_evidence_query = """
-                update paint_evidence{table_suffix}
+                update panther_upl.paint_evidence{table_suffix}
                 set evidence = '{anc_annotation_id}'
                 where evidence_id = {ev_id};
             """.format(table_suffix=TABLE_SUFFIX, anc_annotation_id=anc_annotation_id, ev_id=ev_id)
@@ -166,12 +166,12 @@ for ibd in red_ibds:
 
     # Obsolete desc_annotation using desc_annotation_id. Both paint_annotation and paint_evidence.
     update_annot_query = """
-        update paint_annotation{table_suffix}
+        update panther_upl.paint_annotation{table_suffix}
         set obsoleted_by = 1, obsolescence_date = now()
         where annotation_id = {annotation_id};
     """.format(table_suffix=TABLE_SUFFIX, annotation_id=desc_annotation_id)
     update_evidence_query = """
-        update paint_evidence{table_suffix}
+        update panther_upl.paint_evidence{table_suffix}
         set obsoleted_by = 1, obsolescence_date = now()
         where annotation_id = {annotation_id};
     """.format(table_suffix=TABLE_SUFFIX, annotation_id=desc_annotation_id)
