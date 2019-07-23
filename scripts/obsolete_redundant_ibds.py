@@ -147,7 +147,7 @@ for ibd in red_ibds:
             ev_id = r[0]
             changed_ptn = r[1]
             conf_code = r[2]
-            comment = "Evidence PTN for {conf_code} {term} annotation to {changed_ptn} changed from {desc_ptn} to {anc_ptn} due to {desc_ptn}'s {term} annotation being marked redundant and thus obsoleted.".format(
+            comment = "Evidence PTN for {conf_code} {term} annotation to {changed_ptn} changed from {desc_ptn} to {anc_ptn} due to {desc_ptn}s {term} annotation being marked redundant and thus obsoleted.".format(
                     conf_code=conf_code,
                     term=term,
                     changed_ptn=changed_ptn,
@@ -200,6 +200,6 @@ for fam in comments_for_fam:
     # print(cmt_text)
 
 print(have_nots)
-print(evs_to_update)
+# print(evs_to_update)
 # {'PTHR11451': [Decimal('88231633')]}
 # {'PTHR10336': [909054683, 88218457], 'PTHR12628': [730102247, 730102376], 'PTHR19241': [909054708, 909054710, 909054712, 909054714, 909054716, 909054718, 909054720, 909054722, 909054724, 909054726]}

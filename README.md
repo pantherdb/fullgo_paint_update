@@ -43,6 +43,7 @@ make update_paint_paint_annotation
 make update_paint_paint_evidence
 make update_paint_paint_annot_qualifier
 make update_comments_status
+make obsolete_redundant_ibds
 make setup_preupdate_data
 make gen_iba_gaf_yamls
 make switch_paint_table_names

@@ -3,8 +3,8 @@ import yaml
 import os
 import datetime
 import argparse
-from util.publish_google_sheet import SheetPublishHandler, Sheet
-from util.pthr_data import MOD_ORGS
+from scripts.util.publish_google_sheet import SheetPublishHandler, Sheet
+from scripts.util.pthr_data import MOD_ORGS
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-a', '--a_yaml')
