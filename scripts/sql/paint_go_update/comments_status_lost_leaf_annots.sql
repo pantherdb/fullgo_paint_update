@@ -49,7 +49,7 @@ set search_path = panther_upl;
 update comments_new cm
 set remark = cm.remark || '\n' || current_date || ': ' || '.\n'
 from
-(select distinct c.classification_id, gc.accession go_acc, n.public_id, p.primary_ext_id paint_evidence_uniprot_id, n1.public_id paint_evidence_leaf_node, gc1.accession go_annotation_go_term
+(select distinct c.classification_id, gc.accession go_acc, n.public_id, n1.public_id paint_evidence_leaf_node, gc1.accession go_annotation_go_term
 from paint_annotation_new pa, paint_evidence_new pe, node n, classification c, go_classification_new gc, go_annotation_new ga, node n1, go_classification_new gc1
 where pa.annotation_id not in (
 select pe.annotation_id
