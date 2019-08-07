@@ -1,6 +1,7 @@
 # from __future__ import print_function
 import pickle
 import os.path
+from datetime import datetime
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -22,6 +23,9 @@ class SheetRow:
         for v in self.values:
             if v.__class__ == int:
                 value_type_field = "numberValue"
+            elif v.__class__ == datetime:
+                value_type_field = "stringValue"
+                v = str(v.strftime('%Y-%m-%d'))
             else:
                 value_type_field = "stringValue"
             rows_dict["values"].append({
