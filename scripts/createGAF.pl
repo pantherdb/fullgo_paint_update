@@ -215,6 +215,8 @@ foreach my $file (@files){
                     }
                 }elsif ($geneId=~/HGNC/){
                     $shortId=$proteinId;
+                }elsif ($geneId=~/EcoGene/){
+                    $shortId=$proteinId;
                 }else{
                     $shortId = $geneId;
                 }
