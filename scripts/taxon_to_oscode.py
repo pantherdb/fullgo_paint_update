@@ -54,6 +54,8 @@ with open("resources/RefProt_README") as rf:
                 oscodes.append(l_bits[2])
     # 85003 reassigned to 1760 for Actinobacteria
     taxon_to_os["NCBITaxon:85003"] = "Actinobacteria"
+    # NCBI has Opisthokonta for NCBITaxon:33154 but we have Opisthokonts
+    taxon_to_os["NCBITaxon:33154"] = "Opisthokonts"
 
 # query or locate list of paint_taxons - pretty much the taxons passed into gaferencer
 

@@ -25,7 +25,6 @@ MADEUP_SPECIES = [
     "Fornicata-Parabasalids",
     "Homo-Pan",
     "Sordariomycetes-Leotiomycetes",
-    "Opisthokonta",
     "Excavates",
     "Unikonts",
     "Artiodactyla",
@@ -53,8 +52,6 @@ def extract_clade_name(clade_comment):
     ###
     new_comment = new_comment.replace("&&NHX:S=", "")
     new_comment = new_comment.replace("&&NXH:S=", "")
-    if new_comment == "Opisthokonts":
-        new_comment = "Opisthokonta"
     return new_comment, an_id
 
 def name_children(parent_clade):
