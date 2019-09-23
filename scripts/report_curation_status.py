@@ -11,7 +11,7 @@ join panther_upl.classification c on c.classification_id = cs.classification_id
 join panther_upl.users u on u.user_id = cs.user_id
 join panther_upl.curation_status_type cst on cst.status_type_sid = cs.status_type_sid
 where c.classification_version_sid = 26
-and cs.creation_date > '{}'
+--and cs.creation_date > '{}'
 order by cs.creation_date desc;
 """
 
