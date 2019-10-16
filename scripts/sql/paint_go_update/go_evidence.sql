@@ -13,5 +13,6 @@ INSERT INTO go_evidence_new(evidence_id, evidence_type_sid, classification_id, e
     where gc.accession = gw.go_acc and cc.confidence_code = gw.confidence_code 
     and ga.node_id = gn.node_id and gn.gene_id = g.gene_id and g.classification_version_sid = {classification_version_sid}
     and gw.geneid = g.primary_ext_acc and ga.classification_id = gc.classification_id 
+    and ga.obsolescence_date is null
     and upper(gw.evidence_type) = upper(et.type)
   ) ge;

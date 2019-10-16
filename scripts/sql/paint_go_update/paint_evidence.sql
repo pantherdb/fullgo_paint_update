@@ -13,9 +13,12 @@ where not exists (
     select 1 from go_annotation_new gan 
     join go_evidence_new gen on gen.annotation_id = gan.annotation_id
     join confidence_code cc on cc.confidence_code_sid = gen.confidence_code_sid
+    left join go_evidence_qualifier_new geq on geq.evidence_id = gen.evidence_id
+    left join paint_annotation_qualifier paq on paq.annotation_id = pen.annotation_id
     where cast(pen.evidence as int) = gan.annotation_id 
     and gan.obsolescence_date is null
     and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')
+    and (geq.qualifier_id = paq.qualifier_id or (geq.evidence_qualifier_id is null and paq.annotation_qualifier_id is null))
   ) 
   and pen.obsolescence_date is null;
 
