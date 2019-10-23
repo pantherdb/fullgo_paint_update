@@ -6,9 +6,17 @@ insert into go_classification_new select * from go_classification;
 
 -- update go entries with the same accession, keep the old go_classification_id
 set search_path = panther_upl;
-update go_classification_new gcn set name = ge.name, definition = ge.definition, creation_date = now(), obsolescence_date = to_date(ge.obsolete_date, 'YYYY:MM:DD'), term_type_sid = ge.term_type_sid, replaced_by_acc = ge.replaced_by 
+update go_classification_new gcn set name = ge.name, definition = ge.definition, term_type_sid = ge.term_type_sid, replaced_by_acc = ge.replaced_by 
 from goobo_extract ge  
 where gcn.accession = ge.accession;
+
+-- update obsolescence_date ONLY for terms previously non-obsolete. goobo_extract.obsolete_date is always date of GO release since there's no obsolete_date in the OBO file
+set search_path = panther_upl;
+update go_classification_new gcn set obsoleted_by = 1, obsolescence_date = to_date(ge.obsolete_date, 'YYYY:MM:DD')
+from goobo_extract ge  
+where gcn.accession = ge.accession
+and gcn.obsolescence_date is null
+and ge.obsolete_date is not null;
 
 -- insert new go terms (include alt_id), create new go_classification_id for these new terms (accession not in old table)
 set search_path = panther_upl;
