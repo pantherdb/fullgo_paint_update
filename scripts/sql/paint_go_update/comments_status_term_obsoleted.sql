@@ -66,6 +66,7 @@ select pa.annotation_id, pa.node_id, gcn.accession, gc.accession from paint_anno
 where pa.classification_id = gc.classification_id
 and gc.accession = gcn.accession
 and gcn.obsolescence_date is not null
+and gc.obsolescence_date is null
 and gcn.replaced_by_acc is null;
 
 -- insert a new row with “Require paint review” status into curation_status_new table if you find the records by above query
@@ -79,6 +80,7 @@ where pa.node_id = n.node_id
 and pa.classification_id = gc.classification_id
 and gc.accession = gcn.accession
 and gcn.obsolescence_date is not null
+and gc.obsolescence_date is null
 and gcn.replaced_by_acc is null
 and split_part(n.accession, ':', 1) = c.accession
 and c.depth = 5
@@ -89,12 +91,13 @@ and n.classification_version_sid = {classification_version_sid};
 
 set search_path = panther_upl;
 update comments_new cm
-set remark = cm.remark || '\n' || current_date || ': ' || gc.accession || ' is obsoleted and no replaced term, so the annotion to ' || n.public_id || ' is obsolted.\n'
+set remark = cm.remark || '\n' || current_date || ': ' || gc.accession || ' is obsoleted and no replaced term, so the annotation to ' || n.public_id || ' is obsoleted.\n'
 from paint_annotation_new pa, go_classification_new gcn, go_classification gc, classification c, node n
 where pa.node_id = n.node_id
 and pa.classification_id = gc.classification_id
 and gc.accession = gcn.accession
 and gcn.obsolescence_date is not null
+and gc.obsolescence_date is null
 and gcn.replaced_by_acc is null
 and n.classification_version_sid = {classification_version_sid}
 and c.classification_version_sid = {classification_version_sid}
@@ -104,13 +107,14 @@ and split_part(n.accession,':',1)=c.accession;
 
 set search_path = panther_upl;
 insert into comments_new (comment_id, classification_id, protein_id, remark, created_by, creation_date, obsoleted_by, obsolescence_date, node_id)
-select nextval('uids'), c.classification_id, null, current_date || ': ' || gc.accession || ' is obsoleted and no replaced term, so the annotion to ' || n.public_id || ' is obsolted.\n', 1113, current_date, null, null, null from paint_annotation_new pa, 
+select nextval('uids'), c.classification_id, null, current_date || ': ' || gc.accession || ' is obsoleted and no replaced term, so the annotation to ' || n.public_id || ' is obsoleted.\n', 1113, current_date, null, null, null from paint_annotation_new pa, 
 go_classification_new gcn, go_classification gc, classification c,
 node n
 where pa.node_id = n.node_id
 and pa.classification_id = gc.classification_id
 and gc.accession = gcn.accession
 and gcn.obsolescence_date is not null
+and gc.obsolescence_date is null
 and gcn.replaced_by_acc is null
 and n.classification_version_sid = {classification_version_sid}
 and c.classification_version_sid = {classification_version_sid}

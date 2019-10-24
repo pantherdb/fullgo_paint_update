@@ -3,11 +3,11 @@
 ------ i.	It is a secondary ID (or alt_id) to a different term. This means the two terms are merged. Replace the GO term with the merged term. Mark the family as “Require paint review”. In the comments table, record the old and new GO ids and terms, and indicate that this is a merge. This is to differentiate it from obsoletion. (Example: GO:0003723 and GO:0044822). 
 
 -- find the go terms that have alt_id
-set search_path = panther_upl;
-select gcn.accession, string_agg(gen.alt_id, ',') as alt_acc from go_classification_new gcn, goobo_extract gen
-where gcn.accession = gen.accession
-and gen.alt_id is not null
-group by 1;
+-- set search_path = panther_upl;
+-- select gcn.accession, string_agg(gen.alt_id, ',') as alt_acc from go_classification_new gcn, goobo_extract gen
+-- where gcn.accession = gen.accession
+-- and gen.alt_id is not null
+-- group by 1;
 
 -- update go_classification_new table with alt_id
 set search_path = panther_upl;
