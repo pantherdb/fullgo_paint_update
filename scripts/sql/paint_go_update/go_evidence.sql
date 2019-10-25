@@ -16,3 +16,5 @@ INSERT INTO go_evidence_new(evidence_id, evidence_type_sid, classification_id, e
     and ga.obsolescence_date is null
     and upper(gw.evidence_type) = upper(et.type)
   ) ge;
+
+REINDEX TABLE panther_upl.go_evidence_new;
