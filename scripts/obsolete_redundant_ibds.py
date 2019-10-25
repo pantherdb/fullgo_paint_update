@@ -26,7 +26,7 @@ args = parser.parse_args()
 TABLE_SUFFIX = args.table_suffix
 # LIB_DIR = "/home/pmd-02/pdt/pdthomas/panther/famlib/rel/PANTHER14.1"  # HPC
 # LIB_DIR = "resources/tree_files"  # local
-LIB_DIR = args.library_path
+LIB_DIR = args.library_path  # TODO: BuildConfig parameter?
 
 CALLER = DBCaller()
 COMMENT_HELPER = PthrCommentHelper(comments_tablename="comments{}".format(TABLE_SUFFIX), classification_version_sid=26)
@@ -82,6 +82,25 @@ def add_comment(comments_dict : dict, family, comment):
     if comment not in comments_dict[family]:
         comments_dict[family].append(comment)
     return comments_dict
+
+# TODO: Run query for redundant IBDs on same node and term. Figure out which annots to obsolete and pass list of vals into red_ibds.
+# example = [family, good_ibd_annot_id, good_ibd_ptn, good_ibd_an, bad_ibd_annot_id, bad_ibd_ptn, bad_ibd_an, term, term_id, qualifier]
+REDUNDANT_SAME_NODE_IBDS = """
+select n.public_id, gc.accession, redundant_annots.* from
+(
+	select pa.node_id, pa.classification_id, pe2.confidence_code, q.qualifier, count(*) from paint_annotation pa
+	join (select distinct cc.confidence_code, pe.annotation_id from paint_evidence pe 
+		join confidence_code cc on cc.confidence_code_sid = pe.confidence_code_sid
+		where pe.obsolescence_date is null
+	) pe2 on pe2.annotation_id = pa.annotation_id
+	left join paint_annotation_qualifier paq on paq.annotation_id = pa.annotation_id
+	left join qualifier q on q.qualifier_id = paq.qualifier_id
+	where pa.obsolescence_date is null
+	group by pa.node_id, pa.classification_id, pe2.confidence_code, q.qualifier having count(*) > 1
+) redundant_annots
+join node n on n.node_id = redundant_annots.node_id
+join go_classification gc on gc.classification_id = redundant_annots.classification_id;
+"""
 
 have_nots = {}
 evs_to_update = {}
