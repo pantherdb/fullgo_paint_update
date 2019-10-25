@@ -178,6 +178,13 @@ record_db_import_date:
 check_dups:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql
 
+load_raw_go_to_paint:
+	# Primarily for testing
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/load_raw_go.sql -v '{"panther_version": "$(PANTHER_VERSION)"}'
+
+reset_paint_table:
+	python3 scripts/db_caller.py scripts/sql/util/reset_paint_table.sql -v '{"table_name": "$(TABLE_NAME)"}'
+
 update_paint_go_classification:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification.sql
 	# python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql	# Check for dups in relationship table?
@@ -213,6 +220,7 @@ update_comments_status:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_term_obsoleted.sql
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_term_not_obsoleted.sql
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_lost_leaf_annots.sql	### SET CORRECT DATE IN THIS SCRIPT BEFORE RUNNING (SHOULD BE DATE OF paint_annotation TABLE UPDATE)
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_unobsoleted_ibds.sql
 
 obsolete_redundant_ibds: setup_directories
 	mkdir -p $(BASE_PATH)/resources/sql/cache

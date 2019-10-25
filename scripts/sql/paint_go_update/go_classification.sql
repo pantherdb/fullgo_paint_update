@@ -53,3 +53,28 @@ insert into go_classification_relationship_new(classification_relationship_id,pa
   from goobo_parent_child ts 
   join go_classification_new c1 on c1.accession=ts.parent_go 
   join go_classification_new c2 on c2.accession=ts.child_go;
+
+-- Make view and regen each update - do we need _old and _new views? Probs not.
+-- This only traverses is_a relationships. No part_ofs are valid in this.
+set search_path=panther_upl;
+DROP MATERIALIZED VIEW panther_upl.go_classification_descendants;
+
+CREATE MATERIALIZED VIEW panther_upl.go_classification_descendants AS 
+  with recursive descendants as (
+		select parent_classification_id, child_classification_id
+		from go_classification_relationship_new
+		where parent_classification_id in (select classification_id from go_classification_new)
+		union
+		select gcr.parent_classification_id, gcr.child_classification_id
+		from go_classification_relationship_new gcr
+		inner join descendants d on d.child_classification_id = gcr.parent_classification_id
+	) select dd.parent_classification_id, array_to_string(array_agg(dd.child_classification_id), ',') as desc_classification_ids
+	from descendants dd
+	group by dd.parent_classification_id;
+
+ALTER TABLE panther_upl.go_classification_descendants
+  OWNER TO panther_isp;
+GRANT ALL ON TABLE panther_upl.go_classification_descendants TO panther_isp;
+GRANT ALL ON TABLE panther_upl.go_classification_descendants TO panther_users;
+GRANT ALL ON TABLE panther_upl.go_classification_descendants TO panther_paint;
+GRANT ALL ON TABLE panther_upl.go_classification_descendants TO panther_upl;

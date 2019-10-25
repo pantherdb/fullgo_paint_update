@@ -1,24 +1,24 @@
 -- DATE-DEPENDENT; MUST BE UPDATED EACH RUN TO DATE paint_annotation TABLE WAS UPDATED
 
 -- find the panther families that have IBD annotations loses all the evidental leaf experimental annotations
-set search_path=panther_upl;
-select distinct c.accession from paint_annotation_new pa, paint_evidence_new pe, node n, classification c
-where pa.annotation_id not in (
-  select pe.annotation_id
-  from paint_evidence_new pe, paint_annotation_new pa
-  where pe.annotation_id = pa.annotation_id
-  and pe.evidence_type_sid = 46
-  and pe.obsoleted_by is null
-)
-and pa.annotation_id = pe.annotation_id
-and pe.evidence_type_sid = 46
-and pa.obsolescence_date > '2018-09-26'
-and pa.obsoleted_by = 1
-and pa.node_id = n.node_id
-and n.classification_version_sid = {classification_version_sid}
-and split_part(n.accession, ':', 1) = c.accession
-and c.depth = 5
-and c.classification_version_sid = {classification_version_sid};
+-- set search_path=panther_upl;
+-- select distinct c.accession from paint_annotation_new pa, paint_evidence_new pe, node n, classification c
+-- where pa.annotation_id not in (
+--   select pe.annotation_id
+--   from paint_evidence_new pe, paint_annotation_new pa
+--   where pe.annotation_id = pa.annotation_id
+--   and pe.evidence_type_sid = 46
+--   and pe.obsoleted_by is null
+-- )
+-- and pa.annotation_id = pe.annotation_id
+-- and pe.evidence_type_sid = 46
+-- and pa.obsolescence_date > '2018-09-26'
+-- and pa.obsoleted_by = 1
+-- and pa.node_id = n.node_id
+-- and n.classification_version_sid = {classification_version_sid}
+-- and split_part(n.accession, ':', 1) = c.accession
+-- and c.depth = 5
+-- and c.classification_version_sid = {classification_version_sid};
 
 --update curation_status_new table for the families with paint_annotation lost all evidence leaf annotations to 'Require paint review'
 set search_path = panther_upl;
@@ -35,7 +35,7 @@ and pe.evidence_type_sid = 46
 and pe.obsoleted_by is null)
 and pa.annotation_id = pe.annotation_id
 and pe.evidence_type_sid = 46
-and pa.obsolescence_date > '2018-09-26' -- need to update the date every time
+and pa.obsolescence_date > '2019-10-24' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
 and n.classification_version_sid = {classification_version_sid}
@@ -59,7 +59,7 @@ and pe.evidence_type_sid = 46
 and pe.obsoleted_by is null)
 and pa.annotation_id = pe.annotation_id
 and pe.evidence_type_sid = 46
-and pa.obsolescence_date > '2018-09-26' -- need to update the date every time
+and pa.obsolescence_date > '2019-10-24' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
 and n.classification_version_sid = {classification_version_sid}
@@ -88,7 +88,7 @@ and pe.evidence_type_sid = 46
 and pe.obsoleted_by is null)
 and pa.annotation_id = pe.annotation_id
 and pe.evidence_type_sid = 46
-and pa.obsolescence_date > '2018-09-26' -- need to update the date every time
+and pa.obsolescence_date > '2019-10-24' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
 and n.classification_version_sid = {classification_version_sid}
@@ -119,7 +119,7 @@ and pe.evidence_type_sid = 46
 and pe.obsoleted_by is null)
 and pa.annotation_id = pe.annotation_id
 and pe.evidence_type_sid = 46
-and pa.obsolescence_date > '2018-09-26' -- need to update the date every time
+and pa.obsolescence_date > '2019-10-24' -- need to update the date every time
 and pa.obsoleted_by = 1
 and pa.node_id = n.node_id
 and n.classification_version_sid = {classification_version_sid}
