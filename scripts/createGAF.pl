@@ -249,15 +249,18 @@ close (QA);
 ##################################
 
 my %experimental_seqs;
+my %exp_qualifier;
 open (GA, $go_aggregate) or die "Could not open file $go_aggregate\n";
 while (my $line=<GA>){
     chomp $line;
-    my ($annotation_id, $an, $go, $type, $evidence_id, $evidence, $confidence, $qualifier)=split(/\;/, $line);
+    my ($annotation_id, $an, $go, $type, $evidence_id, $evidence, $confidence, $exp_qual, $rest)=split(/\;/, $line);
     next unless ($confidence=~/IDA|EXP|IMP|IPI|IGI|IEP/);
-    if ($qual =~/CONTRIBUTES|COLOCALIZES/){
-        $qual=~tr/[A-Z]/[a-z]/;
+    if ($exp_qual =~/CONTRIBUTES|COLOCALIZES/){
+        $exp_qual=~tr/[A-Z]/[a-z]/;
     }
     $experimental_seqs{$annotation_id}=$an;
+    $longId = $leaf{$an};
+    $exp_qualifier{$longId}{$go}{$evidence_id}{$exp_qual}=1;  # Need to track by evidence_id
 }
 
 close (GA);
@@ -482,6 +485,16 @@ foreach my $annotation_id (keys %annotation){
     }
     if (defined $node_genes{$ptn}){
         foreach my $gene (keys %{$node_genes{$ptn}}){
+            if (defined $exp_qualifier{$gene} && defined $exp_qualifier{$gene}{$go}){
+                foreach my $ev_id (keys %{$exp_qualifier{$gene}{$go}}){
+                    foreach my $exp_qual (keys %{$exp_qualifier{$gene}{$go}{$ev_id}}){
+                        if ((($exp_qual eq 'NOT' || $exp_qual eq '') && ($qual eq 'NOT' || $qual eq '')) && !($exp_qual eq $qual)){
+                            # Add leaf to not_genes if leaf has exp_qualifier disagreement w/ IBD - only checking NOTs
+                            $not_genes{$gene}=1;
+                        }
+                    }
+                }
+            }
             next if (defined $not_genes{$gene});
             my $short_id;
             if (defined $id_lookup{$gene}){
