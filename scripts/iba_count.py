@@ -71,6 +71,30 @@ def get_ibd_counts_from_dir(dir_path, mods_only=None):
     return ibd_nodes
 
 
+def get_iba_gafs_by_ibd_ptn(ibd_ptn, dir_path, mods_only=None):
+    found_lines = []
+    for gaf in os.listdir(dir_path):
+        with open("{}/{}".format(dir_path, gaf)) as gaf_f:
+            for l in gaf_f.readlines():
+                if not l.startswith("!"):
+                    parts = l.split("\t")
+                    if mods_only:
+                        taxon = parts[12]
+                        if taxon not in MOD_ORGS:
+                            continue
+                    with_from = parts[7]
+                    with_froms = with_from.split("|")
+                    # Assuming PANTHER is first
+                    panther_ibd = with_froms[0]
+                    try:
+                        ibd_node = panther_ibd.split(":")[1]
+                    except:
+                        print(panther_ibd)
+                        ibd_node = panther_ibd.split(":")[1]
+                    if ibd_node == ibd_ptn:
+                        found_lines.append(l)
+
+
 def get_family_for_ptn(node_ptn, cls_ver_id):
     return FAM_LOOKUP[cls_ver_id].get(node_ptn)
 
@@ -157,6 +181,20 @@ if __name__ == "__main__":
                 # print(row_vals)
                 writer.writerow(row_vals)
                 sheet.append_row(row_vals)
+
+    # Construct A and B GAFs for only affected PTNs
+    base_path = A_DATA["iba_gaf_path"].replace("/IBA_GAFs", "")
+    with open("{}/affected_ibas.gaf".format(base_path), "w") as gaf_a:
+        # affected_ptns = set(ibd_nodes_a.keys()) + set(ibd_nodes_b.keys())
+        affected_ptns = set(ibd_nodes_a.keys())
+        for ptn in affected_ptns:
+            gaf_a.writelines(get_iba_gafs_by_ibd_ptn(ptn, A_DATA["iba_gaf_path"], args.mods_only))
+
+    base_path = B_DATA["iba_gaf_path"].replace("/IBA_GAFs", "")
+    with open("{}/affected_ibas.gaf".format(base_path), "w") as gaf_b:
+        affected_ptns = set(ibd_nodes_b.keys())
+        for ptn in affected_ptns:
+            gaf_b.writelines(get_iba_gafs_by_ibd_ptn(ptn, B_DATA["iba_gaf_path"], args.mods_only))
 
     outf.close()
     handler.publish_sheet(sheet)
