@@ -93,6 +93,7 @@ def get_iba_gafs_by_ibd_ptn(ibd_ptn, dir_path, mods_only=None):
                         ibd_node = panther_ibd.split(":")[1]
                     if ibd_node == ibd_ptn:
                         found_lines.append(l)
+    return found_lines
 
 
 def get_family_for_ptn(node_ptn, cls_ver_id):
