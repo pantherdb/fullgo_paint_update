@@ -153,6 +153,7 @@ if __name__ == "__main__":
     writer.writerow(headers)
     sheet.append_row(headers)
     
+    affected_ptns = set()
     for n in ibd_nodes_a:
         for term in ibd_nodes_a[n]:
             a_term_count = query_ds_by_ptn_and_term(ibd_nodes_a, n, term)
@@ -168,6 +169,7 @@ if __name__ == "__main__":
                 # print(row_vals)
                 writer.writerow(row_vals)
                 sheet.append_row(row_vals)
+                affected_ptns.add(n)
 
     # After A is exhaustively checked, go through B, skipping entries where already matching A by node AND term.
     for n in ibd_nodes_b:
@@ -182,18 +184,19 @@ if __name__ == "__main__":
                 # print(row_vals)
                 writer.writerow(row_vals)
                 sheet.append_row(row_vals)
+                affected_ptns.add(n)
 
     # Construct A and B GAFs for only affected PTNs
     base_path = A_DATA["iba_gaf_path"].replace("/IBA_GAFs", "")
     with open("{}/affected_ibas.gaf".format(base_path), "w") as gaf_a:
         # affected_ptns = set(ibd_nodes_a.keys()) + set(ibd_nodes_b.keys())
-        affected_ptns = set(ibd_nodes_a.keys())
+        # affected_ptns = set(ibd_nodes_a.keys())
         for ptn in affected_ptns:
             gaf_a.writelines(get_iba_gafs_by_ibd_ptn(ptn, A_DATA["iba_gaf_path"], args.mods_only))
 
     base_path = B_DATA["iba_gaf_path"].replace("/IBA_GAFs", "")
     with open("{}/affected_ibas.gaf".format(base_path), "w") as gaf_b:
-        affected_ptns = set(ibd_nodes_b.keys())
+        # affected_ptns = set(ibd_nodes_b.keys())
         for ptn in affected_ptns:
             gaf_b.writelines(get_iba_gafs_by_ibd_ptn(ptn, B_DATA["iba_gaf_path"], args.mods_only))
 
