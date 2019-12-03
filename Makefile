@@ -348,6 +348,8 @@ repair_gaf_symbols:
 
 run_reports:
 	python3 scripts/iba_count.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml
+	diff -u $(BASE_PATH)/preupdate_data/affected_ibas.gaf $(BASE_PATH)/affected_ibas.gaf | grep -E "^\-" > $(BASE_PATH)/dropped_ibas_filtered_raw
+	grep -v "Created on" $(BASE_PATH)/dropped_ibas_filtered_raw | grep -v "$(BASE_PATH)" | sed 's/^-//' > $(BASE_PATH)/dropped_IBAs_filtered
 	python3 scripts/iba_count.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml --mods_only
 	python3 scripts/version_paint_annot_counts.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml --reload_data
 
