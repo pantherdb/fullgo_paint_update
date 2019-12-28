@@ -58,7 +58,7 @@ where not exists (
 	where annotation_id = x.paint_annotation_id and evidence = x.go_annotation_id::varchar(255)
 	and evidence_type_sid = 46 and confidence_code_sid = 15
 	and obsolescence_date is null
-)
+);
 
 --Update evidence column to correct, non-obsolete GO annotation for PAINT ANCESTOR evidence records and mark un-obsoleted
 set search_path=panther_upl;
