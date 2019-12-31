@@ -485,15 +485,24 @@ foreach my $annotation_id (keys %annotation){
     }
     if (defined $node_genes{$ptn}){
         foreach my $gene (keys %{$node_genes{$ptn}}){
+            my %positive_quals = (''=>1, 'colocalizes_with'=>1, 'contributes_to'=>1);  # no qualifier, colocalizes_with, and contributes_to are considered positive
+            my %negative_quals = ('NOT'=>1);  # NOT is negative
+            my $qual_supported=0;
             if (defined $exp_qualifier{$gene} && defined $exp_qualifier{$gene}{$go}){
                 foreach my $ev_id (keys %{$exp_qualifier{$gene}{$go}}){
                     foreach my $exp_qual (keys %{$exp_qualifier{$gene}{$go}{$ev_id}}){
-                        if ((($exp_qual eq 'NOT' || $exp_qual eq '') && ($qual eq 'NOT' || $qual eq '')) && !($exp_qual eq $qual)){
-                            # Add leaf to not_genes if leaf has exp_qualifier disagreement w/ IBD - only checking NOTs
-                            $not_genes{$gene}=1;
+                        if ((exists($positive_quals{$exp_qual}) && exists($positive_quals{$qual})) || (exists($negative_quals{$exp_qual}) && exists($negative_quals{$qual}))) {
+                            # IBA qualifier is valid if agreement w/ any same-term experimental annotation qualifier
+                            $qual_supported=1;
                         }
                     }
                 }
+            } else {
+                # No same-term experimental annotations that could possibly contradict qualifier? Then it's good
+                $qual_supported=1;
+            }
+            if (!$qual_supported) {
+                $not_genes{$gene}=1;
             }
             next if (defined $not_genes{$gene});
             my $short_id;
