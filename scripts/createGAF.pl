@@ -491,7 +491,7 @@ foreach my $annotation_id (keys %annotation){
             if (defined $exp_qualifier{$gene} && defined $exp_qualifier{$gene}{$go}){
                 foreach my $ev_id (keys %{$exp_qualifier{$gene}{$go}}){
                     foreach my $exp_qual (keys %{$exp_qualifier{$gene}{$go}{$ev_id}}){
-                        if ((exists($positive_quals{$exp_qual}) && exists($positive_quals{$qual})) || (exists($negative_quals{$exp_qual}) && exists($negative_quals{$qual}))) {
+                        if ($qual eq $exp_qual) {
                             # IBA qualifier is valid if agreement w/ any same-term experimental annotation qualifier
                             $qual_supported=1;
                         }
