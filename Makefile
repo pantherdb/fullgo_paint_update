@@ -25,7 +25,7 @@ export CLS_VER_ID = 25
 export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/identifier.dat
 export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr14_code_taxId.txt
-else
+else ifeq ($(PANTHER_VERSION),14.1)
 export PANTHER_VERSION_DATE = 20190312
 export CLS_VER_ID = 26
 export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/identifier.dat
@@ -33,6 +33,14 @@ export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/
 export TAXON_ID_PATH = scripts/pthr14_1_code_taxId.txt
 export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/node.dat
 export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/treeNodes
+else
+export PANTHER_VERSION_DATE = 20200214
+export CLS_VER_ID = 27
+export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/identifier.dat
+export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/gene.dat
+export TAXON_ID_PATH = scripts/pthr15_code_taxId.txt
+export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/node.dat
+export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/treeNodes
 endif
 
 ########## GAF CREATION ##########
@@ -74,10 +82,12 @@ export PAINT_ANNOT_B_TABLE = paint_annotation
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH)
 	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A "gaf.gz" http://current.geneontology.org/annotations/
+	wget -P $(GAF_FILES_PATH) http://current.geneontology.org/products/annotations/paint_other.gaf.gz
+	wget -P $(BASE_PATH) http://current.geneontology.org/metadata/release-date.json
+	wget -P $(BASE_PATH) http://current.geneontology.org/metadata/release-archive-doi.json
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/go.obo
-	sleep 5
 	$(MAKE) make_profile
 	$(MAKE) make_readme
 
@@ -123,7 +133,7 @@ format_taxon_term_table:
 	#  run taxa --contexts resources/go_context.jsonld --ontfile true resources/go-plus.owl resources/paint_taxons.txt new_table_file
 	#  exit
 	# Process new_table_file:
-	#  python3 scripts/taxon_to_oscode.py -t new_table_file -s resources/paint_taxons_14_1.txt -o taxon_term_table_converted
+	#  python3 scripts/taxon_to_oscode.py -t new_table_file -s resources/paint_taxons_14_1.txt -r resources/RefProt_README_14 -o taxon_term_table_converted
 	#  python3 scripts/taxon_validate.py -t taxon_term_table_converted -p resources/species_pthr14_annot_redo.nhx -o TaxonConstraintsLookup.txt
 	#  python3 scripts/taxon_validate.py -t taxon_term_table_converted -p resources/species_pthr14_annot_redo.nhx -s resources/panther14slim_terms.txt -o TaxonConstraintsLookup14Slim.txt
 	@echo "Under construction"
@@ -132,7 +142,7 @@ get_fullgo_date:
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
 
 make_profile:
-	sed 's/GO_VERSION_DATE/$(shell date -r $(shell ls $(FULL_GAF_FILES_PATH)/*.gaf | head -n 1) +%Y-%m-%d)/g' profile.txt | envsubst > $(BASE_PATH)/profile.txt
+	python3 scripts/create_profile.py -j $(BASE_PATH)/release-date.json -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
 
 make_profile_from_db:
 	# query DB table fullgo_version - likely w/ python

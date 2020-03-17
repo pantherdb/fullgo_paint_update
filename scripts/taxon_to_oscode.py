@@ -26,6 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--taxon_term_table")
 parser.add_argument("-s", "--species_taxons")
 parser.add_argument("-o", "--outfile")
+parser.add_argument("-r", "--ref_prot_readme")
 args = parser.parse_args()
 
 # Command-ify this script to separate slurm from no-slurm (internet-required)
@@ -41,7 +42,7 @@ EXCEPTION_NAME_REPLACEMENTS = {
 # Download or locate RefProt readme
 
 # Get all taxonID-to-OSCode mappings from ref prot
-with open("resources/RefProt_README") as rf:
+with open(args.ref_prot_readme) as rf:
     taxon_to_os = {}
     oscodes = []
     for l in rf.readlines():
@@ -83,6 +84,7 @@ with open(args.species_taxons) as pf:
 # Locate
 
 # Get OS codes existing in current TaxonConstraintsLookup.txt PAINT file - check if there are any mappings missing
+# This is specific to version 13-ish taxon list - can ignore now but can use later for QA
 with open("resources/taxon_constraints_taxons.tsv") as ctf:
     required_taxons = []
     for l in ctf.readlines():
