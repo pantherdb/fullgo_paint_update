@@ -19,5 +19,5 @@ if __name__ == "__main__":
         doi = doi_j['doi']
 
     print("\t".join(["GO", release_date]))
-    print("\t".join(["GO DOI", doi]))
+    print("\t".join(["DOI GO", doi]))
     print("\t".join(["PANTHER", f"v.{args.panther_version}"]))
