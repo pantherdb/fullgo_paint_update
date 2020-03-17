@@ -142,7 +142,7 @@ get_fullgo_date:
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
 
 make_profile:
-	python3 scripts/create_profile.py -j $(BASE_PATH)/release-date.json -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
+	python3 scripts/create_profile.py -j $(BASE_PATH)/release-date.json -d $(BASE_PATH)/release-archive-doi.json -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
 
 make_profile_from_db:
 	# query DB table fullgo_version - likely w/ python
