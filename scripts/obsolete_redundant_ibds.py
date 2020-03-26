@@ -7,17 +7,19 @@
 # import sys
 # sys.path.append("scripts")
 
-from pthr_db_caller.db_caller import DBCaller
+from pthr_db_caller.db_caller import DBCaller, DBCallerConfig
 from pthr_db_caller.panther_tree_graph import PantherTreeGraph
 from pthr_db_caller.pthr_comment_helper import PthrCommentHelper
 from pthr_db_caller.curation_status_model import PaintCurationStatusHelper
 import csv
 import argparse
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('library_path')
 parser.add_argument('table_suffix')
 parser.add_argument('cachefile')
+parser.add_argument("-c", "--config_file")
 
 args = parser.parse_args()
 
@@ -26,18 +28,24 @@ args = parser.parse_args()
 TABLE_SUFFIX = args.table_suffix
 # LIB_DIR = "/home/pmd-02/pdt/pdthomas/panther/famlib/rel/PANTHER14.1"  # HPC
 # LIB_DIR = "resources/tree_files"  # local
-LIB_DIR = args.library_path  # TODO: BuildConfig parameter?
+# LIB_DIR = args.tree_files_dir
+ignore_cache = False
 
-CALLER = DBCaller()
+if args.config_file:
+    config = DBCallerConfig(config_path=args.config_file)
+else:
+    config = DBCallerConfig()
+CALLER = DBCaller(config=config)
 COMMENT_HELPER = PthrCommentHelper(comments_tablename="comments{}".format(TABLE_SUFFIX), classification_version_sid=26)
 CURATION_STATUS_HELPER = PaintCurationStatusHelper(curation_status_tablename="curation_status{}".format(TABLE_SUFFIX), classification_version_sid=26)
+LIB_DIR = config.query_variables.get("tree_files_dir")
 
 QUERY = """
 select distinct split_part(na.accession, ':', 1) as family, paa.annotation_id anc_annotation_id, na.public_id ancestor_ptn, na.accession ancestor_an, pa.annotation_id desc_annotation_id, n.public_id descendant_ptn, n.accession descendant_an, gc.accession, gc.classification_id, q.qualifier
 from panther_upl.paint_annotation{table_suffix} pa
 join panther_upl.paint_evidence{table_suffix} pe on pe.annotation_id = pa.annotation_id
 join panther_upl.node n on n.node_id = pa.node_id
-join (select child_node_acc, unnest(string_to_array(ancestor_node_acc, ',')) as ancestor from panther_upl.node_all_ancestors_v14_1) naa on naa.child_node_acc = n.accession
+join (select child_node_acc, unnest(string_to_array(ancestor_node_acc, ',')) as ancestor from panther_upl.node_all_ancestors) naa on naa.child_node_acc = n.accession
 join panther_upl.node na on na.accession = naa.ancestor
 join panther_upl.paint_annotation{table_suffix} paa on paa.node_id = na.node_id and paa.classification_id = pa.classification_id
 join panther_upl.paint_evidence{table_suffix} pea on pea.annotation_id = paa.annotation_id
@@ -45,8 +53,8 @@ join panther_upl.go_classification{table_suffix} gc on gc.classification_id = pa
 left join panther_upl.paint_annotation_qualifier{table_suffix} paq on paq.annotation_id = pa.annotation_id
 left join panther_upl.paint_annotation_qualifier{table_suffix} paaq on paaq.annotation_id = paa.annotation_id
 left join panther_upl.qualifier q on q.qualifier_id = paq.qualifier_id
-where n.classification_version_sid = 26
-and na.classification_version_sid = 26
+where n.classification_version_sid = {classification_version_sid}
+and na.classification_version_sid = {classification_version_sid}
 and pa.obsolescence_date is null
 and paa.obsolescence_date is null
 and pe.confidence_code_sid = 15  -- IBD
@@ -55,20 +63,26 @@ and (paq.qualifier_id = paaq.qualifier_id or (paq.qualifier_id is null and paaq.
 """.format(table_suffix=TABLE_SUFFIX)
 
 # cachefile = "resources/sql/cache/obsolete_redundant_ibds.txt"
-ibd_results = CALLER.run_cmd_line_args(QUERY.rstrip(), no_header_footer=True, rows_outfile=args.cachefile)
-red_ibds = ibd_results[1:]  # skip header row
+ignore_cache = True
 
-# with open(cachefile) as rf:
-#     reader = csv.reader(rf, delimiter=";")
-#     red_ibds = []
-#     next(reader)  # skip header row
-#     for r in reader:
-#         red_ibds.append(r)
+if ignore_cache:
+    ibd_results = CALLER.run_cmd_line_args(QUERY.rstrip(), no_header_footer=True, rows_outfile=args.cachefile)
+    red_ibds = ibd_results[1:]  # skip header row
+else:
+    with open(args.cachefile) as rf:
+        reader = csv.reader(rf, delimiter=";")
+        red_ibds = []
+        next(reader)  # skip header row
+        for r in reader:
+            red_ibds.append(r)
 
 def get_nodes_between(ancestor_an, descendant_an, family):
     # How about we try parsing tree files?
-    tree_graph = PantherTreeGraph("{}/books/{}/tree.tree".format(LIB_DIR, family))  # HPC
-    # tree_graph = PantherTreeGraph("{}/{}.tree".format(LIB_DIR, family))  # local
+    tree_filepath = f"{LIB_DIR}/{family}.tree"
+    if not os.path.exists(tree_filepath):
+        tree_filepath = tree_filepath.replace(".tree", ".orig.tree")
+    # tree_graph = PantherTreeGraph("{}/books/{}/tree.tree".format(LIB_DIR, family))  # HPC
+    tree_graph = PantherTreeGraph(tree_filepath)  # local
     return tree_graph.nodes_between(ancestor_an, descendant_an)
 
 # btwn_nodes = get_nodes_between("PTN002469673", "PTN000031802", "PTHR10283")
@@ -130,7 +144,7 @@ for ibd in red_ibds:
             select pa.annotation_id from panther_upl.paint_annotation{table_suffix} pa
             join panther_upl.paint_evidence{table_suffix} pe on pe.annotation_id = pa.annotation_id
             join panther_upl.node n on n.node_id = pa.node_id
-            where n.classification_version_sid = 26
+            where n.classification_version_sid = {classification_version_sid}
             and pa.classification_id = {classification_id}
             and pe.evidence_type_sid = 47
             and pe.confidence_code_sid = 17
