@@ -36,8 +36,9 @@ if args.config_file:
 else:
     config = DBCallerConfig()
 CALLER = DBCaller(config=config)
-COMMENT_HELPER = PthrCommentHelper(comments_tablename="comments{}".format(TABLE_SUFFIX), classification_version_sid=26)
-CURATION_STATUS_HELPER = PaintCurationStatusHelper(curation_status_tablename="curation_status{}".format(TABLE_SUFFIX), classification_version_sid=26)
+CLS_VER_SID = config.query_variables.get("classification_version_sid")
+COMMENT_HELPER = PthrCommentHelper(comments_tablename="comments{}".format(TABLE_SUFFIX), classification_version_sid=CLS_VER_SID)
+CURATION_STATUS_HELPER = PaintCurationStatusHelper(curation_status_tablename="curation_status{}".format(TABLE_SUFFIX), classification_version_sid=CLS_VER_SID)
 LIB_DIR = config.query_variables.get("tree_files_dir")
 
 QUERY = """
@@ -60,7 +61,7 @@ and paa.obsolescence_date is null
 and pe.confidence_code_sid = 15  -- IBD
 and pea.confidence_code_sid = 15  -- IBD
 and (paq.qualifier_id = paaq.qualifier_id or (paq.qualifier_id is null and paaq.qualifier_id is null));
-""".format(table_suffix=TABLE_SUFFIX)
+""".format(table_suffix=TABLE_SUFFIX, classification_version_sid=CLS_VER_SID)
 
 # cachefile = "resources/sql/cache/obsolete_redundant_ibds.txt"
 ignore_cache = True
@@ -149,7 +150,7 @@ for ibd in red_ibds:
             and pe.evidence_type_sid = 47
             and pe.confidence_code_sid = 17
             and n.accession in ('{nodes}');
-        """.format(table_suffix=TABLE_SUFFIX, classification_id=term_id, nodes="','".join(query_node_list))
+        """.format(table_suffix=TABLE_SUFFIX, classification_id=term_id, nodes="','".join(query_node_list), classification_version_sid=CLS_VER_SID)
 
         not_results = CALLER.run_cmd_line_args(not_query.rstrip(), no_header_footer=True)
         if len(not_results) > 1:
