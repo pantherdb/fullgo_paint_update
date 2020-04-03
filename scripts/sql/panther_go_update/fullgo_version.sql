@@ -3,7 +3,7 @@
 ALTER TABLE fullgo_version_old RENAME TO fullgo_version_new;
 Truncate table fullgo_version_new;
 INSERT INTO fullgo_version_new(
-        go_annotation_format_version, go_annotation_release_date, panther_version, 
+        go_annotation_format_version, go_annotation_release_date, go_annotation_doi, panther_version, 
         panther_release_date)
-VALUES ('1.2', to_date('{go_release_date}','YYYYMMDD'), '{panther_version}', 
+VALUES ('1.2', to_date('{go_release_date}','YYYYMMDD'), '{go_doi}', '{panther_version}', 
         to_date('{panther_version_date}','YYYYMMDD'));

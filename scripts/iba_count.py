@@ -71,6 +71,31 @@ def get_ibd_counts_from_dir(dir_path, mods_only=None):
     return ibd_nodes
 
 
+def get_iba_gafs_by_ibd_ptn_list(ibd_ptns, dir_path, mods_only=None):
+    found_lines = []
+    for gaf in os.listdir(dir_path):
+        with open("{}/{}".format(dir_path, gaf)) as gaf_f:
+            for l in gaf_f.readlines():
+                if not l.startswith("!"):
+                    parts = l.split("\t")
+                    if mods_only:
+                        taxon = parts[12]
+                        if taxon not in MOD_ORGS:
+                            continue
+                    with_from = parts[7]
+                    with_froms = with_from.split("|")
+                    # Assuming PANTHER is first
+                    panther_ibd = with_froms[0]
+                    try:
+                        ibd_node = panther_ibd.split(":")[1]
+                    except:
+                        print(panther_ibd)
+                        ibd_node = panther_ibd.split(":")[1]
+                    if ibd_node in ibd_ptns:
+                        found_lines.append(l)
+    return found_lines
+
+
 def get_family_for_ptn(node_ptn, cls_ver_id):
     return FAM_LOOKUP[cls_ver_id].get(node_ptn)
 
@@ -128,6 +153,7 @@ if __name__ == "__main__":
     writer.writerow(headers)
     sheet.append_row(headers)
     
+    affected_ptns = set()
     for n in ibd_nodes_a:
         for term in ibd_nodes_a[n]:
             a_term_count = query_ds_by_ptn_and_term(ibd_nodes_a, n, term)
@@ -143,6 +169,7 @@ if __name__ == "__main__":
                 # print(row_vals)
                 writer.writerow(row_vals)
                 sheet.append_row(row_vals)
+                affected_ptns.add(n)
 
     # After A is exhaustively checked, go through B, skipping entries where already matching A by node AND term.
     for n in ibd_nodes_b:
@@ -157,6 +184,18 @@ if __name__ == "__main__":
                 # print(row_vals)
                 writer.writerow(row_vals)
                 sheet.append_row(row_vals)
+                affected_ptns.add(n)
+
+    # For now, only concerned with producing full (not MOD-filtered) list of affected IBAs
+    if not args.mods_only:
+        # Construct A and B GAFs for only affected PTNs
+        base_path = A_DATA["iba_gaf_path"].replace("/IBA_GAFs", "")
+        with open("{}/affected_ibas.gaf".format(base_path), "w") as gaf_a:
+            gaf_a.writelines(get_iba_gafs_by_ibd_ptn_list(affected_ptns, A_DATA["iba_gaf_path"], args.mods_only))
+
+        base_path = B_DATA["iba_gaf_path"].replace("/IBA_GAFs", "")
+        with open("{}/affected_ibas.gaf".format(base_path), "w") as gaf_b:
+            gaf_b.writelines(get_iba_gafs_by_ibd_ptn_list(affected_ptns, B_DATA["iba_gaf_path"], args.mods_only))
 
     outf.close()
     handler.publish_sheet(sheet)

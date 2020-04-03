@@ -25,7 +25,7 @@ export CLS_VER_ID = 25
 export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/identifier.dat
 export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.0/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr14_code_taxId.txt
-else
+else ifeq ($(PANTHER_VERSION),14.1)
 export PANTHER_VERSION_DATE = 20190312
 export CLS_VER_ID = 26
 export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/identifier.dat
@@ -33,6 +33,14 @@ export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/
 export TAXON_ID_PATH = scripts/pthr14_1_code_taxId.txt
 export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/node.dat
 export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/treeNodes
+else
+export PANTHER_VERSION_DATE = 20200214
+export CLS_VER_ID = 27
+export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/identifier.dat
+export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/gene.dat
+export TAXON_ID_PATH = scripts/pthr15_code_taxId.txt
+export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/node.dat
+export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/treeNodes
 endif
 
 ########## GAF CREATION ##########
@@ -74,10 +82,12 @@ export PAINT_ANNOT_B_TABLE = paint_annotation
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH)
 	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A "gaf.gz" http://current.geneontology.org/annotations/
+	wget -P $(GAF_FILES_PATH) http://current.geneontology.org/products/annotations/paint_other.gaf.gz
+	wget -P $(BASE_PATH) http://current.geneontology.org/metadata/release-date.json
+	wget -P $(BASE_PATH) http://current.geneontology.org/metadata/release-archive-doi.json
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/go.obo
-	sleep 5
 	$(MAKE) make_profile
 	$(MAKE) make_readme
 
@@ -123,7 +133,7 @@ format_taxon_term_table:
 	#  run taxa --contexts resources/go_context.jsonld --ontfile true resources/go-plus.owl resources/paint_taxons.txt new_table_file
 	#  exit
 	# Process new_table_file:
-	#  python3 scripts/taxon_to_oscode.py -t new_table_file -s resources/paint_taxons_14_1.txt -o taxon_term_table_converted
+	#  python3 scripts/taxon_to_oscode.py -t new_table_file -s resources/paint_taxons_14_1.txt -r resources/RefProt_README_14 -o taxon_term_table_converted
 	#  python3 scripts/taxon_validate.py -t taxon_term_table_converted -p resources/species_pthr14_annot_redo.nhx -o TaxonConstraintsLookup.txt
 	#  python3 scripts/taxon_validate.py -t taxon_term_table_converted -p resources/species_pthr14_annot_redo.nhx -s resources/panther14slim_terms.txt -o TaxonConstraintsLookup14Slim.txt
 	@echo "Under construction"
@@ -132,7 +142,7 @@ get_fullgo_date:
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
 
 make_profile:
-	sed 's/GO_VERSION_DATE/$(shell date -r $(shell ls $(FULL_GAF_FILES_PATH)/*.gaf | head -n 1) +%Y-%m-%d)/g' profile.txt | envsubst > $(BASE_PATH)/profile.txt
+	python3 scripts/create_profile.py -j $(BASE_PATH)/release-date.json -d $(BASE_PATH)/release-archive-doi.json -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
 
 make_profile_from_db:
 	# query DB table fullgo_version - likely w/ python
@@ -161,7 +171,7 @@ load_raw_go_to_panther:
 
 update_panther_new_tables:
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/go_classification.sql
-	python3 scripts/db_caller.py scripts/sql/panther_go_update/fullgo_version.sql -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "panther_version": "$(PANTHER_VERSION)", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/fullgo_version.sql -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "go_doi": "$(shell grep DOI $(BASE_PATH)/profile.txt | head -n 1 | cut -f2')", "panther_version": "$(PANTHER_VERSION)", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/genelist_agg.sql
 
 switch_panther_table_names:
@@ -178,10 +188,17 @@ record_db_import_date:
 check_dups:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql
 
+load_raw_go_to_paint:
+	# Primarily for testing
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/load_raw_go.sql -v '{"panther_version": "$(PANTHER_VERSION)"}'
+
+reset_paint_table:
+	python3 scripts/db_caller.py scripts/sql/util/reset_paint_table.sql -v '{"table_name": "$(TABLE_NAME)"}'
+
 update_paint_go_classification:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification.sql
 	# python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql	# Check for dups in relationship table?
-	python3 scripts/db_caller.py scripts/sql/paint_go_update/fullgo_version.sql -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "panther_version": "$(PANTHER_VERSION)", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/fullgo_version.sql -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "go_doi": "$(shell grep DOI $(BASE_PATH)/profile.txt | head -n 1 | cut -f2)", "panther_version": "$(PANTHER_VERSION)", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
 
 regen_go_classification_relationship:	# Incorporated into go_classification.sql, so shouldn't need to be run ever again
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_relationship.sql
@@ -213,6 +230,7 @@ update_comments_status:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_term_obsoleted.sql
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_term_not_obsoleted.sql
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_lost_leaf_annots.sql	### SET CORRECT DATE IN THIS SCRIPT BEFORE RUNNING (SHOULD BE DATE OF paint_annotation TABLE UPDATE)
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/comments_status_unobsoleted_ibds.sql
 
 obsolete_redundant_ibds: setup_directories
 	mkdir -p $(BASE_PATH)/resources/sql/cache
@@ -340,6 +358,8 @@ repair_gaf_symbols:
 
 run_reports:
 	python3 scripts/iba_count.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml
+	diff -u $(BASE_PATH)/preupdate_data/affected_ibas.gaf $(BASE_PATH)/affected_ibas.gaf | grep -E "^\-" > $(BASE_PATH)/dropped_ibas_filtered_raw
+	grep -v "Created on" $(BASE_PATH)/dropped_ibas_filtered_raw | grep -v "$(BASE_PATH)" | sed 's/^-//' > $(BASE_PATH)/dropped_IBAs_filtered
 	python3 scripts/iba_count.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml --mods_only
 	python3 scripts/version_paint_annot_counts.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml --reload_data
 

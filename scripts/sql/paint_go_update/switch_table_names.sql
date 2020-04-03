@@ -12,6 +12,8 @@ ALTER TABLE go_annotation RENAME TO go_annotation_old;
 ALTER TABLE go_annotation_new RENAME TO go_annotation;
 ALTER TABLE go_annotation_qualifier RENAME TO go_annotation_qualifier_old;
 ALTER TABLE go_annotation_qualifier_new RENAME TO go_annotation_qualifier;
+ALTER TABLE go_evidence_qualifier RENAME TO go_evidence_qualifier_old;
+ALTER TABLE go_evidence_qualifier_new RENAME TO go_evidence_qualifier;
 ALTER TABLE paint_annotation RENAME TO paint_annotation_old;
 ALTER TABLE paint_annotation_new RENAME TO paint_annotation;
 ALTER TABLE paint_evidence RENAME TO paint_evidence_old;
