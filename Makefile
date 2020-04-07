@@ -363,6 +363,16 @@ run_reports:
 	python3 scripts/iba_count.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml --mods_only
 	python3 scripts/version_paint_annot_counts.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml --reload_data
 
+	# Ex: python3 scripts/created_ibds_by_curator.py -b 2020-01-31 -a 2020-03-26 -p
+	python3 scripts/created_ibds_by_curator.py -b $(BEFORE_DATE) -a $(AFTER_DATE) -p
+	# Download and/or point to release folders. Ex: ftp://ftp.pantherdb.org/downloads/paint/14.1/2020-01-31/ and 2020-01-31
+	python3 scripts/compare_paint_releases.py -b $(BEFORE_DATE) -a $(AFTER_DATE) -p
+
+run_stats_report:
+	if $(BEFORE_PATH) != ?(http://*|ftp://*); then
+		echo "Invalid URL"
+	fi
+
 push_gafs_to_ftp:
 	@echo "Needs to be implemented"
 
