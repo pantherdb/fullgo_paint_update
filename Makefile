@@ -368,11 +368,6 @@ run_reports:
 	# Download and/or point to release folders. Ex: ftp://ftp.pantherdb.org/downloads/paint/14.1/2020-01-31/ and 2020-01-31
 	python3 scripts/compare_paint_releases.py -b $(BEFORE_DATE) -a $(AFTER_DATE) -p
 
-run_stats_report:
-	if $(BEFORE_PATH) != ?(http://*|ftp://*); then
-		echo "Invalid URL"
-	fi
-
 push_gafs_to_ftp:
 	@echo "Needs to be implemented"
 
