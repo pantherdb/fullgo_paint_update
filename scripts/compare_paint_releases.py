@@ -9,6 +9,7 @@ parser.add_argument('-b', '--before_release_folder_root')
 parser.add_argument('-a', '--after_release_folder_root')
 parser.add_argument('-s', '--startdate', help="Formatted like '20200201'")
 parser.add_argument('-p', '--publish_report', action='store_const', const=True)
+parser.add_argument('-o', '--skip_other', action='store_const', const=True)
 
 args = parser.parse_args()
 
@@ -117,7 +118,7 @@ def get_ibd_to_iba_counts(iba_folder, ibd_tuples):
     iba_count_by_file = {}
     all_iba_count_by_file = {}
     for iba_filename in os.listdir(iba_folder):
-        if "paint_other" in iba_filename:  # Only here to increase testing speed
+        if args.skip_other and "paint_other" in iba_filename:  # Only here to increase testing speed
             continue
         iba_file = os.path.join(iba_folder, iba_filename)
         print("Parsing", iba_file)
