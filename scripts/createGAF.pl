@@ -189,7 +189,7 @@ foreach my $file (@files){
                 }elsif ($geneId =~/WormBase/){
                     $geneId=~s/WormBase/WB/;
                     $shortId = $geneId;
-                }elsif ($geneId=~/^TAIR/){
+                }elsif ($geneId=~/^TAIR/ && !($geneId=~/^TAIR:locus:\d+/)){
                     $geneId=~s/^\w+\://;
                     if ($geneId eq 'locus'){
                         $proteinId=~s/^\w+\://;
