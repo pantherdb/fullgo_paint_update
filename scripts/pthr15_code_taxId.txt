@@ -1,0 +1,288 @@
+Aconoidasida	422676
+Actinobacteridae	85003
+Actinomycetales	2037
+Alphaproteobacteria	28211
+Alveolata	33630
+Alveolata-Stramenopiles	
+Amniota	32524
+Amoebozoa	554915
+ANOCA	28377
+ANOGA	7165
+Apicomplexa	5794
+AQUAE	224324
+ARATH	3702
+Archaea	2157
+Archaea-Eukaryota	
+Arthropoda	6656
+Artiodactyla	
+Ascomycota	4890
+ASHGO	284811
+Aspergillus	5052
+Bacillales	1385
+Bacillariophyta	2836
+Bacilli	91061
+Bacillus	1386
+BACCR	226900
+BACSU	224308
+Bacillus_cereus_group	
+BACTN	226186
+Bacteroidetes	976
+bacteroidetes-chlorobi	
+Basidiomycota	5204
+BATDJ	684364
+BEP_clade	
+Bilateria	33213
+Boreoeutheria	1437010
+BOVIN	9913
+BRADI	15368
+BRADU	224911
+BRAFL	7739
+Caenorhabditis	6237
+CAEBR	6238
+CAEEL	6239
+CANAL	237561
+CANLF	9615
+Carnivora	33554
+Catarrhini	9526
+CHLTR	272561
+CHLRE	3055
+CHLAA	324602
+Chordata	7711
+Chroococcales	1118
+Ciona	7718
+CIOIN	7719
+Clostridia	186801
+Clostridium	1485
+CLOBH	441771
+commelinids	4734
+Corynebacterineae	85007
+COXBU	227377
+Craniata-Cephalochordata	
+CRYNJ	214684
+Cyanobacteria	1117
+DANRE	7955
+DAPPU	6669
+Deinococci	188787
+DEIRA	243230
+Delta-epsilon_subdivisions	
+Deltaproteobacteria	28221
+Deuterostomia	33511
+DICTD	515635
+Dictyosteliida	33083
+Dictyostelium	5782
+DICDI	44689
+DICPU	5786
+Dikarya	451864
+Diptera	7147
+DROME	7227
+Ecdysozoa	1206794
+Embryophyta	3193
+EMENI	227321
+Endopterygota	33392
+ENTHI	5759
+Enterobacteriaceae	543
+HORSE	9796
+ECOLI	83333
+Euarchontoglires	314146
+Eubacteria	2
+Eukaryota	2759
+Eumetazoa	6072
+Eurotiomycetidae	451871
+Euryarchaeota	28890
+Euteleostomi	117571
+Eutheria	9347
+Excavates	
+fabids	91835
+FELCA	9685
+Firmicutes	1239
+Fornicata-Parabasalids	
+Fungi	4751
+FUSNN	190304
+CHICK	9031
+Gammaproteobacteria	1236
+GEOSL	243231
+GIAIC	184922
+GLOVI	251221
+SOYBN	3847
+GORGO	9595
+HAEIN	71421
+Halobacteriaceae	2236
+HALSA	64091
+HELPY	85962
+HELRO	6412
+Hexapoda-Crustacea	
+HUMAN	9606
+Homininae	207598
+Homo-Pan	
+Insecta	50557
+IXOSC	6945
+KORCO	374847
+Lactobacillales	186826
+Laurasiatheria	314145
+LEIMA	5664
+LEPOC	7918
+LEPIN	189518
+LISMO	169963
+LUCA	
+MACMU	9544
+Magnoliophyta	3398
+Mammalia	40674
+Metazoa	33208
+Metazoa-Choanoflagellida	
+METJA	243232
+Methanomicrobia	224756
+METAC	188937
+MONDO	13616
+MONBE	81824
+Murinae	39107
+MOUSE	10090
+Mycobacterium	1763
+MYCTU	83332
+MYCGE	243273
+NEIMB	122586
+NEMVE	45351
+Neopterygii	41665
+ASPFU	330879
+NEUCR	367110
+NITMS	436308
+Oligohymenophorea	6020
+Opisthokonts	33154
+ORNAN	9258
+ORYSJ	39947
+ORYLA	8090
+Osteichthyes	
+PANTR	9598
+PARTE	5888
+Pentapetalae	1437201
+Perissodactyla	9787
+Pezizomycotina	147538
+Pezizomycotina-Saccharomycotina	
+PHANO	321614
+PHYPA	3218
+Phytophthora	4783
+PHYRM	164328
+PLAF7	36329
+Pleosporineae	715340
+Poaceae	4479
+POPTR	3694
+PRIPA	54126
+Proteobacteria	1224
+Protostomia	33317
+PSEAE	208964
+PUCGT	418459
+PYRAE	178306
+RAT	10116
+Rhabditida-Chromadorea	
+Rhizobiales	356
+RHOBA	243090
+rosids	71275
+YEAST	559292
+Saccharomycetaceae	4893
+Saccharomycetaceae-Candida	
+Saccharomycetales	4892
+SALTY	99287
+Sauria	32561
+SCHPO	284812
+SCLS1	665079
+SHEON	211586
+SOLLC	4081
+Sordariomyceta	715989
+Sordariomycetes	147550
+Sordariomycetes-Leotiomycetes	
+SORBI	4558
+Spirochaetales	136
+STAA8	93061
+Stramenopiles	33634
+Streptococcaceae	1300
+STRR6	171101
+STRCO	100226
+STRPU	7668
+SULSO	273057
+PIG	9823
+SYNY3	1111708
+Teleostei	32443
+Tetrapoda	32523
+THAPS	35128
+Theria	
+Thermococcaceae	2259
+THEKO	69014
+THEYD	289376
+Thermoproteales	2266
+Thermoprotei	183924
+THEMA	243274
+TRICA	7070
+TRIVA	5722
+TRIAD	10228
+TRYB2	185431
+Trypanosomatidae	5654
+Unikonts	
+USTMA	237631
+VIBCH	243277
+Viridiplantae	33090
+VITVI	29760
+XANCP	190485
+XENTR	8364
+YARLI	284591
+YERPE	632
+MAIZE	4577
+Chlorophyta	3041
+Zingiberales-Arecales	
+Andropogoneae	147429
+Panicoideae	147369
+Triticeae	147389
+Pooideae	147368
+Liliopsida	4447
+Solanaceae	4070
+lamiids	91888
+asterids	71274
+Brassicaceae	3700
+Malvaceae	3629
+Brassicales-Malvales	
+malvids	91836
+Malpighiales	3646
+Papilionoideae	3814
+Cucurbitales-Rosales	
+Fabales-Rosales	
+Mesangiosperma	
+AMBTC	13333
+BRARP	51351
+CITSI	2711
+CUCSA	3659
+ERYGU	4155
+GOSHI	3635
+HELAN	4232
+HORVV	112509
+MEDTR	3880
+MUSAM	214687
+TOBAC	4097
+OSTTA	70448
+PHODC	42345
+PRUPE	3760
+RICCO	3988
+SETIT	4555
+THECC	3641
+WHEAT	4565
+ZOSMR	29655
+Asteraceae	4210
+Solanum	4107
+Solanoideae	424551
+Brassica	3705
+Euphorbiaceae	3977
+Cucurbitales-Fagales	
+eudicotyledons	71240
+Tracheophyta	58023
+SAR/HA_supergroup	
+Bikonts	
+Chloroflexi-Actinobacteria	
+Terrabacteria	
+PVC_group	
+BRANA	3708
+CAPAN	4072
+EUCGR	71139
+JUGRE	51240
+LACSA	4236
+MANES	3983
+NELNU	4432
+SELML	88036
+SOLTU	4113
+SPIOL	3562
