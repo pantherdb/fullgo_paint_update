@@ -20,6 +20,7 @@ where not exists (
     and cc.confidence_code in ('EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'HTP', 'HDA', 'HMP', 'HGI', 'HEP')
     and (geq.qualifier_id = paq.qualifier_id or (geq.evidence_qualifier_id is null and paq.annotation_qualifier_id is null))
   ) 
+  and pen.evidence_type_sid = 46
   and pen.obsolescence_date is null;
 
 -- Global insert of all valid 'withs' for a paint_annotation, checking exp evidence on any descendant nodes to same term or descendant term if 'with' doesn't exist
