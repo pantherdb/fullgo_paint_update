@@ -332,6 +332,16 @@ setup_directories:
 	mkdir -p $(BASE_PATH)/resources
 	mkdir -p $(IBA_DIR)
 
+%resources/panther_blacklist.txt: %resources/uniprot_protein.gpi.ids
+	R_DIR=$*resources envsubst < scripts/create_panther_gene_blacklist.slurm > $*create_panther_gene_blacklist.slurm
+	sbatch --wait $*create_panther_gene_blacklist.slurm
+
+.PRECIOUS: %resources/uniprot_protein.gpi.ids
+%resources/uniprot_protein.gpi.ids:
+	wget ftp://ftp.ebi.ac.uk/pub/contrib/goa/uniprot_protein.gpi.gz -O $*resources/uniprot_protein.gpi.gz
+	R_DIR=$*resources envsubst < scripts/cut_uniprot_ids.slurm > $*cut_uniprot_ids.slurm
+	sbatch --wait $*cut_uniprot_ids.slurm
+
 paint_annotation:
 	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql -o $(BASE_PATH)/resources/$(ANNOT)
 
