@@ -22,7 +22,7 @@
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:n:N:G:t:u:c:T:e:vVh') || &usage();
+getopts('o:i:a:q:g:n:N:G:b:t:u:c:T:e:vVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
@@ -37,6 +37,7 @@ $araport = $opt_u if ($opt_u);    # -u for the UniProt-to-Araport ID lookup file
 $evidence = $opt_c if ($opt_c);   # -c for evidence file
 $taxon = $opt_T if ($opt_T);      # -T for the taxon file
 $gene_dat = $opt_G if ($opt_G);   # -G for the gene.dat file in DB load folder
+$gene_blacklist = $opt_b if ($opt_b);   # -b for the obsoleted UniProt ID blacklist file
 $errFile = $opt_e if ($opt_e);    # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);         # -v for (v)erbose (debug info to STDERR)
 $verbose = 2 if ($opt_V);         # -V for (V)ery verbose (debug info STDERR)
@@ -283,6 +284,18 @@ while (my $line=<GD>){
 }
 
 close (GD);
+
+#########################################
+# Parse the gene_blacklist file
+#########################################
+
+my %blacklisted_genes;
+open (BL, $gene_blacklist) or die "Could not open file $gene_blacklist\n";
+while (my $line=<BL>){
+    chomp $line;
+    $blacklisted_genes{$line}=1;
+}
+close (BL);
 
 ##########################################
 # Parse annotation file.
@@ -542,6 +555,13 @@ foreach my $annotation_id (keys %annotation){
             }
             
             $uniprot =~s/\=/\:/g;
+
+            # Skip IBA for UniProt IDs that have since been obsoleted / missing from UniProt GPI
+            my ($prefix, $uniprot_id) = split(/\:/, $uniprot);
+            if (defined $blacklisted_genes{$uniprot_id}){
+                print STDERR "Skipping - $uniprot is obsolete - missing from latest uniprot_protein.gpi.\n";
+                next;
+            }
             
             my $leaf_ptn;
             if (defined $leaf_ptn{$gene}){
