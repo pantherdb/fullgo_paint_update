@@ -17,7 +17,7 @@
 -c $BASE_PATH/resources/$EVIDENCE \
 -T $BASE_PATH/resources/$TAXON \
 -G $GENE_PATH \
--b $BASE_PATH/resources/panther_blacklist.txt
+-b $BASE_PATH/resources/panther_blacklist.txt \
 -o $IBA_DIR > $BASE_PATH/IBD ) > $BASE_PATH/err
 
 perl scripts/fix_pombe_symbol.pl -i $IBA_DIR/gene_association.paint_pombase.gaf -p $BASE_PATH/resources/allNames.tsv -d $BASE_PATH/resources/sysID2product.tsv > $BASE_PATH/gene_association.paint_pombase.fixed.gaf
