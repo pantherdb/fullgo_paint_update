@@ -375,6 +375,7 @@ run_reports:
 	grep -v "Created on" $(BASE_PATH)/dropped_ibas_filtered_raw | grep -v "$(BASE_PATH)" | sed 's/^-//' > $(BASE_PATH)/dropped_IBAs_filtered
 	python3 scripts/iba_count.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml --mods_only
 	python3 scripts/version_paint_annot_counts.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml --reload_data
+	python3 scripts/report_curation_status.py
 
 	# Ex: python3 scripts/created_ibds_by_curator.py -b 2020-01-31 -a 2020-03-26 -p
 	python3 scripts/created_ibds_by_curator.py -b $(BEFORE_DATE) -a $(AFTER_DATE) -p
