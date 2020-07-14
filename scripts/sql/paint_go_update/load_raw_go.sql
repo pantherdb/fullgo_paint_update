@@ -9,3 +9,5 @@ with null as '' csv header delimiter '	';
 Truncate table panther_upl.goobo_parent_child;
 Copy panther_upl.goobo_parent_child from '{load_dir}goparentchild.tsv'
 with null as '' csv header delimiter '	';
+
+reindex table panther_upl.goanno_wf;

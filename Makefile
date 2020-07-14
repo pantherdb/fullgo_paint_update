@@ -311,9 +311,11 @@ reset_paint_table_names:
 # update_taxon_constraints_file:
 
 setup_preupdate_data:
-	mkdir -p $(BASE_PATH)/preupdate_data
+	mkdir -p $(BASE_PATH)/preupdate_data/resources
 	# Retain previous GO version for accuracy
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data make_profile_from_db
+	# Reuse panther_blacklist.txt cuz it takes sooo long to make
+	ln -s $(realpath $(BASE_PATH)/resources/panther_blacklist.txt) $(BASE_PATH)/preupdate_data/resources/panther_blacklist.txt
 	# Generate IBA GAFs from preupdate data - call before table name switch
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data create_gafs
 
@@ -367,6 +369,7 @@ repair_gaf_symbols:
 	# cp $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf $(IBA_DIR)/gene_association.paint_pombase.gaf
 
 run_reports:
+	mkdir -p scripts/sql/cache/
 	python3 scripts/iba_count.py --a_yaml $(BASE_PATH)/iba_gaf_gen_a.yaml --b_yaml $(BASE_PATH)/iba_gaf_gen_b.yaml
 	diff -u $(BASE_PATH)/preupdate_data/affected_ibas.gaf $(BASE_PATH)/affected_ibas.gaf | grep -E "^\-" > $(BASE_PATH)/dropped_ibas_filtered_raw
 	grep -v "Created on" $(BASE_PATH)/dropped_ibas_filtered_raw | grep -v "$(BASE_PATH)" | sed 's/^-//' > $(BASE_PATH)/dropped_IBAs_filtered

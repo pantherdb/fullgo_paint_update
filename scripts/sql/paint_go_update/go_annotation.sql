@@ -4,6 +4,8 @@ ALTER TABLE go_annotation_old RENAME TO go_annotation_new;
 Truncate table go_annotation_new;
 insert into go_annotation_new select * from go_annotation;
 
+reindex table panther_upl.go_annotation_new;
+
 -- for the new fullgo annotation data (node and go_classification combination) (from goanno_wf foreign table loaded with new fullgo data in production database) that are not in the go_annotation_new table, insert them into the table as new rows with new annotation_id - 26 min
 set search_path = panther_upl;
 insert into go_annotation_new(annotation_id, node_id, classification_id, annotation_type_id, created_by, creation_date)
