@@ -8,9 +8,6 @@
 
 source /home/pmd-02/pdt/pdthomas/panther/cshrc.panther
 
-perl scripts/FindAllParents.pl $BASE_PATH/goparentchild.tsv $BASE_PATH/AllParentsofGOTerms.txt
-perl scripts/printHierarchy.pl $BASE_PATH/AllParentsofGOTerms.txt $BASE_PATH/FinalChildParent-Hierarchy.dat
-
 perl $PWD/scripts/fullGoMappingPthrHierarchy.pl \
 -f $FULL_GAF_FILES_PATH/ \
 -t $PWD/$TAXON_ID_PATH \

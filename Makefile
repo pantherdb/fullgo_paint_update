@@ -95,10 +95,10 @@ extractfromgoobo:
 	perl scripts/extractfromgoobo.pl -i $(BASE_PATH)/go.obo -o $(BASE_PATH)/inputforGOClassification.tsv > $(BASE_PATH)/obsolete_go_terms.txt
 	wc -l $(BASE_PATH)/inputforGOClassification.tsv
 	wc -l $(BASE_PATH)/obsolete_go_terms.txt
-
-extractfromgoobo_relation:
 	perl scripts/extractfromgoobo_relation.pl -i $(BASE_PATH)/go.obo -o $(BASE_PATH)/goparentchild.tsv
 	wc -l $(BASE_PATH)/goparentchild.tsv
+	perl scripts/FindAllParents.pl $(BASE_PATH)/goparentchild.tsv $(BASE_PATH)/AllParentsofGOTerms.txt
+	perl scripts/printHierarchy.pl $(BASE_PATH)/AllParentsofGOTerms.txt $(BASE_PATH)/FinalChildParent-Hierarchy.dat
 
 submit_fullGoMappingPthr_slurm:
 	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr_$(PANTHER_VERSION).slurm

@@ -13,7 +13,6 @@ To execute the current existing workflow:
 ```
 make download_fullgo
 make extractfromgoobo
-make extractfromgoobo_relation
 make submit_fullGoMappingPthrHierarchy_slurm
 ``` 
 
