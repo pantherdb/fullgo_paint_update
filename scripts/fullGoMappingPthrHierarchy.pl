@@ -29,7 +29,7 @@ my @unmatched_ptherid;
 my %golist;
 
 use Getopt::Std;
-getopts('h:f:t:i:g:p:m:o:x:b:c:d:y:a:u:e:v:w:P:M:B:C:V') || &usage();
+getopts('h:f:t:i:g:p:m:o:x:b:c:d:y:a:u:e:v:w:H:P:M:B:C:V') || &usage();
 &usage() if ($opt_h);          # -h for (h)elp
 $fullgo = $opt_f if ($opt_f);   # -f for (f) full gene Ontology association complete File (GAF file)
 $dir = $opt_d if ($opt_d);	# -d for base directory. where files will be saved
@@ -46,6 +46,7 @@ $mfe = $opt_m if ($opt_m);   # -m for experimental (m)oleculer Function output F
 $bpe = $opt_b if ($opt_b);  # -b for experimental (b)iological process output File
 $cce = $opt_c if ($opt_c);  # -c for experimental (c)ellular component output File
 $goannow = $opt_w if ($opt_w); # -w for complete go annotation mapped to pthr (with evidence) output file
+$hierarchy_suffix = $opt_H if ($opt_H); # -H suffix at end of hierarchy output files. Holds Pthr version and/or Proc ID
 $emty = $opt_y if ($opt_y); # -y for pantherid with empty go terms output File
 $mat = $opt_a if ($opt_a);   # -a for total m(a)tch File
 $umat = $opt_u if ($opt_u);  # -u for total (u)nmatch Data File
@@ -73,9 +74,9 @@ print STDERR "Opened arg files\n";
 
 open CP, "<$dir/FinalChildParent-Hierarchy.dat" or die $!;
 # open FN1, ">$dir/GOWithHierarchy-BP-$pthr_version.dat" or die $!;
-open FN1, ">$dir/GOWithHierarchy-BP-$pthr_version.dat" or die $!;
-open FN2, ">$dir/GOWithHierarchy-MF-$pthr_version.dat" or die $!;
-open FN3, ">$dir/GOWithHierarchy-CC-$pthr_version.dat" or die $!;
+open FN1, ">$dir/GOWithHierarchy-BP-$hierarchy_suffix" or die $!;
+open FN2, ">$dir/GOWithHierarchy-MF-$hierarchy_suffix" or die $!;
+open FN3, ">$dir/GOWithHierarchy-CC-$hierarchy_suffix" or die $!;
 print FN1 "SequenceID\tGOHierarchy\tEvidenceCode\tWith\tReference\tDate\tDB\n";
 print FN2 "SequenceID\tGOHierarchy\tEvidenceCode\tWith\tReference\tDate\tDB\n";
 print FN3 "SequenceID\tGOHierarchy\tEvidenceCode\tWith\tReference\tDate\tDB\n";
