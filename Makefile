@@ -100,6 +100,12 @@ extractfromgoobo:
 	perl scripts/FindAllParents.pl $(BASE_PATH)/goparentchild.tsv $(BASE_PATH)/AllParentsofGOTerms.txt
 	perl scripts/printHierarchy.pl $(BASE_PATH)/AllParentsofGOTerms.txt $(BASE_PATH)/FinalChildParent-Hierarchy.dat
 
+slurm_fullGoMappingPthr:
+	scripts/mkdir_fullGoMappingPthr_groups.sh $(GAF_FILES_PATH)
+	NUMGROUPS=$(shell ls -d $(GAF_FILES_PATH)/group_* | wc -l) envsubst < scripts/fullGoMappingPthrHierarchy_para.slurm > $(BASE_PATH)/fullGoMappingPthrHierarchy_para_$(PANTHER_VERSION).slurm
+	sbatch $(BASE_PATH)/fullGoMappingPthrHierarchy_para_$(PANTHER_VERSION).slurm
+	# cat $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION).tsv.* > $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION).tsv
+
 submit_fullGoMappingPthr_slurm:
 	envsubst < scripts/fullGoMappingPthr.slurm > $(BASE_PATH)/fullGoMappingPthr_$(PANTHER_VERSION).slurm
 	sbatch $(BASE_PATH)/fullGoMappingPthr_$(PANTHER_VERSION).slurm
