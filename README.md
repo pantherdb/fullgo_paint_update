@@ -13,7 +13,7 @@ To execute the current existing workflow:
 ```
 make download_fullgo
 make extractfromgoobo
-make submit_fullGoMappingPthrHierarchy_slurm
+make slurm_fullGoMappingPthr
 ``` 
 
 * `download_fullgo` will download all current GAF and GO.obo files from GO ftp server. This also creates the base folder ("YYYY-MM-DD_fullgo/") where the update files will live.
@@ -32,6 +32,7 @@ After these are run the Panther web server needs to be restarted before the chan
 ## Updating PAINT tables
 
 ```
+make load_raw_go_to_paint
 make update_paint_go_classification
 make update_paint_go_annotation
 make update_paint_go_evidence

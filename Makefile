@@ -201,7 +201,6 @@ check_dups:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql
 
 load_raw_go_to_paint:
-	# Primarily for testing
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/load_raw_go.sql -v '{"panther_version": "$(PANTHER_VERSION)"}'
 
 reset_paint_table:

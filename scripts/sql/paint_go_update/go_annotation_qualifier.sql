@@ -45,6 +45,9 @@ CREATE MATERIALIZED VIEW panther_upl.goanno_w_qualifier AS
   from panther_upl.goanno_wf
   where qualifier is not null;
 
+CREATE INDEX goanno_w_qualifier_evidence_idx ON panther_upl.goanno_w_qualifier USING btree (evidence);
+CREATE INDEX goanno_w_qualifier_geneid_idx ON panther_upl.goanno_w_qualifier USING btree (geneid);
+
 ALTER TABLE panther_upl.goanno_w_qualifier
   OWNER TO panther_isp;
 GRANT ALL ON TABLE panther_upl.goanno_w_qualifier TO panther_isp;
