@@ -290,7 +290,7 @@ close (GD);
 #########################################
 
 my %blacklisted_genes;
-open (BL, $gene_blacklist) or die "Could not open file $gene_blacklist\n";
+open (BL, $gene_blacklist);
 while (my $line=<BL>){
     chomp $line;
     $blacklisted_genes{$line}=1;

@@ -321,7 +321,7 @@ reset_paint_table_names:
 
 # update_taxon_constraints_file:
 
-setup_preupdate_data:
+setup_preupdate_data: $(BASE_PATH)/resources/panther_blacklist.txt
 	mkdir -p $(BASE_PATH)/preupdate_data/resources
 	# Retain previous GO version for accuracy
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data make_profile_from_db
