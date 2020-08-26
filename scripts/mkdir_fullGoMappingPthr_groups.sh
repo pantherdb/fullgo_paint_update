@@ -1,3 +1,5 @@
+#!/bin/bash
+
 GROUPNUM=0
 CURRENTSIZE=0
 MAXSIZE=5000
