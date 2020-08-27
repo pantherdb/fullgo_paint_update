@@ -559,7 +559,7 @@ foreach my $annotation_id (keys %annotation){
             # Skip IBA for UniProt IDs that have since been obsoleted / missing from UniProt GPI
             my ($prefix, $uniprot_id) = split(/\:/, $uniprot);
             if (defined $blacklisted_genes{$uniprot_id}){
-                print STDERR "Skipping - $uniprot is obsolete - missing from latest uniprot_protein.gpi.\n";
+                print STDERR "Skipping - obsolete ID missing from latest uniprot_protein.gpi\ttaxon\:$gene_taxon\t$uniprot\n";
                 next;
             }
             

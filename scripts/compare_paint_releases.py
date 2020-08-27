@@ -2,6 +2,7 @@ import csv
 import os
 import argparse
 import datetime
+from collections import Counter
 from util.publish_google_sheet import SheetPublishHandler, Sheet
 
 parser = argparse.ArgumentParser()
@@ -10,6 +11,7 @@ parser.add_argument('-a', '--after_release_folder_root')
 parser.add_argument('-s', '--startdate', help="Formatted like '20200201'")
 parser.add_argument('-p', '--publish_report', action='store_const', const=True)
 parser.add_argument('-o', '--skip_other', action='store_const', const=True)
+parser.add_argument('-u', '--panther_blacklist', help='panther_blacklist.txt built from UniProt GPI')
 
 args = parser.parse_args()
 
@@ -67,6 +69,19 @@ def parse_ptn_terms_from_ibd_before_startdate_intersect(filepath, startdate, ann
                 new_annotations.add(ibd_tuple)
     return new_annotations
 
+
+def parse_panther_blacklist(panther_blacklist):
+    uniprot_ids = []
+    with open(panther_blacklist) as bf:
+        for l in bf.readlines():
+            uniprot_ids.append(f"UniProtKB:{l.rstrip()}")
+    return uniprot_ids
+
+
+panther_blacklist = None
+if args.panther_blacklist:
+    panther_blacklist = parse_panther_blacklist(args.panther_blacklist)
+
 handler = SheetPublishHandler()
 date_str = datetime.date.today().isoformat()
 sheet_title = "{}-update_stats".format(date_str)
@@ -117,6 +132,7 @@ def parse_ptn_from_with_from(with_from):
 def get_ibd_to_iba_counts(iba_folder, ibd_tuples):
     iba_count_by_file = {}
     all_iba_count_by_file = {}
+    taxons = {}
     for iba_filename in os.listdir(iba_folder):
         if args.skip_other and "paint_other" in iba_filename:  # Only here to increase testing speed
             continue
@@ -136,15 +152,23 @@ def get_ibd_to_iba_counts(iba_folder, ibd_tuples):
                 if iba_tuple in ibd_tuples:
                     iba_count_by_file[iba_file] += 1
                 all_iba_count_by_file[iba_file_base] += 1
-    return iba_count_by_file, all_iba_count_by_file
+
+                # Grab UniProt and taxon data
+                uniprot = r[10].split("|", maxsplit=1)[0]
+                taxon = r[12]
+                if taxon not in taxons:
+                    taxons[taxon] = []
+                taxons[taxon].append(uniprot)
+    return iba_count_by_file, all_iba_count_by_file, taxons
+
 
 after_iba_folder = os.path.join(args.after_release_folder_root, "presubmission")
-added_iba_count_by_file, all_iba_counts_after = get_ibd_to_iba_counts(after_iba_folder, new_ibds)
+added_iba_count_by_file, all_iba_counts_after, taxons_after = get_ibd_to_iba_counts(after_iba_folder, new_ibds)
 added_iba_count = sum([count for iba_file, count in added_iba_count_by_file.items()])
 
 # Count how many IBAs in before release match obsoleted_ibds
 before_iba_folder = os.path.join(args.before_release_folder_root, "presubmission")
-dropped_iba_count_by_file, all_iba_counts_before = get_ibd_to_iba_counts(before_iba_folder, obsoleted_ibds)
+dropped_iba_count_by_file, all_iba_counts_before, taxons_before = get_ibd_to_iba_counts(before_iba_folder, obsoleted_ibds)
 dropped_iba_count = sum([count for iba_file, count in dropped_iba_count_by_file.items()])
 
 for f, count in added_iba_count_by_file.items():
@@ -179,6 +203,38 @@ total_percent_change = "%.2f" % (((after_total_count - before_total_count) / bef
 total_row = ["Total", before_total_count, after_total_count, total_percent_change]
 print("\t".join([str(i) for i in total_row]))
 sheet.append_row(total_row)
+
+uniprot_blacklisted_ids = ["P12345", "P12346", "P12347", "P12348"]
+all_taxons = set(list(taxons_before.keys()) + list(taxons_after.keys()))
+taxon_headers = [
+    "Taxon",
+    f"Annot count {args.before_release_folder_root}",
+    f"Annot count {args.after_release_folder_root}",
+    "Percent change",
+    "% dropped by UniProt GPI check"
+]
+print("\t".join(taxon_headers))
+sheet.append_row([])
+sheet.append_row(taxon_headers)
+for taxon in sorted(all_taxons):
+    before_ids = taxons_before.get(taxon, [])
+    before_count = len(before_ids)
+    after_ids = taxons_after.get(taxon, [])
+    after_count = len(after_ids)
+    blacklisted_count = 0
+    if panther_blacklist:
+        before_counts_by_id = Counter(before_ids)
+        after_counts_by_id = Counter(after_ids)
+        for uniprot_id in panther_blacklist:
+            if uniprot_id in before_counts_by_id:
+                blacklisted_count += before_counts_by_id[uniprot_id]
+        bl_percent_change = "%.2f" % ((blacklisted_count / before_count) * 100)
+    percent_change = "%.2f" % (((after_count - before_count) / before_count) * 100)
+    print_row = [taxon, before_count, after_count, percent_change]
+    if panther_blacklist:
+        print_row = print_row + [bl_percent_change]
+    print("\t".join([str(i) for i in print_row]))
+    sheet.append_row(print_row)
 
 if args.publish_report:
     handler.publish_sheet(sheet)
