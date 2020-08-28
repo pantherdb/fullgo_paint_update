@@ -391,7 +391,9 @@ run_reports:
 	# Ex: python3 scripts/created_ibds_by_curator.py -b 2020-01-31 -a 2020-03-26 -p
 	python3 scripts/created_ibds_by_curator.py -b $(BEFORE_DATE) -a $(AFTER_DATE) -p
 	# Download and/or point to release folders. Ex: ftp://ftp.pantherdb.org/downloads/paint/14.1/2020-01-31/ and 2020-01-31
-	python3 scripts/compare_paint_releases.py -b $(BEFORE_DATE) -a $(AFTER_DATE) -p -u $(BASE_PATH)/resources/panther_blacklist.txt
+	envsubst < scripts/compare_paint_releases.slurm > $(BASE_PATH)/compare_paint_releases.slurm
+	sbatch --wait $(BASE_PATH)/compare_paint_releases.slurm
+	python3 scripts/publish_sheet_json.py -t $(shell date +%Y-%m-%d)_update_stats -j $(BASE_PATH)/update_stats.json
 
 push_gafs_to_ftp:
 	@echo "Needs to be implemented"

@@ -1,6 +1,7 @@
 # from __future__ import print_function
 import pickle
 import os.path
+import json
 from datetime import datetime
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -56,6 +57,10 @@ class Sheet:
         ]
         return data
 
+    def dump(self, outfile):
+        with open(outfile, 'w+') as jf:
+            json.dump(self.get_data(), jf)
+
 
 class SheetPublishHandler:
     def __init__(self):
@@ -96,6 +101,11 @@ class SheetPublishHandler:
     def publish_sheet(self, sheet):
         meta = self.create_sheet(sheet.title, values=sheet.get_data())
         sheet.spreadsheet_id = meta['spreadsheetId']
+
+    def load_and_publish(self, json_file, title):
+        with open(json_file) as jf:
+            data = json.load(jf)
+        self.create_sheet(title, values=data)
 
 
 def main():
