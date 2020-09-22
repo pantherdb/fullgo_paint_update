@@ -460,7 +460,7 @@ foreach my $annotation_id (keys %annotation){
     # print the rest as 'others'
     #####################################################
     
-    next if ($confidence_code =~/IRD/);
+    next if ($confidence_code =~/IRD|TCV/);
     
     # First, create a hash of all genes under an annotated node.
     
