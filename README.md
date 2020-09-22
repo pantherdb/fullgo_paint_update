@@ -13,6 +13,7 @@ To execute the current existing workflow:
 ```
 make download_fullgo
 make extractfromgoobo
+make split_fullGoMappingPthr_gafs
 make slurm_fullGoMappingPthr
 ``` 
 
