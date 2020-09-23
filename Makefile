@@ -317,7 +317,7 @@ switch_paint_table_names:
 
 switch_table_names_go_only:
 	$(MAKE) paint_go_table_counts
-	scripts/sql/paint_go_update/switch_table_names_go_only.sql
+	python3 scripts/db_caller.py scripts/sql/paint_go_update/switch_table_names_go_only.sql
 	$(MAKE) paint_go_table_counts
 
 regenerate_go_aggregate_view:
