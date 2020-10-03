@@ -3,7 +3,7 @@ set search_path=panther_upl;
 DROP MATERIALIZED VIEW panther_upl.paint_aggregate;
 
 CREATE MATERIALIZED VIEW panther_upl.paint_aggregate AS 
-    select pa.annotation_id, n.accession, clf.accession term, et.type, pe.evidence_id, pe.evidence, cc.confidence_code, q.qualifier from paint_evidence pe
+    select pa.annotation_id, n.accession, clf.accession term, et.type, pe.evidence_id, pe.evidence, cc.confidence_code, q.qualifier, pa.creation_date from paint_evidence pe
     join paint_annotation pa
     on pe.annotation_id = pa.annotation_id
     join confidence_code cc
