@@ -88,6 +88,7 @@ download_fullgo:
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/go.obo
+	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/extensions/go-plus.owl
 	$(MAKE) make_profile
 	$(MAKE) make_readme
 
@@ -139,18 +140,10 @@ generate_go_hierarchy:
 	envsubst < scripts/hierarchyfinalstep.slurm > $(BASE_PATH)/hierarchyfinalstep_$(PANTHER_VERSION).slurm
 	sbatch $(BASE_PATH)/hierarchyfinalstep_$(PANTHER_VERSION).slurm
 
-format_taxon_term_table:
-	# Download taxon_term_table file from current.go.org and run python scripts
-	# To run gaferencer:
-	#  export SBT_OPTS="-Xmx128G"
-	#  sbt
-	#  run taxa --contexts resources/go_context.jsonld --ontfile true resources/go-plus.owl resources/paint_taxons.txt new_table_file
-	#  exit
-	# Process new_table_file:
-	#  python3 scripts/taxon_to_oscode.py -t new_table_file -s resources/paint_taxons_14_1.txt -r resources/RefProt_README_14 -o taxon_term_table_converted
-	#  python3 scripts/taxon_validate.py -t taxon_term_table_converted -p resources/species_pthr14_annot_redo.nhx -o TaxonConstraintsLookup.txt
-	#  python3 scripts/taxon_validate.py -t taxon_term_table_converted -p resources/species_pthr14_annot_redo.nhx -s resources/panther14slim_terms.txt -o TaxonConstraintsLookup14Slim.txt
-	@echo "Under construction"
+TaxonConstraintsLookup.txt:
+	wget -P $(BASE_PATH) http://data.pantherdb.org/PANTHER15.0/globals/species_pthr15_annot.nhx
+	envsubst < scripts/format_taxon_term_table.slurm > $(BASE_PATH)/format_taxon_term_table.slurm
+	sbatch $(BASE_PATH)/format_taxon_term_table.slurm
 
 get_fullgo_date:
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
