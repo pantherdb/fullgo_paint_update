@@ -1,4 +1,5 @@
 #! /usr/local/bin/perl
+use POSIX qw(strftime);
 
 #####
 #####
@@ -22,7 +23,7 @@
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:n:N:G:b:t:u:c:T:e:vVh') || &usage();
+getopts('o:i:a:q:g:n:N:G:b:t:u:c:T:e:s:vVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
@@ -38,6 +39,7 @@ $evidence = $opt_c if ($opt_c);   # -c for evidence file
 $taxon = $opt_T if ($opt_T);      # -T for the taxon file
 $gene_dat = $opt_G if ($opt_G);   # -G for the gene.dat file in DB load folder
 $gene_blacklist = $opt_b if ($opt_b);   # -b for the obsoleted UniProt ID blacklist file
+$gaf_version = $opt_s if ($opt_s); # -s for output GAF specification version 2.1 (default) or 2.2
 $errFile = $opt_e if ($opt_e);    # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);         # -v for (v)erbose (debug info to STDERR)
 $verbose = 2 if ($opt_V);         # -V for (V)ery verbose (debug info STDERR)
@@ -45,6 +47,11 @@ $verbose = 2 if ($opt_V);         # -V for (V)ery verbose (debug info STDERR)
 ###
 ### PUT YOUR CODE HERE
 ###
+
+my %default_qualifiers = (F => 'enables', P => 'involved_in', C => 'part_of');
+if (!$gaf_version) {
+    $gaf_version = '2.1';
+}
 
 my $go_version;
 my $panther_version;
@@ -518,6 +525,17 @@ foreach my $annotation_id (keys %annotation){
                 $not_genes{$gene}=1;
             }
             next if (defined $not_genes{$gene});
+            
+            my $qual_output = $qual;
+            if ($gaf_version eq '2.2') {
+                # Add default qualifier if blank or "NOT"-only
+                if ($qual eq 'NOT') {
+                    $qual_output = "NOT|$default_qualifiers{$ontology}";
+                } elsif ($qual eq '') {
+                    $qual_output = $default_qualifiers{$ontology};
+                }
+            }
+
             my $short_id;
             if (defined $id_lookup{$gene}){
                 $short_id = $id_lookup{$gene};
@@ -571,7 +589,7 @@ foreach my $annotation_id (keys %annotation){
             }
             next unless ($db);
             next unless ($short_id);
-            my $foo = "$db\t$short_id\t$symbol\t$qual\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t";
+            my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t";
             
             my $file_type;
             if ($org eq 'MOUSE'){
@@ -613,10 +631,13 @@ foreach my $annotation_id (keys %annotation){
 
 foreach my $type (keys %IBAs){
     my $outFile = "gene_association.paint_$type.gaf";
+    my $datestring = strftime "%F", localtime;
 
     open (OUT, ">$outDir/$outFile");
-    print OUT "\!gaf-version: 2.1\n";
+    print OUT "\!gaf-version: $gaf_version\n";
     print OUT "\!Created on " . localtime . ".\n";
+    print OUT "\!generated-by: PANTHER\n";
+    print OUT "\!date-generated: $datestring\n";
     print OUT "\!PANTHER version: $panther_version.\n";
     print OUT "\!GO version: $go_version.\n";
         foreach my $line (keys %{$IBAs{$type}}){
