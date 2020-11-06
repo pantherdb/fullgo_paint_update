@@ -23,7 +23,7 @@ use POSIX qw(strftime);
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:n:N:G:b:t:u:c:T:e:s:vVh') || &usage();
+getopts('o:i:a:q:g:n:N:G:b:C:t:u:c:T:e:s:vVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
@@ -39,6 +39,7 @@ $evidence = $opt_c if ($opt_c);   # -c for evidence file
 $taxon = $opt_T if ($opt_T);      # -T for the taxon file
 $gene_dat = $opt_G if ($opt_G);   # -G for the gene.dat file in DB load folder
 $gene_blacklist = $opt_b if ($opt_b);   # -b for the obsoleted UniProt ID blacklist file
+$complex_termlist = $opt_C if ($opt_C);   # -b for the obsoleted UniProt ID blacklist file
 $gaf_version = $opt_s if ($opt_s); # -s for output GAF specification version 2.1 (default) or 2.2
 $errFile = $opt_e if ($opt_e);    # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);         # -v for (v)erbose (debug info to STDERR)
@@ -48,7 +49,7 @@ $verbose = 2 if ($opt_V);         # -V for (V)ery verbose (debug info STDERR)
 ### PUT YOUR CODE HERE
 ###
 
-my %default_qualifiers = (F => 'enables', P => 'involved_in', C => 'part_of');
+my %default_qualifiers = (F => 'enables', P => 'involved_in', C => 'is_active_in', complex => 'part_of');
 if (!$gaf_version) {
     $gaf_version = '2.1';
 }
@@ -304,6 +305,18 @@ while (my $line=<BL>){
 }
 close (BL);
 
+#########################################
+# Parse the complex_termlist file
+#########################################
+
+my %complex_terms;
+open (CL, $complex_termlist);
+while (my $line=<CL>){
+    chomp $line;
+    $complex_terms{$line}=1;
+}
+close (CL);
+
 ##########################################
 # Parse annotation file.
 ##########################################
@@ -528,11 +541,17 @@ foreach my $annotation_id (keys %annotation){
             
             my $qual_output = $qual;
             if ($gaf_version eq '2.2') {
+                my $default_qualifier;
+                if ($ontology eq 'C' && defined $complex_terms{$go}) {
+                    $default_qualifier = $default_qualifiers{'complex'};
+                } else {
+                    $default_qualifier = $default_qualifiers{$ontology};
+                }
                 # Add default qualifier if blank or "NOT"-only
                 if ($qual eq 'NOT') {
-                    $qual_output = "NOT|$default_qualifiers{$ontology}";
+                    $qual_output = "NOT|$default_qualifier";
                 } elsif ($qual eq '') {
-                    $qual_output = $default_qualifiers{$ontology};
+                    $qual_output = $default_qualifier;
                 }
             }
 

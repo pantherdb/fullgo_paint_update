@@ -8,6 +8,7 @@ export FULL_GAF_FILES_PATH = $(shell realpath $(GAF_FILES_PATH))
 export PWD = $(shell pwd)
 GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
 export PANTHER_VERSION ?= 15.0
+export GAF_VERSION ?= 2.1
 
 ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
@@ -328,12 +329,13 @@ reset_paint_table_names:
 
 # update_taxon_constraints_file:
 
-setup_preupdate_data: $(BASE_PATH)/resources/panther_blacklist.txt
+setup_preupdate_data: $(BASE_PATH)/resources/panther_blacklist.txt $(BASE_PATH)/resources/complex_terms.tsv
 	mkdir -p $(BASE_PATH)/preupdate_data/resources
 	# Retain previous GO version for accuracy
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data make_profile_from_db
 	# Reuse panther_blacklist.txt cuz it takes sooo long to make
 	ln -sf $(realpath $(BASE_PATH)/resources/panther_blacklist.txt) $(BASE_PATH)/preupdate_data/resources/panther_blacklist.txt
+	ln -sf $(realpath $(BASE_PATH)/resources/complex_terms.tsv) $(BASE_PATH)/preupdate_data/resources/complex_terms.tsv
 	# Generate IBA GAFs from preupdate data - call before table name switch
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data create_gafs
 
@@ -358,9 +360,14 @@ setup_directories:
 
 .PRECIOUS: %resources/uniprot_protein.gpi.ids
 %resources/uniprot_protein.gpi.ids:
+	mkdir -p $*resources
 	wget ftp://ftp.ebi.ac.uk/pub/contrib/goa/uniprot_protein.gpi.gz -O $*resources/uniprot_protein.gpi.gz
 	R_DIR=$*resources envsubst < scripts/cut_uniprot_ids.slurm > $*cut_uniprot_ids.slurm
 	sbatch --wait $*cut_uniprot_ids.slurm
+
+.PRECIOUS: %resources/complex_terms.tsv
+%resources/complex_terms.tsv:
+	bin/robot extract --method MIREOT --input $(BASE_PATH)/go.obo --branch-from-term GO:0032991 export --format tsv --header "ID" --export $@
 
 paint_annotation:
 	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql -o $(BASE_PATH)/resources/$(ANNOT)
