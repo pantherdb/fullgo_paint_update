@@ -40,14 +40,9 @@ make update_paint_go_evidence
 make update_paint_go_annot_qualifier
 make switch_evidence_to_pmid
 make delete_incorrect_go_annot_qualifiers
-make update_paint_paint_annotation
-make update_paint_paint_evidence
-make update_paint_paint_annot_qualifier
-make update_comments_status
-make obsolete_redundant_ibds
 make setup_preupdate_data
 make gen_iba_gaf_yamls
-make switch_paint_table_names
+make switch_table_names_go_only
 make regenerate_go_aggregate_view
 make regenerate_paint_aggregate_view
 ```
