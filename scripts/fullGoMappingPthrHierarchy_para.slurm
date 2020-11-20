@@ -26,3 +26,4 @@ rm -f $FULL_BASE_PATH/Pthr_GO_$PANTHER_VERSION.tsv.*
 rm -f $FULL_BASE_PATH/GOWithHierarchy-BP-$PANTHER_VERSION.dat.*
 rm -f $FULL_BASE_PATH/GOWithHierarchy-MF-$PANTHER_VERSION.dat.*
 rm -f $FULL_BASE_PATH/GOWithHierarchy-CC-$PANTHER_VERSION.dat.*
+rm -f $FULL_BASE_PATH/PthrGOLog_$PANTHER_VERSION.txt.*

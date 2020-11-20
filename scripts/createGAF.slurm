@@ -18,7 +18,7 @@
 -T $BASE_PATH/resources/$TAXON \
 -G $GENE_PATH \
 -b $BASE_PATH/resources/panther_blacklist.txt \
--s $GAF_VERSION
+-s $GAF_VERSION \
 -C $BASE_PATH/resources/complex_terms.tsv \
 -o $IBA_DIR > $BASE_PATH/IBD ) > $BASE_PATH/err
 
