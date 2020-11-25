@@ -42,6 +42,7 @@ export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/
 export TAXON_ID_PATH = scripts/pthr15_code_taxId.txt
 export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/node.dat
 export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/treeNodes
+export ORGANISM_DAT = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/organism.dat
 endif
 
 ########## GAF CREATION ##########

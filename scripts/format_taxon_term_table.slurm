@@ -10,6 +10,4 @@
 
 ./gaferencer-0.4.1/bin/gaferencer -J-Xmx96G taxa --contexts resources/go_context.jsonld --ontfile true $BASE_PATH/go-plus.owl resources/paint_taxons_15.txt $BASE_PATH/new_table_file
 
-### These need internets for Curie expansion and species name lookup - refactor to do this from files
-# python3 scripts/taxon_to_oscode.py -t $BASE_PATH/new_table_file -s resources/paint_taxons_15.txt -r resources/RefProt_README_15 -o $BASE_PATH/taxon_term_table_converted
-# python3 scripts/taxon_validate.py -t $BASE_PATH/taxon_term_table_converted -p $BASE_PATH/species_pthr15_annot.nhx -o $BASE_PATH/TaxonConstraintsLookup.txt
+align_taxon_term_table_species.py -t $BASE_PATH/new_table_file -o $ORGANISM_DAT -p $BASE_PATH/species_pthr15_annot.nhx -f $BASE_PATH/TaxonConstraintsLookup.txt
