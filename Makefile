@@ -42,7 +42,6 @@ export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/
 export TAXON_ID_PATH = scripts/pthr15_code_taxId.txt
 export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/node.dat
 export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/treeNodes
-export ORGANISM_DAT = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/organism.dat
 endif
 
 ########## GAF CREATION ##########
@@ -144,7 +143,7 @@ generate_go_hierarchy:
 
 TaxonConstraintsLookup.txt:
 	wget -P $(BASE_PATH) http://data.pantherdb.org/PANTHER15.0/globals/species_pthr15_annot.nhx
-	envsubst < scripts/format_taxon_term_table.slurm > $(BASE_PATH)/format_taxon_term_table.slurm
+	ORGANISM_DAT=$(ORGANISM_DAT) envsubst < scripts/format_taxon_term_table.slurm > $(BASE_PATH)/format_taxon_term_table.slurm
 	sbatch $(BASE_PATH)/format_taxon_term_table.slurm
 
 get_fullgo_date:
