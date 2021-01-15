@@ -3,7 +3,7 @@
 #SBATCH --nodes=$NUMGROUPS
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem=96gb
-#SBATCH --account=lc_pdt
+#SBATCH --account=$HPC_ACCOUNT
 #SBATCH --partition=thomas
 #SBATCH --mail-type=END,FAIL
 

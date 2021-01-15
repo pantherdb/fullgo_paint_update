@@ -1,3 +1,5 @@
+include config.mk
+
 ### Working directory where files will be downloaded and built for each release (e.g. "2018-06-19_fullgo") - Need to make into makefile argument
 ### should create new base folder derived from current date, unless base path argument is specified (for example, if incomplete update is continued on later dates)
 ### maybe we should just call this 'target', adhering to GO pipeline then rename after everything's done?
@@ -34,7 +36,7 @@ export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/
 export TAXON_ID_PATH = scripts/pthr14_1_code_taxId.txt
 export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/DBload/node.dat
 export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/treeNodes
-else
+else ifeq ($(PANTHER_VERSION),15.0)
 export PANTHER_VERSION_DATE = 20200214
 export CLS_VER_ID = 27
 export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/identifier.dat
@@ -42,6 +44,14 @@ export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/
 export TAXON_ID_PATH = scripts/pthr15_code_taxId.txt
 export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/node.dat
 export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/treeNodes
+else
+export PANTHER_VERSION_DATE = 20201201
+export CLS_VER_ID = 28
+export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/identifier.dat
+export GENE_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/gene.dat
+export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/pthr16_code_taxId.txt
+export NODE_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/node.dat
+export TREE_NODES_DIR = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/treeNodes
 endif
 
 ########## GAF CREATION ##########
