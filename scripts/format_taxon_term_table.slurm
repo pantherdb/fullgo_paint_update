@@ -6,6 +6,7 @@
 #SBATCH --partition=thomas
 #SBATCH --mail-type=END,FAIL
 
+module load openjdk
 . env/bin/activate
 
 ./gaferencer-0.4.1/bin/gaferencer -J-Xmx96G taxa --contexts resources/go_context.jsonld --ontfile true $BASE_PATH/go-plus.owl resources/paint_taxons_15.txt $BASE_PATH/new_table_file

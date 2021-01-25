@@ -1,6 +1,6 @@
 #!/bin/tcsh
 
-source /home/pmd-02/pdt/pdthomas/panther/cshrc.panther
+source /project/pdthomas_136/pdt/pdthomas/panther/cshrc.panther
 
 perl $PWD/scripts/fullGoMappingPthrHierarchy.pl \
 -f $FULL_GAF_FILES_PATH/group_$SLURM_PROCID/ \

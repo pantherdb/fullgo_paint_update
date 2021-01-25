@@ -39,17 +39,17 @@ export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/tr
 else ifeq ($(PANTHER_VERSION),15.0)
 export PANTHER_VERSION_DATE = 20200214
 export CLS_VER_ID = 27
-export IDENTIFIER_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/identifier.dat
-export GENE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/gene.dat
+export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/identifier.dat
+export GENE_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr15_code_taxId.txt
-export NODE_PATH = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/DBload/node.dat
-export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER15.0/library_building/treeNodes
+export NODE_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/node.dat
+export TREE_NODES_DIR = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/treeNodes
 else
 export PANTHER_VERSION_DATE = 20201201
 export CLS_VER_ID = 28
 export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/identifier.dat
 export GENE_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/gene.dat
-export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/pthr16_code_taxId.txt
+export TAXON_ID_PATH = scripts/pthr16_code_taxId.txt
 export NODE_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/node.dat
 export TREE_NODES_DIR = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/treeNodes
 endif
@@ -375,9 +375,10 @@ setup_directories:
 	R_DIR=$*resources envsubst < scripts/cut_uniprot_ids.slurm > $*cut_uniprot_ids.slurm
 	sbatch --wait $*cut_uniprot_ids.slurm
 
-.PRECIOUS: %resources/complex_terms.tsv
-%resources/complex_terms.tsv:
-	bin/robot extract --method MIREOT --input $(BASE_PATH)/go.obo --branch-from-term GO:0032991 export --format tsv --header "ID" --export $@
+.PRECIOUS: %/resources/complex_terms.tsv
+%/resources/complex_terms.tsv:
+	envsubst < scripts/robot_complex_terms.slurm > $*/robot_complex_terms.slurm
+	sbatch --wait $*/robot_complex_terms.slurm
 
 paint_annotation:
 	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql -o $(BASE_PATH)/resources/$(ANNOT)
