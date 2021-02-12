@@ -42,7 +42,7 @@ export CLS_VER_ID = 27
 export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/identifier.dat
 export GENE_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr15_code_taxId.txt
-export NODE_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/node.dat
+export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/node.dat
 export TREE_NODES_DIR = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/treeNodes
 else
 export PANTHER_VERSION_DATE = 20201201
@@ -50,7 +50,7 @@ export CLS_VER_ID = 28
 export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/identifier.dat
 export GENE_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr16_code_taxId.txt
-export NODE_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/node.dat
+export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/node.dat
 export TREE_NODES_DIR = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/treeNodes
 endif
 
@@ -99,7 +99,7 @@ download_fullgo:
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/go.obo
-	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/extensions/go-plus.owl
+	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/extensions/go-gaf.owl
 	$(MAKE) make_profile
 	$(MAKE) make_readme
 
