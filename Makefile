@@ -10,7 +10,7 @@ export FULL_GAF_FILES_PATH = $(shell realpath $(GAF_FILES_PATH))
 export PWD = $(shell pwd)
 GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')
 export PANTHER_VERSION ?= 15.0
-export GAF_VERSION ?= 2.1
+export GAF_VERSION ?= 2.2
 
 ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
@@ -66,7 +66,7 @@ export ANNOT_QUALIFIER = paint_annotation_qualifier
 ### -g go_aggregate (from database)
 export GO_AGG = go_aggregate
 ### -t TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
-export TAIR_MAP = /auto/rcf-proj3/hm/mi/PAINT/Analysis/TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
+export TAIR_MAP = resources/TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
 ### -u Mapping to support "TAIR=locus" long IDs
 export ARAPORT_MAP = resources/uniprot_to_araport_map_gaf.tsv
 ### -c evidence (from database)
