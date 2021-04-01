@@ -249,7 +249,7 @@ while (my $line = <QA>){
     if ($qual =~/CONTRIBUTES|COLOCALIZES/){
         $qual=~tr/[A-Z]/[a-z]/;
     }
-    $qualifier{$annotation_id} = $qual;
+    $qualifier{$annotation_id}{$qual}=1;  # Support multiple quals
 }
 close (QA);
 
@@ -419,9 +419,10 @@ foreach my $annotation_id (keys %annotation){
         $ontology = 'P';
     }
     
-    my $qual;
+    my $qual = '';
     if (defined $qualifier{$annotation_id}){
-        $qual = $qualifier{$annotation_id};
+        # Get full "|"-separated format
+        $qual = qualOutput(keys %{$qualifier{$annotation_id}});
     }
     
     my $db_ref = 'PMID:21873635';
@@ -524,9 +525,16 @@ foreach my $annotation_id (keys %annotation){
             if (defined $exp_qualifier{$gene} && defined $exp_qualifier{$gene}{$go}){
                 foreach my $ev_id (keys %{$exp_qualifier{$gene}{$go}}){
                     foreach my $exp_qual (keys %{$exp_qualifier{$gene}{$go}{$ev_id}}){
-                        if ($qual eq $exp_qual) {
-                            # IBA qualifier is valid if agreement w/ any same-term experimental annotation qualifier
-                            $qual_supported=1;
+                        @quals = split(/\|/, $qual);
+                        if (!@quals){
+                            @quals = ('');
+                        }
+                        foreach my $q (@quals){
+                            # exp_qual will be either NOT, colocalizes_with, contributes_to, or ''
+                            if ($q eq $exp_qual) {
+                                # IBA qualifier is valid if agreement w/ any same-term experimental annotation qualifier
+                                $qual_supported=1;
+                            }
                         }
                     }
                 }
@@ -706,5 +714,22 @@ sub findGeneInPTN{
     }
     return %leaf;
     
+}
+
+sub qualOutput{
+    my $negated;
+    my @quals;
+    foreach my $q (@_){
+        if ($q eq "NOT"){
+            $negated=1;
+        }else{
+            push (@quals, $q);
+        }
+    }
+    if ($negated){
+        unshift (@quals, "NOT");
+    }
+    my $qual_output = join ("\|", @quals);
+    return $qual_output;
 }
 
