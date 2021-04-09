@@ -1,0 +1,42 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX in_taxon: <http://purl.obolibrary.org/obo/RO_0002162>
+INSERT {
+  ?ancestor a owl:Class .
+  ?descendant a owl:Class .
+  ?ancestor rdfs:subClassOf ?supertaxon .
+  ?descendant rdfs:subClassOf ?supertaxon .
+  ?descendant owl:disjointWith ?ancestor .
+  ?subtaxon rdfs:subClassOf ?descendant .
+  ?ancestor rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty in_taxon: ;
+    owl:someValuesFrom ?ancestor
+  ] .
+  ?descendant rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty in_taxon: ;
+    owl:someValuesFrom ?descendant
+  ] .
+  [  a owl:Restriction ;
+     owl:onProperty in_taxon: ;
+     owl:someValuesFrom ?ancestor ;
+     owl:disjointWith [
+       a owl:Restriction ;
+       owl:onProperty in_taxon: ;
+       owl:someValuesFrom ?descendant 
+       ]
+  ] .
+}
+WHERE {
+  ?supertaxon a owl:Class .
+  OPTIONAL { 
+    ?subtaxon rdfs:subClassOf ?supertaxon . 
+    FILTER(isIRI(?subtaxon))
+    FILTER(STRSTARTS(STR(?subtaxon), "http://purl.obolibrary.org/obo/NCBITaxon_"))
+  }
+  FILTER(isIRI(?supertaxon))
+  FILTER(STRSTARTS(STR(?supertaxon), "http://purl.obolibrary.org/obo/NCBITaxon_"))
+  BIND(IRI(REPLACE(STR(?supertaxon), "http://purl.obolibrary.org/obo/NCBITaxon_", "http://purl.obolibrary.org/obo/NCBITaxon_Ancestor_")) AS ?ancestor)
+  BIND(IRI(REPLACE(STR(?supertaxon), "http://purl.obolibrary.org/obo/NCBITaxon_", "http://purl.obolibrary.org/obo/NCBITaxon_Descendant_")) AS ?descendant)
+}
