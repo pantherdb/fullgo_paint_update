@@ -1,0 +1,6 @@
+{
+  "@context": {
+    "GO": "http://purl.obolibrary.org/obo/GO_",
+    "NCBITaxon": "http://purl.obolibrary.org/obo/NCBITaxon_Ancestor_"
+  }
+}
