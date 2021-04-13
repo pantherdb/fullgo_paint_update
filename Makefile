@@ -153,7 +153,6 @@ generate_go_hierarchy:
 
 TaxonConstraintsLookup.txt:
 	wget -P $(BASE_PATH) http://data.pantherdb.org/PANTHER15.0/globals/species_pthr15_annot.nhx
-	robot query -i $(BASE_PATH)/go-gaf.owl --update scripts/sparql/ancestral-species.rq -o $(BASE_PATH)/go-gaf-anc-desc.ofn
 	ORGANISM_DAT=$(ORGANISM_DAT) envsubst < scripts/format_taxon_term_table.slurm > $(BASE_PATH)/format_taxon_term_table.slurm
 	sbatch $(BASE_PATH)/format_taxon_term_table.slurm
 
