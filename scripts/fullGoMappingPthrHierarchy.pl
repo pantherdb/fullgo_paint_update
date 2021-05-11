@@ -265,6 +265,7 @@ for my $gaf (readdir GO) {
 		    #print "$gsym\t";
 			$gsym =~ s/\|/\\/g;
 		  }
+		  $qualifier = &checkQualifier($qualifier);
 		  
 		  $tax1 =~ s/^\s+|\s+$//g;
 		  my ($taxon, $tax) = split(':', $tax1);
@@ -445,6 +446,24 @@ sub addAnnotDetails{
 	my $ref1=$with."\t".$xref."\t".$date."\t".$db;
 	
 	$refre{"$gid"."$goacc"."$ev_code"}=$ref1;
+}
+
+sub checkQualifier{
+	my ($qual) = @_;
+
+	@quals = split(/\|/, $qual);
+	my @new_quals;
+	for my $q (@quals){
+		# Only pass through qualifiers if NOT or contributes_to or colocalizes_with.
+		# So, drop gp2term relations. We may change this when we decide what PAINT should
+		#  do with these.
+		if ($q eq 'NOT' || $q eq 'contributes_to' || $q eq 'colocalizes_with'){
+			push(@new_quals, $q);
+		}
+	}
+	my $new_qual = join("\|", @new_quals);
+
+	return $new_qual;
 }
  
  sub usage {
