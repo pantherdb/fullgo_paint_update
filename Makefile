@@ -40,18 +40,18 @@ else ifeq ($(PANTHER_VERSION),15.0)
 export PANTHER_VERSION_DATE = 20200214
 export CLS_VER_ID = 27
 export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/identifier.dat
-export GENE_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/gene.dat
+export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr15_code_taxId.txt
 export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/node.dat
-export TREE_NODES_DIR = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/treeNodes
+export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/treeNodes
 else
 export PANTHER_VERSION_DATE = 20201201
 export CLS_VER_ID = 28
 export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/identifier.dat
-export GENE_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/gene.dat
+export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/gene.dat
 export TAXON_ID_PATH = scripts/pthr16_code_taxId.txt
 export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/node.dat
-export TREE_NODES_DIR = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/treeNodes
+export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/treeNodes
 endif
 
 ########## GAF CREATION ##########
@@ -379,6 +379,10 @@ setup_directories:
 %/resources/complex_terms.tsv:
 	envsubst < scripts/robot_complex_terms.slurm > $*/robot_complex_terms.slurm
 	sbatch --wait $*/robot_complex_terms.slurm
+
+%/resources/go_aspects.tsv:
+	envsubst < scripts/robot_go_aspects.slurm > $*/robot_go_aspects.slurm
+	sbatch --wait $*/robot_go_aspects.slurm
 
 paint_annotation:
 	python3 scripts/db_caller.py scripts/sql/paint_annotation.sql -o $(BASE_PATH)/resources/$(ANNOT)
