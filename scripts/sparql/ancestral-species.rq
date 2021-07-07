@@ -8,6 +8,7 @@ INSERT {
   ?descendant rdfs:subClassOf ?supertaxon .
   ?descendant owl:disjointWith ?ancestor .
   ?subtaxon rdfs:subClassOf ?descendant .
+  ?ancestor rdfs:label ?ancestor_label .
   ?ancestor rdfs:subClassOf [
     a owl:Restriction ;
     owl:onProperty in_taxon: ;
@@ -35,8 +36,12 @@ WHERE {
     FILTER(isIRI(?subtaxon))
     FILTER(STRSTARTS(STR(?subtaxon), "http://purl.obolibrary.org/obo/NCBITaxon_"))
   }
+  OPTIONAL {
+    ?supertaxon rdfs:label $superlabel
+  }
   FILTER(isIRI(?supertaxon))
   FILTER(STRSTARTS(STR(?supertaxon), "http://purl.obolibrary.org/obo/NCBITaxon_"))
   BIND(IRI(REPLACE(STR(?supertaxon), "http://purl.obolibrary.org/obo/NCBITaxon_", "http://purl.obolibrary.org/obo/NCBITaxon_Ancestor_")) AS ?ancestor)
   BIND(IRI(REPLACE(STR(?supertaxon), "http://purl.obolibrary.org/obo/NCBITaxon_", "http://purl.obolibrary.org/obo/NCBITaxon_Descendant_")) AS ?descendant)
+  BIND(CONCAT("Ancestral_", STR($superlabel)) AS ?ancestor_label)
 }
