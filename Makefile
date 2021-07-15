@@ -360,6 +360,11 @@ create_gafs: setup_directories pombe_sources paint_annotation paint_evidence pai
 	envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
 	sbatch $(BASE_PATH)/createGAF.slurm
 
+create_gafs_from_xml:
+	IBA_XML_DIR=$(BASE_PATH)/leafIBAInfo GO_RELEASE_DATE=$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g') \
+	envsubst < scripts/format_xml_iba_to_gaf.slurm > $(BASE_PATH)/format_xml_iba_to_gaf.slurm
+	sbatch $(BASE_PATH)/format_xml_iba_to_gaf.slurm
+
 setup_directories:
 	mkdir -p $(BASE_PATH)/resources
 	mkdir -p $(IBA_DIR)
