@@ -386,7 +386,7 @@ setup_directories:
 	sbatch --wait $*/robot_complex_terms.slurm
 
 %/resources/go_aspects.tsv:
-	envsubst < scripts/robot_go_aspects.slurm > $*/robot_go_aspects.slurm
+	BASE_PATH=$* envsubst < scripts/robot_go_aspects.slurm > $*/robot_go_aspects.slurm
 	sbatch --wait $*/robot_go_aspects.slurm
 
 paint_annotation:
