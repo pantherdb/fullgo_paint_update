@@ -18,4 +18,5 @@ format_xml_iba_to_gaf.py -f $IBA_XML_DIR \
 -a GAF \
 -p $PANTHER_VERSION \
 -r $GO_RELEASE_DATE \
--u $BASE_PATH/resources/panther_blacklist.txt
+-u $BASE_PATH/resources/panther_blacklist.txt \
+-b $BASE_PATH/IBD
