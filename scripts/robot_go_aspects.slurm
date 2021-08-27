@@ -6,8 +6,9 @@
 #SBATCH --partition=thomas
 #SBATCH --mail-type=END,FAIL
 
+module load gcc/8.3.0
 module load openjdk
 
 bin/robot export --input $BASE_PATH/go.obo --format tsv --header "ID|hasOBONamespace" --export $BASE_PATH/resources/go_aspects.tsv
-awk '$$2 != ""' $BASE_PATH/resources/go_aspects.tsv | tail -n +2 > $BASE_PATH/resources/go_aspects.tsv.tmp
+awk '$2 != ""' $BASE_PATH/resources/go_aspects.tsv | tail -n +2 > $BASE_PATH/resources/go_aspects.tsv.tmp
 mv $BASE_PATH/resources/go_aspects.tsv.tmp $BASE_PATH/resources/go_aspects.tsv
