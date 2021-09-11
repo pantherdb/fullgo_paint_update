@@ -92,14 +92,9 @@ export PAINT_ANNOT_B_TABLE = paint_annotation
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH)
-	wget -r -l1 -nd --no-parent -P $(GAF_FILES_PATH) -A "gaf.gz" http://current.geneontology.org/annotations/
-	wget -P $(GAF_FILES_PATH) http://current.geneontology.org/products/annotations/paint_other.gaf.gz
-	wget -P $(BASE_PATH) http://current.geneontology.org/metadata/release-date.json
-	wget -P $(BASE_PATH) http://current.geneontology.org/metadata/release-archive-doi.json
+	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u http://current.geneontology.org/
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
-	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/go.obo
-	wget -P $(BASE_PATH) http://current.geneontology.org/ontology/extensions/go-gaf.owl
 	$(MAKE) make_profile
 	$(MAKE) make_readme
 
@@ -168,6 +163,7 @@ make_profile_from_db:
 
 make_readme:
 	echo "GO source files downloaded on $(shell date +%Y-%m-%d)" > $(BASE_PATH)/README
+	python3 scripts/make_readme.py -r $(BASE_PATH)/release-date.json -d $(BASE_PATH)/downloaded_files.txt >> $(BASE_PATH)/README
 
 raw_table_count:
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,goanno_wf

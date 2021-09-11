@@ -7,3 +7,5 @@ pthr_db_caller==0.0.18
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
+bs4
+tqdm
