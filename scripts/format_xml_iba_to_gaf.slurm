@@ -20,3 +20,6 @@ format_xml_iba_to_gaf.py -f $IBA_XML_DIR \
 -r $GO_RELEASE_DATE \
 -u $BASE_PATH/resources/panther_blacklist.txt \
 -b $BASE_PATH/IBD
+
+perl scripts/fix_pombe_symbol.pl -i $IBA_DIR/gene_association.paint_pombase.gaf -p $BASE_PATH/resources/allNames.tsv -d $BASE_PATH/resources/sysID2product.tsv > $BASE_PATH/gene_association.paint_pombase.fixed.gaf
+cp -f $BASE_PATH/gene_association.paint_pombase.fixed.gaf $IBA_DIR/gene_association.paint_pombase.gaf
