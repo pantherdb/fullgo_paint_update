@@ -39,7 +39,7 @@ $evidence = $opt_c if ($opt_c);   # -c for evidence file
 $taxon = $opt_T if ($opt_T);      # -T for the taxon file
 $gene_dat = $opt_G if ($opt_G);   # -G for the gene.dat file in DB load folder
 $gene_blacklist = $opt_b if ($opt_b);   # -b for the obsoleted UniProt ID blacklist file
-$complex_termlist = $opt_C if ($opt_C);   # -b for the obsoleted UniProt ID blacklist file
+$complex_termlist = $opt_C if ($opt_C);   # -C for the protein-containing complex descendants file
 $gaf_version = $opt_s if ($opt_s); # -s for output GAF specification version 2.1 (default) or 2.2
 $errFile = $opt_e if ($opt_e);    # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);         # -v for (v)erbose (debug info to STDERR)
@@ -424,6 +424,10 @@ foreach my $annotation_id (keys %annotation){
         # Get full "|"-separated format
         $qual = qualOutput(keys %{$qualifier{$annotation_id}});
     }
+    my @quals = split(/\|/, $qual);  # Used in comparing PAINT qualifiers against experimental qualifiers
+    if (!@quals){
+        @quals = ('');
+    }
     
     my $db_ref = 'PMID:21873635';
     
@@ -519,16 +523,12 @@ foreach my $annotation_id (keys %annotation){
     }
     if (defined $node_genes{$ptn}){
         foreach my $gene (keys %{$node_genes{$ptn}}){
-            my %positive_quals = (''=>1, 'colocalizes_with'=>1, 'contributes_to'=>1);  # no qualifier, colocalizes_with, and contributes_to are considered positive
-            my %negative_quals = ('NOT'=>1);  # NOT is negative
+            # my %positive_quals = (''=>1, 'colocalizes_with'=>1, 'contributes_to'=>1);  # no qualifier, colocalizes_with, and contributes_to are considered positive
+            # my %negative_quals = ('NOT'=>1);  # NOT is negative
             my $qual_supported=0;
             if (defined $exp_qualifier{$gene} && defined $exp_qualifier{$gene}{$go}){
                 foreach my $ev_id (keys %{$exp_qualifier{$gene}{$go}}){
                     foreach my $exp_qual (keys %{$exp_qualifier{$gene}{$go}{$ev_id}}){
-                        @quals = split(/\|/, $qual);
-                        if (!@quals){
-                            @quals = ('');
-                        }
                         foreach my $q (@quals){
                             # exp_qual will be either NOT, colocalizes_with, contributes_to, or ''
                             if ($q eq $exp_qual) {
