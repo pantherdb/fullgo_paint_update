@@ -6,4 +6,4 @@
 #SBATCH --partition=thomas
 #SBATCH --mail-type=END,FAIL
 
-gunzip $FULL_GAF_FILES_PATH/*.gz
+gunzip $GAF_FILES_PATH/*.gz
