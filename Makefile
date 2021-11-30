@@ -146,10 +146,10 @@ generate_go_hierarchy:
 	envsubst < scripts/hierarchyfinalstep.slurm > $(BASE_PATH)/hierarchyfinalstep_$(PANTHER_VERSION).slurm
 	sbatch $(BASE_PATH)/hierarchyfinalstep_$(PANTHER_VERSION).slurm
 
-TaxonConstraintsLookup.txt:
-	wget -P $(BASE_PATH) http://data.pantherdb.org/PANTHER15.0/globals/species_pthr15_annot.nhx
-	ORGANISM_DAT=$(ORGANISM_DAT) envsubst < scripts/format_taxon_term_table.slurm > $(BASE_PATH)/format_taxon_term_table.slurm
-	sbatch $(BASE_PATH)/format_taxon_term_table.slurm
+%/TaxonConstraintsLookup.txt:
+	wget -P $* http://data.pantherdb.org/PANTHER15.0/globals/species_pthr15_annot.nhx
+	ORGANISM_DAT=$(ORGANISM_DAT) envsubst < scripts/format_taxon_term_table.slurm > $*/format_taxon_term_table.slurm
+	sbatch $*/format_taxon_term_table.slurm
 
 get_fullgo_date:
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
