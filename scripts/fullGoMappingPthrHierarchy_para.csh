@@ -4,7 +4,7 @@ source /project/pdthomas_136/pdt/pdthomas/panther/cshrc.panther
 
 perl $PWD/scripts/fullGoMappingPthrHierarchy.pl \
 -f $FULL_GAF_FILES_PATH/group_$SLURM_PROCID/ \
--t $PWD/$TAXON_ID_PATH \
+-t $TAXON_ID_PATH \
 -i $IDENTIFIER_PATH \
 -g $GENE_PATH \
 -o $FULL_BASE_PATH/go.obo \
