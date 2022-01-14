@@ -33,7 +33,7 @@ getopts('h:f:t:i:g:p:m:o:x:b:c:d:y:a:u:e:v:w:H:P:M:B:C:V') || &usage();
 &usage() if ($opt_h);          # -h for (h)elp
 $fullgo = $opt_f if ($opt_f);   # -f for (f) full gene Ontology association complete File (GAF file)
 $dir = $opt_d if ($opt_d);	# -d for base directory. where files will be saved
-$tax = $opt_t if ($opt_t);  # -t for (t)axon File
+$tax = $opt_t if ($opt_t);  # -t for (t)axon File (organism.dat)
 $ide = $opt_i if ($opt_i);   # -i for (i)dentifier File
 $gen = $opt_g if ($opt_g);  # -g for (g)ene File
 $xcode = $opt_x if ($opt_x);  # -x for e(x)perimental codes File
@@ -84,7 +84,8 @@ print FN3 "SequenceID\tGOHierarchy\tEvidenceCode\tWith\tReference\tDate\tDB\n";
 while (<TAX>) 
 {
 	 chomp($_);
-	my ($code,$taxid) = split('\t');
+	# Parsing organism.dat
+	my ($organism, $conversion, $code, $name, $common_name, $taxid, @rest) = split('\t');
 	chomp($code,$taxid);
 	$taxid =~ s/^\s+|\s+$//g;
 	$code =~ s/^\s+|\s+$//g;
