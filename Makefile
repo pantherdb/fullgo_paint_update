@@ -41,7 +41,7 @@ export PANTHER_VERSION_DATE = 20200214
 export CLS_VER_ID = 27
 export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/identifier.dat
 export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/gene.dat
-export TAXON_ID_PATH = scripts/pthr15_code_taxId.txt
+export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/organism.dat
 export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/node.dat
 export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/treeNodes
 else
@@ -49,7 +49,7 @@ export PANTHER_VERSION_DATE = 20201201
 export CLS_VER_ID = 28
 export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/identifier.dat
 export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/gene.dat
-export TAXON_ID_PATH = scripts/pthr16_code_taxId.txt
+export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/organism.dat
 export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/node.dat
 export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/treeNodes
 endif
@@ -148,7 +148,7 @@ generate_go_hierarchy:
 
 %/TaxonConstraintsLookup.txt:
 	wget -P $* http://data.pantherdb.org/PANTHER15.0/globals/species_pthr15_annot.nhx
-	ORGANISM_DAT=$(ORGANISM_DAT) envsubst < scripts/format_taxon_term_table.slurm > $*/format_taxon_term_table.slurm
+	BASE_PATH=$* ORGANISM_DAT=$(ORGANISM_DAT) envsubst < scripts/format_taxon_term_table.slurm > $*/format_taxon_term_table.slurm
 	sbatch $*/format_taxon_term_table.slurm
 
 get_fullgo_date:
@@ -401,12 +401,12 @@ organism_taxon:
 	python3 scripts/db_caller.py scripts/sql/organism_taxon.sql -o $(BASE_PATH)/resources/$(TAXON)
 
 pombe_sources:
-	wget ftp://ftp.pombase.org/nightly_update/misc/allNames.tsv -O $(BASE_PATH)/resources/allNames.tsv
+	wget https://www.pombase.org/nightly_update/misc/gene_IDs_names.tsv -O $(BASE_PATH)/resources/gene_IDs_names.tsv
 	wget ftp://ftp.pombase.org/nightly_update/misc/sysID2product.tsv -O $(BASE_PATH)/resources/sysID2product.tsv
 
 # Now in createGAF.slurm
 repair_gaf_symbols:
-	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p $(BASE_PATH)/resources/allNames.tsv -d $(BASE_PATH)/resources/sysID2product.tsv > $(IBA_DIR)/gene_association.paint_pombase.gaf
+	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p $(BASE_PATH)/resources/gene_IDs_names.tsv -d $(BASE_PATH)/resources/sysID2product.tsv > $(IBA_DIR)/gene_association.paint_pombase.gaf
 	# cp $(BASE_PATH)/gene_association.paint_pombase.fixed.gaf $(IBA_DIR)/gene_association.paint_pombase.gaf
 
 run_reports:
