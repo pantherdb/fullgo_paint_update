@@ -156,7 +156,7 @@ generate_go_hierarchy:
 
 %/TaxonConstraintsLookup.txt:
 	wget -P $* http://data.pantherdb.org/PANTHER$(PANTHER_VERSION)/globals/species_pthr_annot.nhx
-	BASE_PATH=$* ORGANISM_DAT=$(ORGANISM_DAT) envsubst < scripts/format_taxon_term_table.slurm > $*/format_taxon_term_table.slurm
+	BASE_PATH=$* envsubst < scripts/format_taxon_term_table.slurm > $*/format_taxon_term_table.slurm
 	sbatch $*/format_taxon_term_table.slurm
 
 get_fullgo_date:
