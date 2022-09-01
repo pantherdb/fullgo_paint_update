@@ -1,4 +1,5 @@
 #! /usr/local/bin/perl
+use POSIX qw(strftime);
 
 #####
 #####
@@ -22,7 +23,7 @@
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:n:N:G:b:t:u:c:T:e:vVh') || &usage();
+getopts('o:i:a:q:g:n:N:G:b:C:t:u:c:T:e:s:vVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
@@ -38,6 +39,8 @@ $evidence = $opt_c if ($opt_c);   # -c for evidence file
 $taxon = $opt_T if ($opt_T);      # -T for the taxon file
 $gene_dat = $opt_G if ($opt_G);   # -G for the gene.dat file in DB load folder
 $gene_blacklist = $opt_b if ($opt_b);   # -b for the obsoleted UniProt ID blacklist file
+$complex_termlist = $opt_C if ($opt_C);   # -C for the protein-containing complex descendants file
+$gaf_version = $opt_s if ($opt_s); # -s for output GAF specification version 2.1 (default) or 2.2
 $errFile = $opt_e if ($opt_e);    # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);         # -v for (v)erbose (debug info to STDERR)
 $verbose = 2 if ($opt_V);         # -V for (V)ery verbose (debug info STDERR)
@@ -45,6 +48,11 @@ $verbose = 2 if ($opt_V);         # -V for (V)ery verbose (debug info STDERR)
 ###
 ### PUT YOUR CODE HERE
 ###
+
+my %default_qualifiers = (F => 'enables', P => 'involved_in', C => 'is_active_in', complex => 'part_of');
+if (!$gaf_version) {
+    $gaf_version = '2.1';
+}
 
 my $go_version;
 my $panther_version;
@@ -241,7 +249,7 @@ while (my $line = <QA>){
     if ($qual =~/CONTRIBUTES|COLOCALIZES/){
         $qual=~tr/[A-Z]/[a-z]/;
     }
-    $qualifier{$annotation_id} = $qual;
+    $qualifier{$annotation_id}{$qual}=1;  # Support multiple quals
 }
 close (QA);
 
@@ -290,12 +298,24 @@ close (GD);
 #########################################
 
 my %blacklisted_genes;
-open (BL, $gene_blacklist) or die "Could not open file $gene_blacklist\n";
+open (BL, $gene_blacklist);
 while (my $line=<BL>){
     chomp $line;
     $blacklisted_genes{$line}=1;
 }
 close (BL);
+
+#########################################
+# Parse the complex_termlist file
+#########################################
+
+my %complex_terms;
+open (CL, $complex_termlist);
+while (my $line=<CL>){
+    chomp $line;
+    $complex_terms{$line}=1;
+}
+close (CL);
 
 ##########################################
 # Parse annotation file.
@@ -413,9 +433,14 @@ foreach my $annotation_id (keys %annotation){
         $ontology = 'P';
     }
     
-    my $qual;
+    my $qual = '';
     if (defined $qualifier{$annotation_id}){
-        $qual = $qualifier{$annotation_id};
+        # Get full "|"-separated format
+        $qual = qualOutput(keys %{$qualifier{$annotation_id}});
+    }
+    my @quals = split(/\|/, $qual);  # Used in comparing PAINT qualifiers against experimental qualifiers
+    if (!@quals){
+        @quals = ('');
     }
     
     my $db_ref = 'PMID:21873635';
@@ -474,11 +499,11 @@ foreach my $annotation_id (keys %annotation){
     # print the rest as 'others'
     #####################################################
     
-    next if ($confidence_code =~/IRD/);
+    next if ($confidence_code =~/IRD|TCV/);
     
     # First, create a hash of all genes under an annotated node.
     
-    my %not_descendants;  # leaf of the descendant nodes that have IKR or IRD annotations.
+    my %not_descendants;  # descendant nodes that have IKR or IRD annotations.
     if (defined $nots{$annotation_id}){
         foreach $not_annotation_id (keys %{$nots{$annotation_id}}){
             my $confidence_code = $nots{$annotation_id}{$not_annotation_id};
@@ -512,15 +537,18 @@ foreach my $annotation_id (keys %annotation){
     }
     if (defined $node_descendants{$ptn}){
         foreach my $gene (keys %{$node_descendants{$ptn}}){
-            my %positive_quals = (''=>1, 'colocalizes_with'=>1, 'contributes_to'=>1);  # no qualifier, colocalizes_with, and contributes_to are considered positive
-            my %negative_quals = ('NOT'=>1);  # NOT is negative
+            # my %positive_quals = (''=>1, 'colocalizes_with'=>1, 'contributes_to'=>1);  # no qualifier, colocalizes_with, and contributes_to are considered positive
+            # my %negative_quals = ('NOT'=>1);  # NOT is negative
             my $qual_supported=0;
             if (defined $exp_qualifier{$gene} && defined $exp_qualifier{$gene}{$go}){
                 foreach my $ev_id (keys %{$exp_qualifier{$gene}{$go}}){
                     foreach my $exp_qual (keys %{$exp_qualifier{$gene}{$go}{$ev_id}}){
-                        if ($qual eq $exp_qual) {
-                            # IBA qualifier is valid if agreement w/ any same-term experimental annotation qualifier
-                            $qual_supported=1;
+                        foreach my $q (@quals){
+                            # exp_qual will be either NOT, colocalizes_with, contributes_to, or ''
+                            if ($q eq $exp_qual) {
+                                # IBA qualifier is valid if agreement w/ any same-term experimental annotation qualifier
+                                $qual_supported=1;
+                            }
                         }
                     }
                 }
@@ -532,6 +560,23 @@ foreach my $annotation_id (keys %annotation){
                 $not_descendants{$gene}=1;
             }
             next if (defined $not_descendants{$gene});
+            
+            my $qual_output = $qual;
+            if ($gaf_version eq '2.2') {
+                my $default_qualifier;
+                if ($ontology eq 'C' && defined $complex_terms{$go}) {
+                    $default_qualifier = $default_qualifiers{'complex'};
+                } else {
+                    $default_qualifier = $default_qualifiers{$ontology};
+                }
+                # Add default qualifier if blank or "NOT"-only
+                if ($qual eq 'NOT') {
+                    $qual_output = "NOT|$default_qualifier";
+                } elsif ($qual eq '') {
+                    $qual_output = $default_qualifier;
+                }
+            }
+
             my $short_id;
             my $db;
             my $symbol;
@@ -539,6 +584,8 @@ foreach my $annotation_id (keys %annotation){
             my $gene_taxon;
             my $synonyms;
             my $org;
+            my $geneId;
+            my $uniprot;
             if ($gene =~ /^PTN/){
                 $short_id = $gene;
                 $db = "PANTHER";
@@ -574,7 +621,7 @@ foreach my $annotation_id (keys %annotation){
                     print STDERR "$gene -- no gene definition found.\n";
                 }
                 
-                my ($org, $geneId, $uniprot) = split(/\|/, $gene);
+                ($org, $geneId, $uniprot) = split(/\|/, $gene);
                 if (defined $taxon{$org}){
                     $gene_taxon=$taxon{$org};
                 }else{
@@ -586,10 +633,10 @@ foreach my $annotation_id (keys %annotation){
                 # Skip IBA for UniProt IDs that have since been obsoleted / missing from UniProt GPI
                 my ($prefix, $uniprot_id) = split(/\:/, $uniprot);
                 if (defined $blacklisted_genes{$uniprot_id}){
-                    print STDERR "Skipping - $uniprot is obsolete - missing from latest uniprot_protein.gpi.\n";
+                    print STDERR "Skipping - obsolete ID missing from latest uniprot_protein.gpi\ttaxon\:$gene_taxon\t$uniprot\n";
                     next;
                 }
-
+                
                 my $leaf_ptn;
                 if (defined $leaf_ptn{$gene}){
                     $leaf_ptn=$leaf_ptn{$gene};
@@ -598,10 +645,10 @@ foreach my $annotation_id (keys %annotation){
                 }
                 $synonyms = "$uniprot\|$leaf_ptn";
             }
-            
+
             next unless ($db);
             next unless ($short_id);
-            my $foo = "$db\t$short_id\t$symbol\t$qual\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with\t$ontology\t$def\t$synonyms\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t";
+            my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with\t$ontology\t$def\t$synonyms\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t";
             
             my $file_type;
             if ($org eq 'INTERNAL'){
@@ -645,10 +692,13 @@ foreach my $annotation_id (keys %annotation){
 
 foreach my $type (keys %IBAs){
     my $outFile = "gene_association.paint_$type.gaf";
+    my $datestring = strftime "%F", localtime;
 
     open (OUT, ">$outDir/$outFile");
-    print OUT "\!gaf-version: 2.1\n";
+    print OUT "\!gaf-version: $gaf_version\n";
     print OUT "\!Created on " . localtime . ".\n";
+    print OUT "\!generated-by: PANTHER\n";
+    print OUT "\!date-generated: $datestring\n";
     print OUT "\!PANTHER version: $panther_version.\n";
     print OUT "\!GO version: $go_version.\n";
         foreach my $line (keys %{$IBAs{$type}}){
@@ -719,7 +769,7 @@ sub findDescendantInPTN{
                     $desc{$longId}=1;
                 }else{
                     my $ptn = $an_ptn->{$parent};
-                    $desc{$longId}=1;
+                    $desc{$ptn}=1;
                     if (defined $parent_child_href->{$parent}){
                         my @a = keys %{$parent_child_href->{$parent}};
                         push (@childs, @a);
@@ -735,3 +785,21 @@ sub findDescendantInPTN{
     return %desc;
     
 }
+
+sub qualOutput{
+    my $negated;
+    my @quals;
+    foreach my $q (@_){
+        if ($q eq "NOT"){
+            $negated=1;
+        }else{
+            push (@quals, $q);
+        }
+    }
+    if ($negated){
+        unshift (@quals, "NOT");
+    }
+    my $qual_output = join ("\|", @quals);
+    return $qual_output;
+}
+
