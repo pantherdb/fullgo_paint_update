@@ -647,6 +647,8 @@ foreach my $annotation_id (keys %annotation){
                 $file_type = "cgd";
             }elsif ($org eq 'CHICK'){
                 $file_type = "chicken";
+            }elsif ($org eq 'XENTR'){
+                $file_type = "xenbase";
             }else{
                 $file_type = "other";
             }

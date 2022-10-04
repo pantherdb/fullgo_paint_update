@@ -163,6 +163,15 @@ def get_ibd_to_iba_counts(iba_folder, ibd_tuples):
     return iba_count_by_file, all_iba_count_by_file, taxons
 
 
+def calculate_percent_change(before, after):
+    if before == 0:
+        return "100.00"
+    if after == 0:
+        return "-100.00"    
+    percent_change = "%.2f" % (((after - before) / before) * 100)
+    return percent_change
+
+
 after_iba_folder = os.path.join(args.after_release_folder_root, "presubmission")
 added_iba_count_by_file, all_iba_counts_after, taxons_after = get_ibd_to_iba_counts(after_iba_folder, new_ibds)
 added_iba_count = sum([count for iba_file, count in added_iba_count_by_file.items()])
@@ -194,7 +203,7 @@ sheet.append_row(headers)
 for iba_filename in sorted(all_iba_files):
     before_count = all_iba_counts_before.get(iba_filename, 0)
     after_count = all_iba_counts_after.get(iba_filename, 0)
-    percent_change = "%.2f" % (((after_count - before_count) / before_count) * 100)
+    percent_change = calculate_percent_change(before_count, after_count)
     print_row = [iba_filename, before_count, after_count, percent_change]
     print("\t".join([str(i) for i in print_row]))
     sheet.append_row(print_row)
