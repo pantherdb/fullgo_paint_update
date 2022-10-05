@@ -323,12 +323,15 @@ close (CL);
 #########################################
 
 my %goParentToChild;
-my %goAncestorToDescendant;  # to be filled later
+my %goChildToParent;
+my %goAncestorToDescendant;  # cache hash, to be filled later
+my %goDescendantToAncestor;  # cache hash, to be filled later
 open (GPC, $goparentchild);
 while (my $line=<GPC>){
     chomp $line;
     my ($goParent, $goChild) = split(/\t/, $line);
     $goParentToChild{$goParent}{$goChild}=1;
+    $goChildToParent{$goChild}{$goParent}=1;
 }
 close (GPC);
 
@@ -690,9 +693,14 @@ foreach my $type (keys %IBAs){
         foreach my $line (keys %{$IBAs{$type}}){
             my $printThisLine=1;
             my ($gene, $qual, $goTerm) = &extractGeneQualTerm($line);
-            my @goDescendantTerms = &getDescendantTerms($goTerm);
-            foreach my $descTerm (@goDescendantTerms){
-                if (defined $geneQualTerms{$gene}{$qual}{$descTerm}){
+            my @goRelatedTerms;  # Could be descendants or ancestors
+            if (index($qual, "NOT") != -1){  # Is a NOT annotation, so print only most generic term
+                @goRelatedTerms = &getAncestorTerms($goTerm);
+            }else{
+                @goRelatedTerms = &getDescendantTerms($goTerm);
+            }
+            foreach my $relTerm (@goRelatedTerms){
+                if (defined $geneQualTerms{$gene}{$qual}{$relTerm}){
                     $printThisLine=0;
                     last;
                 }
@@ -766,6 +774,20 @@ sub getDescendantTerms{
     }
     $goAncestorToDescendant{$goTerm} = \@descendantTerms;
     return @descendantTerms;
+}
+
+sub getAncestorTerms{
+    my ($goTerm) = @_;
+    my @ancestorTerms;
+    if (defined $goDescendantToAncestor{$goTerm}){
+        return @{$goDescendantToAncestor{$goTerm}};
+    }
+    foreach my $parent (keys %{$goChildToParent{$goTerm}}){
+        push (@ancestorTerms, $parent);
+        push (@ancestorTerms, &getAncestorTerms($parent));
+    }
+    $goDescendantToAncestor{$goTerm} = \@ancestorTerms;
+    return @ancestorTerms;
 }
 
 sub qualOutput{
