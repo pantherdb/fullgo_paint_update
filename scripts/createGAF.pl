@@ -23,7 +23,7 @@ use POSIX qw(strftime);
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:n:N:G:b:C:t:u:c:T:e:s:vVh') || &usage();
+getopts('o:i:a:q:g:n:N:G:b:C:r:t:u:c:T:e:s:vVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
@@ -40,6 +40,7 @@ $taxon = $opt_T if ($opt_T);      # -T for the taxon file
 $gene_dat = $opt_G if ($opt_G);   # -G for the gene.dat file in DB load folder
 $gene_blacklist = $opt_b if ($opt_b);   # -b for the obsoleted UniProt ID blacklist file
 $complex_termlist = $opt_C if ($opt_C);   # -C for the protein-containing complex descendants file
+$goparentchild = $opt_r if ($opt_r);   # -r for the GO term parent-child relationship file
 $gaf_version = $opt_s if ($opt_s); # -s for output GAF specification version 2.1 (default) or 2.2
 $errFile = $opt_e if ($opt_e);    # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);         # -v for (v)erbose (debug info to STDERR)
@@ -317,6 +318,20 @@ while (my $line=<CL>){
 }
 close (CL);
 
+#########################################
+# Parse the goparentchild file
+#########################################
+
+my %goParentToChild;
+my %goAncestorToDescendant;  # to be filled later
+open (GPC, $goparentchild);
+while (my $line=<GPC>){
+    chomp $line;
+    my ($goParent, $goChild) = split(/\t/, $line);
+    $goParentToChild{$goParent}{$goChild}=1;
+}
+close (GPC);
+
 ##########################################
 # Parse annotation file.
 ##########################################
@@ -397,6 +412,7 @@ close (EV);
 ###########################################
 
 my %IBAs;
+my %geneQualTerms;
 
 print "\!gaf-version: 2.1\n";
 print "\!Created on " . localtime . ".\n";
@@ -617,6 +633,8 @@ foreach my $annotation_id (keys %annotation){
             next unless ($db);
             next unless ($short_id);
             my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t";
+            my $full_id = "$db:$short_id";
+            $geneQualTerms{$full_id}{$qual_output}{$go} = 1;
             
             my $file_type;
             if ($org eq 'MOUSE'){
@@ -670,10 +688,21 @@ foreach my $type (keys %IBAs){
     print OUT "\!PANTHER version: $panther_version.\n";
     print OUT "\!GO version: $go_version.\n";
         foreach my $line (keys %{$IBAs{$type}}){
+            my $printThisLine=1;
+            my ($gene, $qual, $goTerm) = &extractGeneQualTerm($line);
+            my @goDescendantTerms = &getDescendantTerms($goTerm);
+            foreach my $descTerm (@goDescendantTerms){
+                if (defined $geneQualTerms{$gene}{$qual}{$descTerm}){
+                    $printThisLine=0;
+                    last;
+                }
+            }
             # print OUT "$line\n";
-            my $msg = "$line\n";
-            $msg =~ s/\r//;
-            print OUT "$msg";
+            if ($printThisLine){
+                my $msg = "$line\n";
+                $msg =~ s/\r//;
+                print OUT "$msg";
+            }
         }
     close (OUT);
     
@@ -716,6 +745,27 @@ sub findGeneInPTN{
     }
     return %leaf;
     
+}
+
+sub extractGeneQualTerm{
+    my ($line) = @_;
+    my ($db, $gene_id, $symbol, $qual_output, $go, @rest)=split(/\t/, $line);
+    my $full_gene = "$db:$gene_id";
+    return $full_gene, $qual_output, $go;
+}
+
+sub getDescendantTerms{
+    my ($goTerm) = @_;
+    my @descendantTerms;
+    if (defined $goAncestorToDescendant{$goTerm}){
+        return @{$goAncestorToDescendant{$goTerm}};
+    }
+    foreach my $child (keys %{$goParentToChild{$goTerm}}){
+        push (@descendantTerms, $child);
+        push (@descendantTerms, &getDescendantTerms($child));
+    }
+    $goAncestorToDescendant{$goTerm} = \@descendantTerms;
+    return @descendantTerms;
 }
 
 sub qualOutput{

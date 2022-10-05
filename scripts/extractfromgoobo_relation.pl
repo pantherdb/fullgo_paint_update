@@ -2,10 +2,11 @@
 #use strict;
 
 use Getopt::Std;
-getopts('h:i:o:e:v:V') || &usage();
+getopts('h:i:o:Ie:v:V') || &usage();
 &usage() if ($opt_h);          # -h for (h)elp
 $input = $opt_i if ($opt_i);   # -i for (i)NPUT File
 $output = $opt_o if ($opt_o);  # -o for (o)utput
+$isaOnly = 1 if ($opt_I);      # -I for Extract (I)s_a relations only
 $errFile = $opt_e if ($opt_e); # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);      # -v for (v)erbose (debug info to STDERR)
 $verbose = 2 if ($opt_V);      # -V for (V)ery verbose (debug info to STDERR)
@@ -36,7 +37,7 @@ while (my $record=<GO>){
 			$isa =~ s/^\s+|\s+$//g;
 			print OUT "$isa\t$gid\n" if $isa =~ /^GO:/;
 		}
-		if ($line =~ /^relationship: part_of/) {
+		if (!$isaOnly && $line =~ /^relationship: part_of/) {
 			$isa1=(split(/!/, $line))[0];
 			$isa1 =~ s/relationship: part_of //g;
 			$isa1 =~ s/^\s+|\s+$//g;

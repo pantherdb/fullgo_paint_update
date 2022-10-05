@@ -112,6 +112,8 @@ extractfromgoobo:
 	wc -l $(BASE_PATH)/obsolete_go_terms.txt
 	perl scripts/extractfromgoobo_relation.pl -i $(BASE_PATH)/go.obo -o $(BASE_PATH)/goparentchild.tsv
 	wc -l $(BASE_PATH)/goparentchild.tsv
+	perl scripts/extractfromgoobo_relation.pl -i $(BASE_PATH)/go.obo -o $(BASE_PATH)/goparentchild_isaonly.tsv -I
+	wc -l $(BASE_PATH)/goparentchild_isaonly.tsv
 	perl scripts/FindAllParents.pl $(BASE_PATH)/goparentchild.tsv $(BASE_PATH)/AllParentsofGOTerms.txt
 	perl scripts/printHierarchy.pl $(BASE_PATH)/AllParentsofGOTerms.txt $(BASE_PATH)/FinalChildParent-Hierarchy.dat
 
