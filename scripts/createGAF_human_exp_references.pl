@@ -671,9 +671,11 @@ foreach my $annotation_id (keys %annotation){
                 my $with_long_id = $long_id_lookup{$with_id};
                 my $with_gene_symbol = $gene_symbol{$with_long_id};
                 my $with_gene_def = $gene_def{$with_long_id};
+                my ($with_org, $with_geneId, $with_uniprot) = split(/\|/, $with_long_id);
+                my $with_taxon_id = $taxon{$with_org};
 
                 # my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t";
-                my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with_id\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t\t$exp_gene_refs_str\t$with_gene_symbol\t$with_gene_def";
+                my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with_id\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t\t$exp_gene_refs_str\t$with_gene_symbol\t$with_gene_def\ttaxon\:$with_taxon_id";
                 # my $full_id = "$db:$short_id";
                 # $geneQualTerms{$full_id}{$qual_output}{$go} = 1;
                 
