@@ -280,7 +280,7 @@ for my $gaf (readdir GO) {
 			  #$mapped_pthrid{$pthrid}++;
 			  #push(@matched_ptherid, $pthrid);
 			  &addAnnotDetails($pthrid, $goacc, $ev_code, $with, $ref, $date, $dbname);
-			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref);
+			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $dbname);
 		  }
 		  elsif(((exists $go_id_to_pthrid{$go_gid}{$dbname}) && (defined $go_id_to_pthrid{$go_gid}{$dbname}))){
 		      #print MAT "$_\n";
@@ -289,7 +289,7 @@ for my $gaf (readdir GO) {
 			  #$mapped_pthrid{$pthrid}++;
 			  #push(@matched_ptherid, $pthrid);
 			  &addAnnotDetails($pthrid, $goacc, $ev_code, $with, $ref, $date, $dbname);
-			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref);
+			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $dbname);
 		  }
 		  elsif(((exists $go_id_to_pthrid{$go_gid}{$tax}) && (defined $go_id_to_pthrid{$go_gid}{$tax}))){
 		      #print MAT "$_\n";
@@ -300,7 +300,7 @@ for my $gaf (readdir GO) {
 			  #$mapped_pthrid{$pthrid}++;
 			  #push(@matched_ptherid, $pthrid);
 			  &addAnnotDetails($pthrid, $goacc, $ev_code, $with, $ref, $date, $dbname);
-			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref);
+			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $dbname);
 		  }
 		  
 		  elsif (((exists $alterid_to_pthrid{$go_gid}{$dbname}) && (defined $alterid_to_pthrid{$go_gid}{$dbname}))){
@@ -310,7 +310,7 @@ for my $gaf (readdir GO) {
 			  #$mapped_pthrid{$pthrid}++;
 			  #push(@matched_ptherid, $pthrid);
 			  &addAnnotDetails($pthrid, $goacc, $ev_code, $with, $ref, $date, $dbname);
-			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref);
+			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $dbname);
 		  }
 		  
 		  elsif (((exists $alterid_to_pthrid{$go_gid}{$tax}) && (defined $alterid_to_pthrid{$go_gid}{$tax}))){
@@ -320,7 +320,7 @@ for my $gaf (readdir GO) {
 			  #$mapped_pthrid{$pthrid}++;
 			  #push(@matched_ptherid, $pthrid);
 			  &addAnnotDetails($pthrid, $goacc, $ev_code, $with, $ref, $date, $dbname);
-			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref);
+			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $dbname);
 		  }
 		  
 		  elsif(((exists $go_id_to_pthrid{$gsym}{$dbname}) && (defined $go_id_to_pthrid{$gsym}{$dbname}))){
@@ -331,7 +331,7 @@ for my $gaf (readdir GO) {
 			  #$mapped_pthrid{$pthrid}++;
 			  #push(@matched_ptherid, $pthrid);
 			  &addAnnotDetails($pthrid, $goacc, $ev_code, $with, $ref, $date, $dbname);
-			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref);
+			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $dbname);
 		  }
 		  
 		  elsif(((exists $go_id_to_pthrid{$gsym}{$tax}) && (defined $go_id_to_pthrid{$gsym}{$tax}))){
@@ -342,7 +342,7 @@ for my $gaf (readdir GO) {
 			  #$mapped_pthrid{$pthrid}++;
 			  #push(@matched_ptherid, $pthrid);
 			  &addAnnotDetails($pthrid, $goacc, $ev_code, $with, $ref, $date, $dbname);
-			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref);
+			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $dbname);
 		  }
 		  
 		  elsif (((exists $alterid_to_pthrid{$gsym}{$dbname}) && (defined $alterid_to_pthrid{$gsym}{$dbname}))){
@@ -352,7 +352,7 @@ for my $gaf (readdir GO) {
 			  #$mapped_pthrid{$pthrid}++;
 			  #push(@matched_ptherid, $pthrid);
 			  &addAnnotDetails($pthrid, $goacc, $ev_code, $with, $ref, $date, $dbname);
-			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref);
+			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $dbname);
 		  }
 		  
 		  elsif (((exists $alterid_to_pthrid{$gsym}{$tax}) && (defined $alterid_to_pthrid{$gsym}{$tax}))){
@@ -362,7 +362,7 @@ for my $gaf (readdir GO) {
 			  #$mapped_pthrid{$pthrid}++;
 			  #push(@matched_ptherid, $pthrid);
 			  &addAnnotDetails($pthrid, $goacc, $ev_code, $with, $ref, $date, $dbname);
-			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref);
+			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $dbname);
 		  }
 		  
 		  
@@ -373,7 +373,7 @@ for my $gaf (readdir GO) {
 			  #$mapped_pthrid{$pthrid}++;
 			  #push(@matched_ptherid, $pthrid);
 			  &addAnnotDetails($pthrid, $goacc, $ev_code, $with, $ref, $date, $dbname);
-			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref);
+			  &goToPthr($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $dbname);
 		  }
 		  else {
 		      print STDERR "$go_gid did not map to any PANTHER ID\n";
@@ -395,7 +395,11 @@ for my $k (sort keys %gomfw) {
 		    printf GOW "%s\t%s\n", $k, join "\t", @{ $go_term };
 			my $term = @{ $go_term }[0];
 			my $ev_code = @{ $go_term }[2];
-			print FN2 "$k\t$golist{$term}\t$ev_code\t".$refre{"$k"."$term"."$ev_code"}."\n";
+			my $with = @{ $go_term }[3];
+			my $ref = @{ $go_term }[4];
+			my $date = @{ $go_term }[5];
+			my $db = @{ $go_term }[6];
+			print FN2 "$k\t$golist{$term}\t$ev_code\t$with\t$ref\t$date\t$db\n";
 		 };
 	 }
 }
@@ -406,7 +410,11 @@ for my $j (sort keys %gobpw) {
 			printf GOW "%s\t%s\n", $j, join "\t", @{ $go_term };
 			my $term = @{ $go_term }[0];
 			my $ev_code = @{ $go_term }[2];
-			print FN1 "$j\t$golist{$term}\t$ev_code\t".$refre{"$j"."$term"."$ev_code"}."\n";
+			my $with = @{ $go_term }[3];
+			my $ref = @{ $go_term }[4];
+			my $date = @{ $go_term }[5];
+			my $db = @{ $go_term }[6];
+			print FN1 "$j\t$golist{$term}\t$ev_code\t$with\t$ref\t$date\t$db\n";
 		 };
 	 }
 }
@@ -417,7 +425,11 @@ for my $l (sort keys %goccw) {
 			printf GOW "%s\t%s\n", $l, join "\t", @{ $go_term };
 			my $term = @{ $go_term }[0];
 			my $ev_code = @{ $go_term }[2];
-			print FN3 "$l\t$golist{$term}\t$ev_code\t".$refre{"$l"."$term"."$ev_code"}."\n";
+			my $with = @{ $go_term }[3];
+			my $ref = @{ $go_term }[4];
+			my $date = @{ $go_term }[5];
+			my $db = @{ $go_term }[6];
+			print FN3 "$l\t$golist{$term}\t$ev_code\t$with\t$ref\t$date\t$db\n";
 		 };
 	 }
 }
@@ -425,17 +437,17 @@ print STDERR "Did something with MF-BP-CC outputs.\n";
 print STDERR "Job finished on ".ctime()."\n";
 
 sub goToPthr{
-    my ($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref)=@_;
+    my ($pthrid,$gotype,$goacc,$qualifier, $ev_code, $with, $ref, $date, $db)=@_;
 	if($gotype eq 'molecular_function'){	
-           push( @{$gomfw{$pthrid}}, [$goacc, $qualifier, $ev_code, $with, $ref]);	   
+           push( @{$gomfw{$pthrid}}, [$goacc, $qualifier, $ev_code, $with, $ref, $date, $db]);	   
 		}
 	  elsif($gotype eq 'biological_process'){
 		
-		   push( @{$gobpw{$pthrid}}, [$goacc, $qualifier, $ev_code, $with, $ref] );
+		   push( @{$gobpw{$pthrid}}, [$goacc, $qualifier, $ev_code, $with, $ref, $date, $db] );
 		}
 	  elsif($gotype eq 'cellular_component'){
 		
-		   push( @{$goccw{$pthrid}}, [$goacc, $qualifier, $ev_code, $with, $ref] );
+		   push( @{$goccw{$pthrid}}, [$goacc, $qualifier, $ev_code, $with, $ref, $date, $db] );
 		}
 	  else {
 		print STDERR "Could not assign go type to a matched go term\n";
