@@ -2,6 +2,8 @@
 #SBATCH --time=6:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=160gb
+#SBATCH --account=$HPC_ACCOUNT
+#SBATCH --partition=thomas
 #SBATCH --mail-type=END,FAIL
 
 module load gcc/8.3.0
