@@ -266,7 +266,7 @@ my %exp_pmid;
 open (GA, $go_aggregate) or die "Could not open file $go_aggregate\n";
 while (my $line=<GA>){
     chomp $line;
-    my ($annotation_id, $an, $go, $type, $evidence_id, $evidence, $confidence, $exp_qual, $rest)=split(/\;/, $line);
+    my ($annotation_id, $an, $go, $type, $evidence_id, $evidence, $confidence, $exp_qual, $date, $group)=split(/\;/, $line);
     next unless ($confidence=~/IDA|EXP|IMP|IPI|IGI|IEP/);
     if ($exp_qual =~/CONTRIBUTES|COLOCALIZES/){
         $exp_qual=~tr/[A-Z]/[a-z]/;
@@ -276,7 +276,8 @@ while (my $line=<GA>){
     $exp_qualifier{$longId}{$go}{$evidence_id}{$exp_qual}=1;  # Need to track by evidence_id
     if ($type eq 'PMID'){
         $full_ref = "$type:$evidence";
-        $exp_pmid{$annotation_id}{$full_ref}=1;
+        # $exp_pmid{$annotation_id}{$full_ref}=1;
+        $exp_pmid{$annotation_id}{$full_ref}{$group}=1;
     }
 }
 
@@ -393,7 +394,9 @@ while (my $line=<EV>){
                 my $id = $id_lookup{$longId};
                 $with{$annotation_id}{$id}=1;
                 foreach my $exp_pmid (keys %{$exp_pmid{$evidence}}){  # array of PMIDs
-                    $paint_evidence_annotation_ids{$annotation_id}{$id}{$exp_pmid}=1;
+                    foreach my $exp_group (keys %{$exp_pmid{$evidence}{$exp_pmid}}){  # array of groups
+                        $paint_evidence_annotation_ids{$annotation_id}{$id}{$exp_pmid}{$exp_group}=1;
+                    }
                 }
             }else{
                 print STDERR "Can't find long id for $an.\n";
@@ -468,16 +471,16 @@ foreach my $annotation_id (keys %annotation){
         print STDERR "Annotation ID $annotation_id has no evidence support in the 'with' column.\n";
     }
 
-    my %exp_refs;
-    my $exp_refs_str;
-    if (defined $paint_evidence_annotation_ids{$annotation_id}){
-        foreach my $exp_gene_id (keys %{$paint_evidence_annotation_ids{$annotation_id}}){
-            for my $exp_pmid (keys %{$paint_evidence_annotation_ids{$annotation_id}{$exp_gene_id}}){
-                $exp_refs{$exp_pmid}=1;
-            }
-        }
-        $exp_refs_str = join ("\|", (keys %exp_refs));
-    }
+    # my %exp_refs;
+    # my $exp_refs_str;
+    # if (defined $paint_evidence_annotation_ids{$annotation_id}){
+    #     foreach my $exp_gene_id (keys %{$paint_evidence_annotation_ids{$annotation_id}}){
+    #         for my $exp_pmid (keys %{$paint_evidence_annotation_ids{$annotation_id}{$exp_gene_id}}){
+    #             $exp_refs{$exp_pmid}=1;
+    #         }
+    #     }
+    #     $exp_refs_str = join ("\|", (keys %exp_refs));
+    # }
     
     my $fam = $an;
     $fam=~s/PTHR(\d+)\:AN\d+/$1/;
@@ -662,10 +665,16 @@ foreach my $annotation_id (keys %annotation){
                 # keys %{$pmids_for_annot_gene_ids{$annotation_id}{$with_id}};
                 my %exp_gene_refs;
                 my $exp_gene_refs_str;
+                my %exp_gene_ref_groups;
+                my $exp_gene_ref_groups_str;
                 for my $exp_pmid (keys %{$paint_evidence_annotation_ids{$annotation_id}{$with_id}}){
                     $exp_gene_refs{$exp_pmid}=1;
+                    for my $exp_group (keys %{$paint_evidence_annotation_ids{$annotation_id}{$with_id}{$exp_pmid}}){
+                        $exp_gene_ref_groups{$exp_group}=1;
+                    }
                 }
                 $exp_gene_refs_str = join ("\|", (keys %exp_gene_refs));
+                $exp_gene_ref_groups_str = join ("\|", (keys %exp_gene_ref_groups));
 
                 # Fetch with/from gene info
                 my $with_long_id = $long_id_lookup{$with_id};
@@ -675,7 +684,7 @@ foreach my $annotation_id (keys %annotation){
                 my $with_taxon_id = $taxon{$with_org};
 
                 # my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t";
-                my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with_id\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t\t$exp_gene_refs_str\t$with_gene_symbol\t$with_gene_def\ttaxon\:$with_taxon_id";
+                my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with_id\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t\t$exp_gene_refs_str\t$with_gene_symbol\t$with_gene_def\ttaxon\:$with_taxon_id\t$exp_gene_ref_groups_str";
                 # my $full_id = "$db:$short_id";
                 # $geneQualTerms{$full_id}{$qual_output}{$go} = 1;
                 

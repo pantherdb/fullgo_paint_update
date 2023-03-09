@@ -3,9 +3,9 @@ set search_path=panther_upl;
 DROP MATERIALIZED VIEW panther_upl.go_aggregate;
 
 CREATE MATERIALIZED VIEW panther_upl.go_aggregate AS 
-  SELECT gpa.annotation_id, n.accession, clf.accession AS term, et.type, gpe.evidence_id, gpe.evidence, cc.confidence_code, q.qualifier, gpa.creation_date
+  SELECT gpa.annotation_id, n.accession, clf.accession AS term, et.type, gpe.evidence_id, gpe.evidence, cc.confidence_code, q.qualifier, gpa.creation_date, gpe.contrib_group
   FROM (
-    SELECT go_evidence.annotation_id, go_evidence.confidence_code_sid, go_evidence.evidence_id, go_evidence.evidence, go_evidence.evidence_type_sid
+    SELECT go_evidence.annotation_id, go_evidence.confidence_code_sid, go_evidence.evidence_id, go_evidence.evidence, go_evidence.evidence_type_sid, go_evidence.contrib_group
     FROM panther_upl.go_evidence 
     WHERE go_evidence.obsolescence_date IS NULL
   ) gpe 

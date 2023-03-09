@@ -392,13 +392,15 @@ for my $k (sort keys %gomfw) {
 	 @{ $gomfw{$k} }=uniq(@{ $gomfw{$k} });
 	 if(@{ $gomfw{$k} }){
 		 for my $go_term (@{ $gomfw{$k} }){
-		    printf GOW "%s\t%s\n", $k, join "\t", @{ $go_term };
+		    # printf GOW "%s\t%s\n", $k, join "\t", @{ $go_term };
 			my $term = @{ $go_term }[0];
+			my $qual = @{ $go_term }[1];
 			my $ev_code = @{ $go_term }[2];
 			my $with = @{ $go_term }[3];
 			my $ref = @{ $go_term }[4];
 			my $date = @{ $go_term }[5];
 			my $db = @{ $go_term }[6];
+			printf GOW "%s\t%s\n", $k, $term, $qual, $ev_code, $with, $ref, $db;
 			print FN2 "$k\t$golist{$term}\t$ev_code\t$with\t$ref\t$date\t$db\n";
 		 };
 	 }
@@ -407,13 +409,15 @@ for my $j (sort keys %gobpw) {
 	 @{ $gobpw{$j} }=uniq(@{ $gobpw{$j} });
 	 if(@{ $gobpw{$j} }){
 		 for my $go_term (@{ $gobpw{$j} }){
-			printf GOW "%s\t%s\n", $j, join "\t", @{ $go_term };
+			# printf GOW "%s\t%s\n", $j, join "\t", @{ $go_term };
 			my $term = @{ $go_term }[0];
+			my $qual = @{ $go_term }[1];
 			my $ev_code = @{ $go_term }[2];
 			my $with = @{ $go_term }[3];
 			my $ref = @{ $go_term }[4];
 			my $date = @{ $go_term }[5];
 			my $db = @{ $go_term }[6];
+			printf GOW "%s\t%s\n", $k, $term, $qual, $ev_code, $with, $ref, $db;
 			print FN1 "$j\t$golist{$term}\t$ev_code\t$with\t$ref\t$date\t$db\n";
 		 };
 	 }
@@ -422,13 +426,15 @@ for my $l (sort keys %goccw) {
 	@{ $goccw{$l} }=uniq(@{ $goccw{$l} });
 	 if(@{ $goccw{$l} }){
 		 for my $go_term (@{ $goccw{$l} }){
-			printf GOW "%s\t%s\n", $l, join "\t", @{ $go_term };
+			# printf GOW "%s\t%s\n", $l, join "\t", @{ $go_term };
 			my $term = @{ $go_term }[0];
+			my $qual = @{ $go_term }[1];
 			my $ev_code = @{ $go_term }[2];
 			my $with = @{ $go_term }[3];
 			my $ref = @{ $go_term }[4];
 			my $date = @{ $go_term }[5];
 			my $db = @{ $go_term }[6];
+			printf GOW "%s\t%s\n", $k, $term, $qual, $ev_code, $with, $ref, $db;
 			print FN3 "$l\t$golist{$term}\t$ev_code\t$with\t$ref\t$date\t$db\n";
 		 };
 	 }
