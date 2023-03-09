@@ -237,8 +237,11 @@ for taxon in sorted(all_taxons):
         for uniprot_id in panther_blacklist:
             if uniprot_id in before_counts_by_id:
                 blacklisted_count += before_counts_by_id[uniprot_id]
-        bl_percent_change = "%.2f" % ((blacklisted_count / before_count) * 100)
-    percent_change = "%.2f" % (((after_count - before_count) / before_count) * 100)
+        if blacklisted_count:
+            bl_percent_change = "%.2f" % ((blacklisted_count / before_count) * 100)
+        else:
+            bl_percent_change = "0.00"
+    percent_change = calculate_percent_change(before_count, after_count)
     print_row = [taxon, before_count, after_count, percent_change]
     if panther_blacklist:
         print_row = print_row + [bl_percent_change]
