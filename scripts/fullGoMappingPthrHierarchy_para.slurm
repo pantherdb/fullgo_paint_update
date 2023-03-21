@@ -1,7 +1,6 @@
 #!/bin/tcsh
 #SBATCH --time=16:00:00
-#SBATCH --nodes=$NUMGROUPS
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks=$NUMGROUPS
 #SBATCH --mem=96gb
 #SBATCH --account=$HPC_ACCOUNT
 #SBATCH --partition=thomas
