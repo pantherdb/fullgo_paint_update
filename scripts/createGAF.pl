@@ -311,7 +311,7 @@ close (BL);
 #########################################
 
 my %complex_terms;
-open (CL, $complex_termlist);
+open (CL, $complex_termlist) or die "Could not open file $complex_termlist\n";
 while (my $line=<CL>){
     chomp $line;
     $complex_terms{$line}=1;
@@ -326,7 +326,7 @@ my %goParentToChild;
 my %goChildToParent;
 my %goAncestorToDescendant;  # cache hash, to be filled later
 my %goDescendantToAncestor;  # cache hash, to be filled later
-open (GPC, $goparentchild);
+open (GPC, $goparentchild) or die "Could not open file $goparentchild\n";
 while (my $line=<GPC>){
     chomp $line;
     my ($goParent, $goChild) = split(/\t/, $line);
