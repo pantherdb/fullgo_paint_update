@@ -400,7 +400,7 @@ for my $k (sort keys %gomfw) {
 			my $ref = @{ $go_term }[4];
 			my $date = @{ $go_term }[5];
 			my $db = @{ $go_term }[6];
-			printf GOW "%s\t%s\n", $k, $term, $qual, $ev_code, $with, $ref, $db;
+			printf GOW "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $k, $term, $qual, $ev_code, $with, $ref, $db;
 			print FN2 "$k\t$golist{$term}\t$ev_code\t$with\t$ref\t$date\t$db\n";
 		 };
 	 }
@@ -417,7 +417,7 @@ for my $j (sort keys %gobpw) {
 			my $ref = @{ $go_term }[4];
 			my $date = @{ $go_term }[5];
 			my $db = @{ $go_term }[6];
-			printf GOW "%s\t%s\n", $k, $term, $qual, $ev_code, $with, $ref, $db;
+			printf GOW "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $k, $term, $qual, $ev_code, $with, $ref, $db;
 			print FN1 "$j\t$golist{$term}\t$ev_code\t$with\t$ref\t$date\t$db\n";
 		 };
 	 }
@@ -434,7 +434,7 @@ for my $l (sort keys %goccw) {
 			my $ref = @{ $go_term }[4];
 			my $date = @{ $go_term }[5];
 			my $db = @{ $go_term }[6];
-			printf GOW "%s\t%s\n", $k, $term, $qual, $ev_code, $with, $ref, $db;
+			printf GOW "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $k, $term, $qual, $ev_code, $with, $ref, $db;
 			print FN3 "$l\t$golist{$term}\t$ev_code\t$with\t$ref\t$date\t$db\n";
 		 };
 	 }
