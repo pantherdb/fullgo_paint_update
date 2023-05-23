@@ -353,6 +353,7 @@ setup_preupdate_data: $(BASE_PATH)/resources/panther_blacklist.txt $(BASE_PATH)/
 	# Reuse panther_blacklist.txt cuz it takes sooo long to make
 	ln -sf $(realpath $(BASE_PATH)/resources/panther_blacklist.txt) $(BASE_PATH)/preupdate_data/resources/panther_blacklist.txt
 	ln -sf $(realpath $(BASE_PATH)/resources/complex_terms.tsv) $(BASE_PATH)/preupdate_data/resources/complex_terms.tsv
+	ln -sf $(realpath $(BASE_PATH)/goparentchild_isaonly.tsv) $(BASE_PATH)/preupdate_data/goparentchild_isaonly.tsv
 	# Generate IBA GAFs from preupdate data - call before table name switch
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data create_gafs
 
