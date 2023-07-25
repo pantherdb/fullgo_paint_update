@@ -40,6 +40,7 @@ open(OUT, ">$output") or die $!;
 
 my @obsolete_terms;
 my %replaced_terms;
+my %all_alt_ids;
 
 local $/="[Term]";
 
@@ -79,6 +80,7 @@ while (my $record=<GO>){
 			my $alt_id = (split(/alt_id:/, $line))[1];
 			$alt_id =~ s/^\s+|\s+$//g;
 			push (@alt_id, $alt_id); 
+			$all_alt_ids{$alt_id}=$gid;
 		}
 		if ($line =~ /^is_obsolete/i){
 			#print "$line\n";
@@ -140,6 +142,10 @@ for my $obsolete (@obsolete_terms){
        $replace_term = $replaced_terms{$obsolete};
    }
    print "$obsolete\t$replace_term\n";
+}
+for my $alt_id (keys %all_alt_ids){
+	my $replace_term = $all_alt_ids{$alt_id};
+	print "$alt_id\t$replace_term\n";
 }
 # output for help and errors
 sub usage {
