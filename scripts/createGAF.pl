@@ -448,7 +448,7 @@ foreach my $annotation_id (keys %annotation){
         @quals = ('');
     }
     
-    my $db_ref = 'PMID:21873635';
+    my $db_ref = 'GOREF:0000033';
     
     my $with;
     if (defined $with{$annotation_id}){
