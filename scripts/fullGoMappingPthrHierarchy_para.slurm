@@ -1,7 +1,7 @@
 #!/bin/tcsh
 #SBATCH --time=16:00:00
 #SBATCH --ntasks=$NUMGROUPS
-#SBATCH --mem=96gb
+#SBATCH --mem=0
 #SBATCH --account=$HPC_ACCOUNT
 #SBATCH --partition=thomas
 #SBATCH --mail-type=END,FAIL

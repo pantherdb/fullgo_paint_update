@@ -51,7 +51,7 @@ if __name__ == "__main__":
     annotation_files = get_directory_listing(annotations_dir_url)
     gaf_files = [af for af in annotation_files if af.endswith(".gaf.gz")]
 
-    gaf_files.append("products/annotations/paint_other.gaf.gz")  # Don't forget our paint_other
+    gaf_files.append("products/upstream_and_raw_data/paint_other.gaf.gz")  # Don't forget our paint_other
     
     download_files(args.go_download_base_url, gaf_files, args.gaf_files_dir, download_logfile)
 
