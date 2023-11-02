@@ -5,4 +5,5 @@ and n.obsolescence_date is null
 and pa.classification_id = c.classification_id
 and c.obsolescence_date is null
 and pa.obsolescence_date is null
+and pa.created_by not in (1116, 1117)
 and c.term_type_sid = t.term_type_sid;
