@@ -414,7 +414,7 @@ organism_taxon:
 
 pombe_sources:
 	wget https://www.pombase.org/nightly_update/misc/gene_IDs_names.tsv -O $(BASE_PATH)/resources/gene_IDs_names.tsv
-	wget ftp://ftp.pombase.org/nightly_update/misc/sysID2product.tsv -O $(BASE_PATH)/resources/sysID2product.tsv
+	wget https://www.pombase.org/nightly_update/misc/sysID2product.tsv -O $(BASE_PATH)/resources/sysID2product.tsv
 
 # Now in createGAF.slurm
 repair_gaf_symbols:
