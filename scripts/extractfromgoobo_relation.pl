@@ -2,11 +2,12 @@
 #use strict;
 
 use Getopt::Std;
-getopts('h:i:o:Ie:v:V') || &usage();
+getopts('h:i:o:Ire:v:V') || &usage();
 &usage() if ($opt_h);          # -h for (h)elp
 $input = $opt_i if ($opt_i);   # -i for (i)NPUT File
 $output = $opt_o if ($opt_o);  # -o for (o)utput
 $isaOnly = 1 if ($opt_I);      # -I for Extract (I)s_a relations only
+$includeRegulates = 1 if ($opt_r);      # -r for extract (r)egulates relations
 $errFile = $opt_e if ($opt_e); # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);      # -v for (v)erbose (debug info to STDERR)
 $verbose = 2 if ($opt_V);      # -V for (V)ery verbose (debug info to STDERR)
@@ -26,6 +27,7 @@ while (my $record=<GO>){
     my @alt_id;
 	my $isa;
     my $isa1;
+	my $reg;
 	chomp($_);
 	my @lines=split(/\n/, $record);
 	my $gid=(split(/id:/, $lines[1]))[1];
@@ -42,6 +44,12 @@ while (my $record=<GO>){
 			$isa1 =~ s/relationship: part_of //g;
 			$isa1 =~ s/^\s+|\s+$//g;
 			print OUT "$isa1\t$gid\n" if $isa1 =~ /^GO:/;
+		}
+		if ($includeRegulates && $line =~ /^relationship: .*regulates GO:/) {
+			$reg=(split(/!/, $line))[0];
+			$reg =~ s/relationship: .*regulates //g;
+			$reg =~ s/^\s+|\s+$//g;
+			print OUT "$reg\t$gid\n" if $reg =~ /^GO:/;
 		}
 		
 		if ($line =~ /^alt_id:/) {
