@@ -52,7 +52,7 @@ export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/
 export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/organism.dat
 export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/node.dat
 export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/treeNodes
-else
+else ifeq ($(PANTHER_VERSION),17.0)
 export PANTHER_VERSION_DATE = 20220222
 export CLS_VER_ID = 29
 export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/identifier.dat
@@ -60,6 +60,14 @@ export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/
 export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/organism.dat
 export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/node.dat
 export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/treeNodes
+else
+export PANTHER_VERSION_DATE = 20230801
+export CLS_VER_ID = 30
+export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/identifier.dat
+export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/gene.dat
+export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/organism.dat
+export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/node.dat
+export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/treeNodes
 endif
 
 ########## GAF CREATION ##########
