@@ -60,7 +60,7 @@ export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/
 export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/organism.dat
 export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/node.dat
 export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/treeNodes
-else
+else ifeq ($(PANTHER_VERSION),18.0)
 export PANTHER_VERSION_DATE = 20230801
 export CLS_VER_ID = 30
 export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/identifier.dat
@@ -68,6 +68,14 @@ export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/
 export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/organism.dat
 export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/node.dat
 export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/treeNodes
+else
+export PANTHER_VERSION_DATE = 20240620
+export CLS_VER_ID = 31
+export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/identifier.dat
+export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/gene.dat
+export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/organism.dat
+export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/node.dat
+export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/treeNodes
 endif
 
 ########## GAF CREATION ##########
@@ -441,7 +449,8 @@ run_reports:
 	# Ex: python3 scripts/created_ibds_by_curator.py -b 2020-01-31 -a 2020-03-26 -p
 	python3 scripts/created_ibds_by_curator.py -b $(BEFORE_DATE) -a $(AFTER_DATE) -p
 	# Download and/or point to release folders. Ex: ftp://ftp.pantherdb.org/downloads/paint/14.1/2020-01-31/ and 2020-01-31
-	envsubst < scripts/compare_paint_releases.slurm > $(BASE_PATH)/compare_paint_releases.slurm
+	python3 scripts/compare_paint_releases.py -p -b $(BEFORE_DATE) -a $(AFTER_DATE) -u $(BASE_PATH)/resources/panther_blacklist.txt -j $(BASE_PATH)/update_stats.json
+	# envsubst < scripts/compare_paint_releases.slurm > $(BASE_PATH)/compare_paint_releases.slurm
 	# sbatch --wait $(BASE_PATH)/compare_paint_releases.slurm
 	# python3 scripts/publish_sheet_json.py -t $(shell date +%Y-%m-%d)_update_stats -j $(BASE_PATH)/update_stats.json
 
