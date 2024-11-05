@@ -115,13 +115,15 @@ export PAINT_ANNOT_A_TABLE = paint_annotation_old
 export PAINT_ANNOT_B_TABLE = paint_annotation
 
 download_fullgo:
-	mkdir -p $(GAF_FILES_PATH)
+	mkdir -p $(GAF_FILES_PATH) $(BASE_PATH)/resources
 	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u http://current.geneontology.org/
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	$(MAKE) make_profile
 	$(MAKE) make_readme
 	$(MAKE) $(BASE_PATH)/TaxonConstraintsLookup.txt
+	$(MAKE) $(BASE_PATH)/resources/complex_terms.tsv
+	$(MAKE) $(BASE_PATH)/resources/panther_blacklist.txt
 
 extractfromgoobo:
 	perl scripts/extractfromgoobo.pl -i $(BASE_PATH)/go.obo -o $(BASE_PATH)/inputforGOClassification.tsv > $(BASE_PATH)/obsolete_go_terms.txt
@@ -381,8 +383,11 @@ gen_iba_gaf_yamls:
 
 create_gafs: setup_directories pombe_sources paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
 	# Slurm this
-	envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
-	sbatch $(BASE_PATH)/createGAF.slurm
+	# envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
+	# sbatch $(BASE_PATH)/createGAF.slurm
+	envsubst < scripts/createGAF.sh > $(BASE_PATH)/createGAF.sh
+	chmod 744 $(BASE_PATH)/createGAF.sh
+	./$(BASE_PATH)/createGAF.sh
 
 create_gafs_from_xml: $(BASE_PATH)/resources/go_aspects.tsv
 	IBA_XML_DIR=$(BASE_PATH)/leafIBAInfo GO_RELEASE_DATE=$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2) \

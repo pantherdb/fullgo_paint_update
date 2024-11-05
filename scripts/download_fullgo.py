@@ -63,4 +63,8 @@ if __name__ == "__main__":
     ontology_files = ["ontology/go.obo", "ontology/extensions/go-gaf.owl"]
     download_files(args.go_download_base_url, ontology_files, args.fullgo_working_dir, download_logfile)
 
+    # Download subset files
+    subset_files = ["ontology/subsets/gocheck_do_not_annotate.owl"]
+    download_files(args.go_download_base_url, subset_files, args.fullgo_working_dir, download_logfile)
+
     download_logfile.close()
