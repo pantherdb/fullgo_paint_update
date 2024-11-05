@@ -141,7 +141,7 @@ close (FH);
 ###################################
 
 my $tree = $treeNodes_dir;
-opendir (TREE, $tree);
+opendir (TREE, $tree) or die "Could not open dir $treeNodes_dir\n";
 my @files = readdir TREE;
 close (TREE);
 shift @files;
