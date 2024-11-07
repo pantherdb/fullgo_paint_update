@@ -1,5 +1,6 @@
 Aconoidasida		Aconoidasida			422676
 Actinobacteridae		Actinobacteridae			85003
+Actinomycetales		Actinomycetales			2037
 Actinomycetales	Bacteria	Actinomycetales			2037
 Alphaproteobacteria		Alphaproteobacteria			28211
 Alveolata		Alveolata			33630
@@ -11,12 +12,12 @@ Andropogoneae		Andropogoneae			147429
 Anolis carolinensis	Vertebrates	ANOCA	lizard	lizard	28377
 Anopheles gambiae	Invertebrates	ANOGA	mosquito	mosquito	7165
 Apicomplexa		Apicomplexa			5794
-Aquifex aeolicus	Bacteria	AQUAE	aquifex	bacteria	224324
-Arabidopsis thaliana	Plants	ARATH	arabidopsis	dicot plant	3702
+Aquifex aeolicus	Bacteria	AQUAE	aquifex	aquaficae bacteria	224324
+Arabidopsis thaliana	Plants	ARATH	arabidopsis	thale cress	3702
 Archaea		Archaea			2157
 Archaea-Eukaryota		Archaea-Eukaryota			
 Arthropoda		Arthropoda			6656
-Artiodactyla		Artiodactyla			
+Artiodactyla		Artiodactyla			91561
 Ascomycota		Ascomycota			4890
 Ashbya gossypii	Fungi	ASHGO	ashbya	fungi	284811
 Aspergillus		Aspergillus			5052
@@ -28,41 +29,42 @@ Bacilli		Bacilli			91061
 Bacillus		Bacillus			1386
 Bacillus cereus	Bacteria	BACCR	bacillus_cereus	bacillus cereus	226900
 Bacillus_cereus_group		Bacillus_cereus_group			
-Bacillus subtilis	Bacteria	BACSU	bacillus_subtilis	bacteria	224308
-Bacteroides thetaiotaomicron	Bacteria	BACTN	bacteroidetes	bacteria	226186
+Bacillus subtilis	Bacteria	BACSU	bacillus_subtilis	b subtilis	224308
+Bacteroides thetaiotaomicron	Bacteria	BACTN	bacteroidetes	bacteroidetes bacteria	226186
 Bacteroidetes		Bacteroidetes			976
 bacteroidetes-chlorobi		bacteroidetes-chlorobi			
 Basidiomycota		Basidiomycota			5204
-Batrachochytrium dendrobatidis	Fungi	BATDJ	chytrid	fungi	684364
+Batrachochytrium dendrobatidis	Fungi	BATDJ	chytrid	chytrid fungus	684364
 BEP_clade		BEP_clade			359160
 Bikonts		Bikonts			
 Bilateria		Bilateria			33213
 Boreoeutheria		Boreoeutheria			1437010
 Bos taurus	Mammals	BOVIN	cow	cow	9913
 Brachypodium distachyon	Plants	BRADI	purple_false_brome	purple false brome	15368
-Bradyrhizobium diazoefficiens	Bacteria	BRADU	bradyrhizobium	proteobacteria	224911
-Branchiostoma floridae	Invertebrates	BRAFL	branchiostoma	chordate	7739
+Bradyrhizobium diazoefficiens	Bacteria	BRADU	bradyrhizobium	alphaproteobacteria	224911
+Branchiostoma floridae	Invertebrates	BRAFL	branchiostoma	lancelet	7739
 Brassica		Brassica			3705
+Brassica campestris	Plants	BRACM	e_campestris	field mustard	3711
 Brassicaceae		Brassicaceae			3700
 Brassicales-Malvales		Brassicales-Malvales			
 Brassicales-Malvales-Sapindales		Brassicales-Malvales-Sapindales			
-Brassica napus	Plants	BRANA	rape	rape	3708
+Brassica napus	Plants	BRANA	canola	canola	3708
 Brassica rapa subsp. pekinensis	Plants	BRARP	cabbage	Chinese cabbage	51351
 Bryophyta-Tracheophyta		Bryophyta-Tracheophyta			
 Caenorhabditis briggsae	Invertebrates	CAEBR	c_briggsae	nematode worm	6238
 Caenorhabditis		Caenorhabditis			6237
 Caenorhabditis elegans	Invertebrates	CAEEL	nematode_worm	nematode worm	6239
-Candida albicans	Fungi	CANAL	candida	fungi	237561
+Candida albicans	Fungi	CANAL	candida	candida	237561
 Canis lupus familiaris	Mammals	CANLF	dog	dog	9615
 Capsicum annuum	Plants	CAPAN	bell pepper	bell pepper	4072
 Carnivora		Carnivora			33554
 Caryophyllales-asterids		Caryophyllales-asterids			
 Catarrhini		Catarrhini			9526
-Chlamydia trachomatis	Bacteria	CHLTR	chlamydia	bacteria	272561
+Chlamydia trachomatis	Bacteria	CHLTR	chlamydia	chlamydia	272561
 Chlamydomonas reinhardtii	Plants	CHLRE	green_algae	green algae	3055
 Chlamydomonas reinhardtii	Protista	CHLRE	green_algae	green algae	3055
 Chloroflexi-Actinobacteria		Chloroflexi-Actinobacteria			
-Chloroflexus aurantiacus	Bacteria	CHLAA	chloroflexus	bacteria	324602
+Chloroflexus aurantiacus	Bacteria	CHLAA	chloroflexus	chloroflexi bacteria	324602
 Chlorophyta		Chlorophyta			3041
 Chordata		Chordata			7711
 Chroococcales		Chroococcales			1118
@@ -77,7 +79,7 @@ Corynebacterineae		Corynebacterineae			85007
 Coxiella burnetii	Bacteria	COXBU	coxiella	coxiella	227377
 Craniata-Cephalochordata		Craniata-Cephalochordata			
 Craniata-Tunicata		Craniata-Tunicata			
-Cryptococcus neoformans	Fungi	CRYNJ	cryptococcus	fungi	214684
+Cryptococcus neoformans	Fungi	CRYNJ	cryptococcus	basidiomycote fungus	214684
 Cucumis sativus	Plants	CUCSA	cucumber	cucumber	3659
 Cucurbitales-Fagales		Cucurbitales-Fagales			
 Cucurbitales-Rosales		Cucurbitales-Rosales			
@@ -101,9 +103,11 @@ Ecdysozoa		Ecdysozoa			1206794
 Embryophyta		Embryophyta			3193
 Emericella nidulans	Fungi	EMENI	aspergillus	fungi	227321
 Endopterygota		Endopterygota			33392
+Entamoeba histolytica	Amoebozoa	ENTH1	e_histolytica	amoeba	294381
 Entamoeba histolytica	Amoebozoa	ENTHI	entamoeba	amoeba	5759
 Enterobacteriaceae		Enterobacteriaceae			543
 Equus caballus	Mammals	HORSE	horse	horse	9796
+Eremothecium gossypii	Fungi	EREGS	e_gossypii	budding yeasts	284811
 Erythranthe guttata	Plants	ERYGU	yellow monkey flower	yellow monkey flower	4155
 Escherichia coli	Bacteria	ECOLI	e_coli	E. coli	83333
 Euarchontoglires		Euarchontoglires			314146
@@ -126,12 +130,12 @@ Firmicutes		Firmicutes			1239
 Firmicutes-Tenericutes		Firmicutes-Tenericutes			
 Fornicata-Parabasalids		Fornicata-Parabasalids			
 Fungi		Fungi			4751
-Fusobacterium nucleatum	Bacteria	FUSNN	fusobacterium	bacteria	190304
+Fusobacterium nucleatum	Bacteria	FUSNN	fusobacterium	fusobacteria	190304
 Gallus gallus	Vertebrates	CHICK	chicken	chicken	9031
 Gammaproteobacteria		Gammaproteobacteria			1236
-Geobacter sulfurreducens	Bacteria	GEOSL	geobacter	bacteria	243231
+Geobacter sulfurreducens	Bacteria	GEOSL	geobacter	deltaproteobacteria	243231
 Giardia intestinalis	Invertebrates	GIAIC	giardia	protist	184922
-Gloeobacter violaceus	Bacteria	GLOVI	gloeobacter	bacteria	251221
+Gloeobacter violaceus	Bacteria	GLOVI	gloeobacter	cyanobacteria	251221
 Glycine max	Plants	SOYBN	soybean	soybean	3847
 Gorilla gorilla gorilla	Primates	GORGO	gorilla	gorilla	9595
 Gossypium hirsutum	Plants	GOSHI	cotton	upland cotton	3635
@@ -150,14 +154,14 @@ Insecta		Insecta			50557
 Ixodes scapularis	Invertebrates	IXOSC	tick	tick	6945
 Juglans regia	Plants	JUGRE	english walnut	english walnut	51240
 Klebsormidium nitens	Plants	KLENI	green algae	green algae	105231
-Korarchaeum cryptofilum	Archaea	KORCO	korarchaeum	archaea	374847
+Korarchaeum cryptofilum	Archaea	KORCO	korarchaeum	candidatus archaea	374847
 Lactobacillales		Lactobacillales			186826
 Lactuca sativa	Plants	LACSA	garden lettuce	garden lettuce	4236
 lamiids		lamiids			91888
 Laurasiatheria		Laurasiatheria			314145
 Leishmania major	Invertebrates	LEIMA	leishmania	protozoa	5664
 lepisosteus oculatus	Vertebrates	LEPOC	lepisosteudae	spotted gar	7918
-Leptospira interrogans	Bacteria	LEPIN	leptospira	bacteria	189518
+Leptospira interrogans	Bacteria	LEPIN	leptospira	spirochaetes bacteria	189518
 Liliopsida		Liliopsida			4447
 Listeria monocytogenes	Bacteria	LISMO	listeria	listeria	169963
 LUCA		LUCA			
@@ -173,17 +177,17 @@ Medicago truncatula	Plants	MEDTR	barrel medic	barrel medic	3880
 Mesangiosperma		Mesangiosperma			1437183
 Metazoa-Choanoflagellida		Metazoa-Choanoflagellida			
 Metazoa		Metazoa			33208
-Methanocaldococcus jannaschii	Archaea	METJA	methanocaldococcus	archaea	243232
+Methanocaldococcus jannaschii	Archaea	METJA	methanocaldococcus	methanococci archaea	243232
 Methanomicrobia		Methanomicrobia			224756
-Methanosarcina acetivorans	Archaea	METAC	methanosarcina	archaea	188937
+Methanosarcina acetivorans	Archaea	METAC	methanosarcina	euryarchaea	188937
 Monodelphis domestica	Mammals	MONDO	opossum	opossum	13616
 Monosiga brevicollis	Invertebrates	MONBE	monosiga	sponge	81824
 Murinae		Murinae			39107
 Musa acuminata subsp. malaccensis	Plants	MUSAM	banana	banana	214687
 Mus musculus	Rodents	MOUSE	mouse	mouse	10090
 Mycobacterium		Mycobacterium			1763
-Mycobacterium tuberculosis	Bacteria	MYCTU	mycobacterium	bacteria	83332
-mycoplasma genitalium	Bacteria	MYCGE	m_genitalium	bacteria	243273
+Mycobacterium tuberculosis	Bacteria	MYCTU	mycobacterium	actinobacteria	83332
+mycoplasma genitalium	Bacteria	MYCGE	m_genitalium	mollicutes bacteria	243273
 Neisseria meningitidis serogroup b	Bacteria	NEIMB	meningococcus	meningococcus	122586
 Nelumbo nucifera	Plants	NELNU	sacred lotus	sacred lotus	4432
 Nematostella vectensis	Invertebrates	NEMVE	nematostella	anemone	45351
@@ -191,7 +195,7 @@ Neopterygii		Neopterygii			41665
 Neosartorya fumigata	Fungi	ASPFU	aspergillus	fungi	330879
 Neurospora crassa	Fungi	NEUCR	neurospora	fungi	367110
 Nicotiana tabacum	Plants	TOBAC	tobacco	tobacco	4097
-Nitrosopumilus maritimus	Archaea	NITMS	nitrosopumilu	archaea	436308
+Nitrosopumilus maritimus	Archaea	NITMS	nitrosopumilu	thaumarchaea	436308
 Oligohymenophorea		Oligohymenophorea			6020
 Opisthokonta		Opisthokonta			33154
 Opisthokonts		Opisthokonts			33154
@@ -226,8 +230,8 @@ Protostomia		Protostomia			33317
 Prunus persica	Plants	PRUPE	peach	peach	3760
 Pseudomonas aeruginosa	Bacteria	PSEAE	pseudomonas	bacteria	208964
 Puccinia graminis	Fungi	PUCGT	puccinia	fungi	418459
-PVC_group		PVC_group			
-Pyrobaculum aerophilum	Archaea	PYRAE	pyrobaculum	archaea	178306
+PVC_group		PVC_group			1783257
+Pyrobaculum aerophilum	Archaea	PYRAE	pyrobaculum	crenarchaea	178306
 Rattus norvegicus	Rodents	RAT	rat	rat	10116
 Rhabditida-Chromadorea		Rhabditida-Chromadorea			
 Rhizobiales		Rhizobiales			356
@@ -235,11 +239,11 @@ Rhodopirellula baltica	Bacteria	RHOBA	rhodopirellula	bacteria	243090
 Ricinus communis	Plants	RICCO	bean	castor bean	3988
 rosids		rosids			71275
 Saccharomyces cerevisiae	Fungi	YEAST	budding_yeast	Brewer's yeast	559292
-Saccharomycetaceae-Candida		Saccharomycetaceae-Candida			
+Saccharomycetaceae-Candida		Saccharomycetaceae-Candida			2952368
 Saccharomycetaceae		Saccharomycetaceae			4893
 Saccharomycetales		Saccharomycetales			4892
 Salmonella typhimurium	Bacteria	SALTY	salmonella	salmonella	99287
-SAR/HA_supergroup		SAR/HA_supergroup			
+SAR/HA_supergroup		SAR/HA_supergroup			2698737
 Sauria		Sauria			32561
 Schistosoma mansoni	Invertebrates	SCHMA	schistosoma	flatworm	6183
 Schizosaccharomyces japonicus	Fungi	SCHJY	s_japonicus	s_japonicus	402676
@@ -265,14 +269,14 @@ Stramenopiles		Stramenopiles			33634
 Streptococcaceae		Streptococcaceae			1300
 Streptococcus pneumoniae	Bacteria	STRR6	strep	strep	171101
 Streptomyces coelicolor	Bacteria	STRCO	streptomyces	bacteria	100226
-Streptophyta		Streptophyta			
+Streptophyta		Streptophyta			35493
 Strongylocentrotus purpuratus	Invertebrates	STRPU	sea_urchin	sea urchin	7668
-Sulfolobus solfataricus	Archaea	SACS2	sulfolobus	archaea	273057
+Sulfolobus solfataricus	Archaea	SACS2	sulfolobus	crenarchaea	273057
 Sus scrofa	Mammals	PIG	pig	pig	9823
 Synechocystis	Bacteria	SYNY3	synechocystis	cyanobacteria	1111708
 Takifugu rubripes	Vertebrates	TAKRU	fugu	fugu	31033
 Teleostei		Teleostei			32443
-Terrabacteria		Terrabacteria			
+Terrabacteria		Terrabacteria			1783272
 Tetrahymena thermophila	Invertebrates	TETTS	tetrahymena	protist	312017
 Tetrapoda		Tetrapoda			32523
 Thalassiosira pseudonana	Chromalveolata	THAPS	thalassiosira	diatom	35128
@@ -281,14 +285,15 @@ Theobroma cacao	Plants	THECC	cacao	cocoa	3641
 Theria		Theria			32525
 Thermococcaceae		Thermococcaceae			2259
 Thermococcus kodakaraensis	Archaea	THEKO	thermococcus	archaea	69014
-Thermodesulfovibrio yellowstonii	Bacteria	THEYD	thermodesulfovibrio	bacteria	289376
+Thermodesulfovibrio yellowstonii	Bacteria	THEYD	thermodesulfovibrio	nitrospirae bacteria	289376
 Thermoproteales		Thermoproteales			2266
 Thermoprotei		Thermoprotei			183924
-Thermotoga maritima	Bacteria	THEMA	thermotoga	bacteria	243274
+Thermotoga maritima	Bacteria	THEMA	thermotoga	thermotogae bacteria	243274
 Tracheophyta		Tracheophyta			58023
 Tribolium castaneum	Invertebrates	TRICA	tribolium	red flour beetle	7070
 Trichomonas vaginalis	Excavates	TRIVA	trichomonas	protist	5722
 Trichomonas vaginalis	Protista	TRIVA	trichomonas	protist	5722
+Trichomonas vaginalis	Protists	TRIV3	trichomonas	excavate	412133	100	0
 Trichoplax adhaerens	Invertebrates	TRIAD	trichoplax	placozoan	10228
 Triticeae		Triticeae			147389
 Triticum aestivum	Plants	WHEAT	wheat	wheat	4565
@@ -300,7 +305,9 @@ Vibrio cholerae	Bacteria	VIBCH	cholera	cholera	243277
 Viridiplantae		Viridiplantae			33090
 Vitis vinifera	Plants	VITVI	grape	grape	29760
 Xanthomonas campestris	Bacteria	XANCP	xanthomonas	xanthomonas	190485
+Xenopus laevis	Vertebrates	XENLA	x_laevis	african clawed frog	8355
 Xenopus tropicalis	Vertebrates	XENTR	frog	frog	8364
+Xenopus		Xenopus			262014
 Yarrowia lipolytica	Fungi	YARLI	yarrowia	fungi	284591
 Yersinia pestis	Bacteria	YERPE	yersinia	yersinia	632
 Zea mays	Plants	MAIZE	maize	corn	4577
