@@ -675,6 +675,7 @@ foreach my $annotation_id (keys %annotation){
                 }
                 $exp_gene_refs_str = join ("\|", (keys %exp_gene_refs));
                 $exp_gene_ref_groups_str = join ("\|", (keys %exp_gene_ref_groups));
+                next if ($exp_gene_refs_str eq '');
 
                 # Fetch with/from gene info
                 my $with_long_id = $long_id_lookup{$with_id};
