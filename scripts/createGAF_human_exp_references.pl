@@ -262,7 +262,7 @@ close (QA);
 
 my %experimental_seqs;
 my %exp_qualifier;
-my %exp_pmid;
+my %exp_group_pmid;
 open (GA, $go_aggregate) or die "Could not open file $go_aggregate\n";
 while (my $line=<GA>){
     chomp $line;
@@ -274,10 +274,11 @@ while (my $line=<GA>){
     $experimental_seqs{$annotation_id}=$an;
     $longId = $leaf{$an};
     $exp_qualifier{$longId}{$go}{$evidence_id}{$exp_qual}=1;  # Need to track by evidence_id
+    $exp_group_pmid{$annotation_id}{$group}=();
     if ($type eq 'PMID'){
         $full_ref = "$type:$evidence";
         # $exp_pmid{$annotation_id}{$full_ref}=1;
-        $exp_pmid{$annotation_id}{$full_ref}{$group}=1;
+        $exp_group_pmid{$annotation_id}{$group}{$full_ref}=1;
     }
 }
 
@@ -393,9 +394,10 @@ while (my $line=<EV>){
                 $longId = $leaf{$an};
                 my $id = $id_lookup{$longId};
                 $with{$annotation_id}{$id}=1;
-                foreach my $exp_pmid (keys %{$exp_pmid{$evidence}}){  # array of PMIDs
-                    foreach my $exp_group (keys %{$exp_pmid{$evidence}{$exp_pmid}}){  # array of groups
-                        $paint_evidence_annotation_ids{$annotation_id}{$id}{$exp_pmid}{$exp_group}=1;
+                foreach my $exp_group (keys %{$exp_group_pmid{$evidence}}){  # array of groups
+                    $paint_evidence_annotation_ids{$annotation_id}{$id}{$exp_group}=();
+                    foreach my $exp_pmid (keys %{$exp_group_pmid{$evidence}{$exp_group}}){  # array of PMIDs
+                        $paint_evidence_annotation_ids{$annotation_id}{$id}{$exp_group}{$exp_pmid}=1;
                     }
                 }
             }else{
@@ -667,15 +669,18 @@ foreach my $annotation_id (keys %annotation){
                 my $exp_gene_refs_str;
                 my %exp_gene_ref_groups;
                 my $exp_gene_ref_groups_str;
-                for my $exp_pmid (keys %{$paint_evidence_annotation_ids{$annotation_id}{$with_id}}){
-                    $exp_gene_refs{$exp_pmid}=1;
-                    for my $exp_group (keys %{$paint_evidence_annotation_ids{$annotation_id}{$with_id}{$exp_pmid}}){
-                        $exp_gene_ref_groups{$exp_group}=1;
+                for my $exp_group (keys %{$paint_evidence_annotation_ids{$annotation_id}{$with_id}}){
+                    $exp_gene_ref_groups{$exp_group}=1;
+                    for my $exp_pmid (keys %{$paint_evidence_annotation_ids{$annotation_id}{$with_id}{$exp_group}}){
+                        $exp_gene_refs{$exp_pmid}=1;
                     }
                 }
                 $exp_gene_refs_str = join ("\|", (keys %exp_gene_refs));
                 $exp_gene_ref_groups_str = join ("\|", (keys %exp_gene_ref_groups));
-                next if ($exp_gene_refs_str eq '');
+                # Hack to handle cases where $with_id is a PTN node, such as for IBAs created by more specific term IKR.
+                if ($exp_gene_ref_groups_str eq '' && $with_id =~ /^PANTHER:/) {
+                    $exp_gene_ref_groups_str = 'GO_Central';
+                }
 
                 # Fetch with/from gene info
                 my $with_long_id = $long_id_lookup{$with_id};
