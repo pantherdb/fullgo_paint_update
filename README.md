@@ -61,3 +61,14 @@ make repair_gaf_symbols
 * `paint_annotation`, `paint_annotation_qualifier`, `paint_evidence`, `go_aggregate`, and `organism_taxon` generate the input files for `scripts/createGAF.pl`.
 * `create_gafs` runs `scripts/createGAF.pl` to generate PAINT GAFs under the IBA_GAFs folder.
 * `repair_gaf_symbols` is only used right now (at least until the next Reference Proteome release) to correct gene symbols in the PomBase PAINT GAF.
+
+## Updating PAN-GO tables and genelist_agg fields
+If necessary, you can reuse this command to load from raw annot and ontology files into `goanno_wf`, `goobo_extract`, and `goobo_parent_child`:
+```
+make load_raw_go_to_panther
+```
+Then run these, making sure to replace the correct `PANGO_VERSION` and `PANGO_VERSION_DATE` values:
+```
+PANGO_VERSION=2.0.2 PANGO_VERSION_DATE=2024-12-05 make update_pango_new_tables
+make switch_pango_table_names
+```
