@@ -23,7 +23,7 @@ use POSIX qw(strftime);
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:n:N:G:b:C:r:t:u:c:T:e:s:vVh') || &usage();
+getopts('o:i:a:q:g:n:N:G:b:C:r:t:u:p:c:T:e:s:vVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
@@ -35,6 +35,7 @@ $go_aggregate = $opt_g if ($opt_g); # -g for go_aggregate file
 $qualifier = $opt_q if ($opt_q);  # -q for qualifier file
 $tair = $opt_t if ($opt_t);       # -t for the TAIR ID lookup file
 $araport = $opt_u if ($opt_u);    # -u for the UniProt-to-Araport ID lookup file
+$gpi_file = $opt_p if ($opt_p);    # -p for the UniProt-to-MOD ID GPI 1.2 file
 $evidence = $opt_c if ($opt_c);   # -c for evidence file
 $taxon = $opt_T if ($opt_T);      # -T for the taxon file
 $gene_dat = $opt_G if ($opt_G);   # -G for the gene.dat file in DB load folder
@@ -99,6 +100,25 @@ while (my $line=<AR>){
     $araport{$uniprotid}=$agi;
 }
 close (AR);
+
+###############################
+# Parse Uniprot-to-MOD-ID GPI file
+###############################
+my %gpi_uniprot_id_mappings;   # UniProt-to-MOD ID lookup from GPI 1.2 file.
+open (GPI, $gpi_file);  # Currently optional
+while (my $line=<GPI>){
+    next if ($line =~ /^!/);
+    chomp $line;
+    my ($db_name, $db_id, $sym, $gene_name, $synonym, $entity_type, $taxon, $something, $xrefs, $rest)=split(/\t/, $line);
+    my $entity_id = $db_name . ':' . $db_id;
+    for (split(/\|/, $xrefs)) {
+        my ($db, $id) = split(/:/, $_);
+        if ($db eq 'UniProtKB') {
+            $gpi_uniprot_id_mappings{$_} = $entity_id;
+        }
+    }
+}
+close (GPI);
 
 #################################
 # Parse the taxon file
@@ -190,7 +210,9 @@ foreach my $file (@files){
             $proteinId=~s/\=/\:/g;
             
             my $shortId;   # the gene or protein ID used for GO.
-            if ($geneId=~/^Gene|Ensembl/){
+            if (defined $gpi_uniprot_id_mappings{$proteinId}){
+                $shortId=$gpi_uniprot_id_mappings{$proteinId};
+            }elsif ($geneId=~/^Gene|Ensembl/){
                 $shortId=$proteinId;
             }else{
                 if($geneId =~/FlyBase/){
