@@ -39,30 +39,3 @@ from (
     and gw.confidence_code in ('IBA')
     group by 1) m 
 where g.gene_ext_acc = m.geneid;
-
-update panther.genelist_agg_new g set pango_mf_iea = m.godetails
-from ( 
-    select gw.geneid, string_agg(distinct gw.go_acc, ',') as godetails 
-    from panther.goanno_wf gw, panther.pango_go_classification_new gc, panther.classification_term_type ct 
-    where (gw.qualifier <> 'NOT' or gw.qualifier is null) and gw.go_acc = gc.accession and gc.obsolescence_date is null and gc.term_type_sid = ct.term_type_sid and ct.term_name = 'molecular_function' 
-    and gw.confidence_code in ('IEA')
-    group by 1 ) m 
-where g.gene_ext_acc = m.geneid;
-
-update panther.genelist_agg_new g set pango_cc_iea = m.godetails 
-from (
-    select gw.geneid, string_agg(distinct gw.go_acc, ',') as godetails 
-    from panther.goanno_wf gw, panther.pango_go_classification_new gc, panther.classification_term_type ct 
-    where (gw.qualifier <> 'NOT' or gw.qualifier is null) and gw.go_acc = gc.accession and gc.obsolescence_date is null and gc.term_type_sid = ct.term_type_sid and ct.term_name = 'cellular_component' 
-    and gw.confidence_code in ('IEA')
-    group by 1) m 
-where g.gene_ext_acc = m.geneid;
-
-update panther.genelist_agg_new g set pango_bp_iea = m.godetails 
-from ( 
-    select gw.geneid, string_agg(distinct gw.go_acc, ',') as godetails 
-    from panther.goanno_wf gw, panther.pango_go_classification_new gc, panther.classification_term_type ct 
-    where (gw.qualifier <> 'NOT' or gw.qualifier is null) and gw.go_acc = gc.accession and gc.obsolescence_date is null and gc.term_type_sid = ct.term_type_sid and ct.term_name = 'biological_process' 
-    and gw.confidence_code in ('IEA')
-    group by 1) m 
-where g.gene_ext_acc = m.geneid;
