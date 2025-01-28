@@ -205,6 +205,12 @@ panther_table_count:
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,fullgo_version
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,genelist_agg
 
+pango_table_count:
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,pango_go_classification
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,pango_go_classification_relationship
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,pango_version
+	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,genelist_agg
+
 load_raw_go_to_panther:
 	@echo "Counts of raw tables before data load:"
 	$(MAKE) raw_table_count
@@ -224,6 +230,18 @@ switch_panther_table_names:
 	@echo "Counts of panther tables after data load:"
 	$(MAKE) panther_table_count
 	$(MAKE) record_db_import_date
+
+update_pango_new_tables:
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/pango_go_classification.sql
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/pango_version.sql -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "go_doi": "$(shell grep DOI $(BASE_PATH)/profile.txt | head -n 1 | cut -f2)", "pango_version": "$(PANGO_VERSION)", "pango_version_date": "$(PANGO_VERSION_DATE)"}'
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/pango_genelist_agg.sql
+
+switch_pango_table_names:
+	@echo "Counts of PAN-GO panther tables before data load:"
+	$(MAKE) pango_table_count
+	python3 scripts/db_caller.py scripts/sql/panther_go_update/switch_pango_table_names.sql
+	@echo "Counts of panther tables after data load:"
+	$(MAKE) pango_table_count
 
 record_db_import_date:
 	echo "Data imported into the PANTHER database on $(shell date +%Y-%m-%d)" | tee -a $(BASE_PATH)/README

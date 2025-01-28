@@ -1,6 +1,16 @@
 ALTER TABLE panther.genelist_agg_old RENAME TO genelist_agg_new;					
 Truncate table panther.genelist_agg_new;					
-INSERT INTO panther.genelist_agg_new(gene_id, gene_name, gene_symbol, genex_assay, snp_assay, panther_best_hit, panther_best_hit_name, panther_best_hit_acc, panther_best_hit_score, panther_mf, panther_bp, transcripts, proteins, cytoband, cytoband_sort, species, genelist_rowuid, cra_chromosome, cra_start_pos, cra_end_pos, pub_chromosome, pub_start_pos, pub_end_pos, source_id, gene_ext_id, gene_ext_acc, cra_chromosome_rank, pub_chromosome_rank, pathway, panther_cc, panther_pc, public_id, reactome) SELECT  gene_id, gene_name, gene_symbol, genex_assay, snp_assay, panther_best_hit, panther_best_hit_name, panther_best_hit_acc, panther_best_hit_score, panther_mf, panther_bp, transcripts, proteins, cytoband, cytoband_sort, species, genelist_rowuid, cra_chromosome, cra_start_pos, cra_end_pos, pub_chromosome, pub_start_pos, pub_end_pos, source_id, gene_ext_id, gene_ext_acc, cra_chromosome_rank, pub_chromosome_rank, pathway, panther_cc, panther_pc, public_id, reactome FROM   panther.genelist_agg WHERE  gene_id IS NOT NULL;
+INSERT INTO panther.genelist_agg_new(gene_id, gene_name, gene_symbol, genex_assay, snp_assay, panther_best_hit, panther_best_hit_name, 
+    panther_best_hit_acc, panther_best_hit_score, panther_mf, panther_bp, transcripts, proteins, cytoband, cytoband_sort, species, 
+    genelist_rowuid, cra_chromosome, cra_start_pos, cra_end_pos, pub_chromosome, pub_start_pos, pub_end_pos, source_id, gene_ext_id, 
+    gene_ext_acc, cra_chromosome_rank, pub_chromosome_rank, pathway, panther_cc, panther_pc, public_id, reactome, pango_mf_iba, 
+    pango_cc_iba, pango_bp_iba) 
+    SELECT  gene_id, gene_name, gene_symbol, genex_assay, snp_assay, panther_best_hit, panther_best_hit_name, panther_best_hit_acc, 
+    panther_best_hit_score, panther_mf, panther_bp, transcripts, proteins, cytoband, cytoband_sort, species, genelist_rowuid, 
+    cra_chromosome, cra_start_pos, cra_end_pos, pub_chromosome, pub_start_pos, pub_end_pos, source_id, gene_ext_id, gene_ext_acc, 
+    cra_chromosome_rank, pub_chromosome_rank, pathway, panther_cc, panther_pc, public_id, reactome, pango_mf_iba, pango_cc_iba, 
+    pango_bp_iba
+    FROM   panther.genelist_agg WHERE  gene_id IS NOT NULL;
 reindex table panther.genelist_agg_new;
 
 update panther.genelist_agg_new g set fullgo_mf_comp = m.godetails
