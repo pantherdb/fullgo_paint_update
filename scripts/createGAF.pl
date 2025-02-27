@@ -211,9 +211,7 @@ foreach my $file (@files){
             $proteinId=~s/\=/\:/g;
             
             my $shortId;   # the gene or protein ID used for GO.
-            if ($goa_mode) {
-                $shortId=$proteinId;
-            }elsif (defined $gpi_uniprot_id_mappings{$proteinId}){
+            if (defined $gpi_uniprot_id_mappings{$proteinId}){
                 $shortId=$gpi_uniprot_id_mappings{$proteinId};
             }elsif ($geneId=~/^Gene|Ensembl/){
                 $shortId=$proteinId;
@@ -658,6 +656,12 @@ foreach my $annotation_id (keys %annotation){
             if (defined $blacklisted_genes{$uniprot_id}){
                 print STDERR "Skipping - obsolete ID missing from latest uniprot_protein.gpi\ttaxon\:$gene_taxon\t$uniprot\n";
                 next;
+            }
+
+            # If GOA mode, primary ID will always be UniProt
+            if ($goa_mode) {
+                $db=$prefix;  # should always be 'UniProtKB'
+                $shortId=$uniprot_id;
             }
             
             my $leaf_ptn;
