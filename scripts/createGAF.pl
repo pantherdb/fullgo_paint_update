@@ -661,7 +661,7 @@ foreach my $annotation_id (keys %annotation){
             # If GOA mode, primary ID will always be UniProt
             if ($goa_mode) {
                 $db=$prefix;  # should always be 'UniProtKB'
-                $shortId=$uniprot_id;
+                $short_id=$uniprot_id;
             }
             
             my $leaf_ptn;
