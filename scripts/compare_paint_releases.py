@@ -225,18 +225,21 @@ taxon_headers = [
 print("\t".join(taxon_headers))
 sheet.append_row([])
 sheet.append_row(taxon_headers)
+blacklisted_ids = {}
 for taxon in sorted(all_taxons):
     before_ids = taxons_before.get(taxon, [])
     before_count = len(before_ids)
     after_ids = taxons_after.get(taxon, [])
     after_count = len(after_ids)
     blacklisted_count = 0
+    blacklisted_ids[taxon] = set()
     if panther_blacklist:
         before_counts_by_id = Counter(before_ids)
         after_counts_by_id = Counter(after_ids)
         for uniprot_id in panther_blacklist:
             if uniprot_id in before_counts_by_id:
                 blacklisted_count += before_counts_by_id[uniprot_id]
+                blacklisted_ids[taxon].add(uniprot_id)
         if blacklisted_count:
             bl_percent_change = "%.2f" % ((blacklisted_count / before_count) * 100)
         else:
@@ -247,6 +250,10 @@ for taxon in sorted(all_taxons):
         print_row = print_row + [bl_percent_change]
     print("\t".join([str(i) for i in print_row]))
     sheet.append_row(print_row)
+
+for taxon, ids in blacklisted_ids.items():
+    for uniprot_id in ids:
+        print("\t".join(["UNIPROT_OBSOLETED_ID", taxon, uniprot_id]))
 
 if args.publish_report:
     handler = SheetPublishHandler()
