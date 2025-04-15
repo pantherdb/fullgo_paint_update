@@ -35,7 +35,7 @@ $go_aggregate = $opt_g if ($opt_g); # -g for go_aggregate file
 $qualifier = $opt_q if ($opt_q);  # -q for qualifier file
 $tair = $opt_t if ($opt_t);       # -t for the TAIR ID lookup file
 $araport = $opt_u if ($opt_u);    # -u for the UniProt-to-Araport ID lookup file
-$gpi_file = $opt_p if ($opt_p);    # -p for the UniProt-to-MOD ID GPI 1.2 file
+$gpi_files = $opt_p if ($opt_p);  # -p for the UniProt-to-MOD ID GPI 1.2 file(s), comma-delimited
 $evidence = $opt_c if ($opt_c);   # -c for evidence file
 $taxon = $opt_T if ($opt_T);      # -T for the taxon file
 $gene_dat = $opt_G if ($opt_G);   # -G for the gene.dat file in DB load folder
@@ -104,21 +104,40 @@ close (AR);
 ###############################
 # Parse Uniprot-to-MOD-ID GPI file
 ###############################
-my %gpi_uniprot_id_mappings;   # UniProt-to-MOD ID lookup from GPI 1.2 file.
-open (GPI, $gpi_file);  # Currently optional
-while (my $line=<GPI>){
-    next if ($line =~ /^!/);
-    chomp $line;
-    my ($db_name, $db_id, $sym, $gene_name, $synonym, $entity_type, $taxon, $something, $xrefs, $rest)=split(/\t/, $line);
-    my $entity_id = $db_name . ':' . $db_id;
-    for (split(/\|/, $xrefs)) {
-        my ($db, $id) = split(/:/, $_);
-        if ($db eq 'UniProtKB') {
-            $gpi_uniprot_id_mappings{$_} = $entity_id;
+my %gpi_uniprot_id_mappings;   # UniProt-to-MOD ID lookup from GPI file.
+my @gpi_files = split(/,/, $gpi_files);
+foreach my $gpi_file (@gpi_files){
+    open (GPI, $gpi_file);  # Currently optional
+    # Get version from first line
+    my $first_line = GPI->getline();
+    my $gpi_version;
+    if ($first_line =~ /^!gpi-version:/){
+        # Ex: !gpi-version:1.2
+        $gpi_version = (split(/:/, $first_line))[1];
+        $gpi_version =~ s/^\s+|\s+$//g;  # remove whitespace
+    }
+    while (my $line=<GPI>){
+        next if ($line =~ /^!/);
+        chomp $line;
+        my ($entity_id, $db_name, $db_id, $sym, $gene_name, $synonym, $entity_type, $taxon, $encoded_by, $canonical_id, $cpx_members, $xrefs, $rest);
+        if ($gpi_version && $gpi_version eq '2.0') {
+            ($entity_id, $sym, $gene_name, $synonym, $entity_type, $taxon, $encoded_by, $canonical_id, $cpx_members, $xrefs, $rest)=split(/\t/, $line);
+        } else {
+            # GPI 1.2
+            ($db_name, $db_id, $sym, $gene_name, $synonym, $entity_type, $taxon, $encoded_by, $xrefs, $rest)=split(/\t/, $line);
+            $entity_id = $db_name . ':' . $db_id;
+        }
+        next if ($encoded_by);
+        for (split(/\|/, $xrefs)) {
+            my ($db, $id) = split(/:/, $_);
+            if ($db eq 'UniProtKB') {
+                $gpi_uniprot_id_mappings{$_} = $entity_id;
+            }
         }
     }
+    close (GPI);
 }
-close (GPI);
+
 
 #################################
 # Parse the taxon file
