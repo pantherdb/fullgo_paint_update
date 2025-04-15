@@ -127,7 +127,7 @@ foreach my $gpi_file (@gpi_files){
             ($db_name, $db_id, $sym, $gene_name, $synonym, $entity_type, $taxon, $encoded_by, $xrefs, $rest)=split(/\t/, $line);
             $entity_id = $db_name . ':' . $db_id;
         }
-        next if ($encoded_by);
+        next if ($encoded_by);  # Skip GPI line if Encoded_by is set since this is typically used by non-gene entities like isoforms or transcripts
         for (split(/\|/, $xrefs)) {
             my ($db, $id) = split(/:/, $_);
             if ($db eq 'UniProtKB') {
@@ -137,7 +137,6 @@ foreach my $gpi_file (@gpi_files){
     }
     close (GPI);
 }
-
 
 #################################
 # Parse the taxon file
