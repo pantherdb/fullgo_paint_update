@@ -121,9 +121,9 @@ download_fullgo:
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	$(MAKE) make_profile
 	$(MAKE) make_readme
-	$(MAKE) $(BASE_PATH)/TaxonConstraintsLookup.txt
 	$(MAKE) $(BASE_PATH)/resources/complex_terms.tsv
 	$(MAKE) $(BASE_PATH)/resources/panther_blacklist.txt
+	$(MAKE) $(BASE_PATH)/TaxonConstraintsLookup.txt
 
 extractfromgoobo:
 	perl scripts/extractfromgoobo.pl -i $(BASE_PATH)/go.obo -o $(BASE_PATH)/inputforGOClassification.tsv > $(BASE_PATH)/obsolete_go_terms.txt
