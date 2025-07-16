@@ -1,6 +1,6 @@
 -- need to reload the aggregate data into materialized view go_aggregate, has to drop the view and recreate it, just refresh data won't work because it will still use the old tables
 set search_path=panther_upl;
-DROP MATERIALIZED VIEW panther_upl.paint_aggregate;
+DROP MATERIALIZED VIEW IF EXISTS panther_upl.paint_aggregate;
 
 CREATE MATERIALIZED VIEW panther_upl.paint_aggregate AS 
     select pa.annotation_id, n.accession, clf.accession term, et.type, pe.evidence_id, pe.evidence, cc.confidence_code, q.qualifier, pa.creation_date from paint_evidence pe
