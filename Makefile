@@ -399,7 +399,7 @@ gen_iba_gaf_yamls:
 	envsubst < resources/iba_gaf_gen_a.yaml > $(BASE_PATH)/iba_gaf_gen_a.yaml
 	envsubst < resources/iba_gaf_gen_b.yaml > $(BASE_PATH)/iba_gaf_gen_b.yaml
 
-create_gafs: setup_directories pombe_sources paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
+create_gafs: setup_directories pombe_sources $(BASE_PATH)/zfin.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
 	# Slurm this
 	# envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
 	# sbatch $(BASE_PATH)/createGAF.slurm
@@ -455,6 +455,10 @@ pombe_sources:
 	wget https://www.pombase.org/nightly_update/misc/gene_IDs_names.tsv -O $(BASE_PATH)/resources/gene_IDs_names.tsv
 	wget https://www.pombase.org/nightly_update/misc/sysID2product.tsv -O $(BASE_PATH)/resources/sysID2product.tsv
 
+%/zfin.gpi:
+	wget https://zfin.org/downloads/zfin.gpi.gz -O $(BASE_PATH)/resources/zfin.gpi.gz
+	gunzip $(BASE_PATH)/resources/zfin.gpi.gz
+
 # Now in createGAF.slurm
 repair_gaf_symbols:
 	perl scripts/fix_pombe_symbol.pl -i $(IBA_DIR)/gene_association.paint_pombase.gaf -p $(BASE_PATH)/resources/gene_IDs_names.tsv -d $(BASE_PATH)/resources/sysID2product.tsv > $(IBA_DIR)/gene_association.paint_pombase.gaf
@@ -472,7 +476,8 @@ run_reports:
 	# Ex: python3 scripts/created_ibds_by_curator.py -b 2020-01-31 -a 2020-03-26 -p
 	python3 scripts/created_ibds_by_curator.py -b $(BEFORE_DATE) -a $(AFTER_DATE) -p
 	# Download and/or point to release folders. Ex: ftp://ftp.pantherdb.org/downloads/paint/14.1/2020-01-31/ and 2020-01-31
-	python3 scripts/compare_paint_releases.py -p -b $(BEFORE_DATE) -a $(AFTER_DATE) -u $(BASE_PATH)/resources/panther_blacklist.txt -j $(BASE_PATH)/update_stats.json
+	# python3 scripts/compare_paint_releases.py -p -b $(BEFORE_DATE) -a $(AFTER_DATE) -u $(BASE_PATH)/resources/panther_blacklist.txt -j $(BASE_PATH)/update_stats.json
+	python3 scripts/compare_paint_releases.py -p -b $(BEFORE_DATE) -a $(AFTER_DATE) -j $(BASE_PATH)/update_stats.json > $(BASE_PATH)/compare_paint_releases.log
 	# envsubst < scripts/compare_paint_releases.slurm > $(BASE_PATH)/compare_paint_releases.slurm
 	# sbatch --wait $(BASE_PATH)/compare_paint_releases.slurm
 	# python3 scripts/publish_sheet_json.py -t $(shell date +%Y-%m-%d)_update_stats -j $(BASE_PATH)/update_stats.json
