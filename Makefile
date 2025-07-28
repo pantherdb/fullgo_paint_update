@@ -457,7 +457,7 @@ pombe_sources:
 
 %/zfin.gpi:
 	wget https://zfin.org/downloads/zfin.gpi.gz -O $(BASE_PATH)/resources/zfin.gpi.gz
-	gunzip $(BASE_PATH)/resources/zfin.gpi.gz
+	gunzip -f $(BASE_PATH)/resources/zfin.gpi.gz
 
 # Now in createGAF.slurm
 repair_gaf_symbols:
