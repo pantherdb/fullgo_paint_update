@@ -136,6 +136,9 @@ extractfromgoobo:
 	perl scripts/FindAllParents.pl $(BASE_PATH)/goparentchild.tsv $(BASE_PATH)/AllParentsofGOTerms.txt
 	perl scripts/printHierarchy.pl $(BASE_PATH)/AllParentsofGOTerms.txt $(BASE_PATH)/FinalChildParent-Hierarchy.dat
 
+%/gaf_files/ecocyc_uniprot.gaf: %/ecocyc.gpi
+	python3 scripts/replace_gaf_ids_w_uniprot_from_gpi.py -i $*/gaf_files/ecocyc.gaf -g $< > $@
+
 split_fullGoMappingPthr_gafs:
 	envsubst < scripts/mkdir_fullGoMappingPthr_groups.slurm > $(BASE_PATH)/mkdir_fullGoMappingPthr_groups.slurm
 	sbatch --wait $(BASE_PATH)/mkdir_fullGoMappingPthr_groups.slurm
