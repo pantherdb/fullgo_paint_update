@@ -653,15 +653,7 @@ foreach my $annotation_id (keys %annotation){
             
             my ($org, $geneId, $uniprot) = split(/\|/, $gene);
             my $gene_taxon;
-            if ($org eq 'SCHPO'){
-                # Schizosaccharomyces pombe - forcing taxon from strain 284812 to species 4896
-                $gene_taxon='4896';
-            }
-            elsif ($org eq 'SCHJY'){
-                # Schizosaccharomyces japonicus - forcing taxon from strain 402676 to species 4897
-                $gene_taxon='4897';
-            }
-            elsif (defined $taxon{$org}){
+            if (defined $taxon{$org}){
                 $gene_taxon=$taxon{$org};
             }else{
                 print STDERR "Gene organism $org has no taxon ID found.\n";
