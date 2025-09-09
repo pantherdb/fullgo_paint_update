@@ -136,8 +136,13 @@ extractfromgoobo:
 	perl scripts/FindAllParents.pl $(BASE_PATH)/goparentchild.tsv $(BASE_PATH)/AllParentsofGOTerms.txt
 	perl scripts/printHierarchy.pl $(BASE_PATH)/AllParentsofGOTerms.txt $(BASE_PATH)/FinalChildParent-Hierarchy.dat
 
-%/gaf_files/ecocyc_uniprot.gaf: %/ecocyc.gpi
+.PRECIOUS: %/gaf_files/ecocyc_uniprot.gaf
+%/gaf_files_ECOLI/ecocyc_uniprot.gaf: %/ecocyc.gpi
+	mkdir -p $*/gaf_files_ECOLI
 	python3 scripts/replace_gaf_ids_w_uniprot_from_gpi.py -i $*/gaf_files/ecocyc.gaf -g $< > $@
+
+%/Pthr_GO_19.0.tsv.ECOLI: %/gaf_files/ecocyc_uniprot.gaf
+	perl scripts/fullGoMappingPthrHierarchy.pl -f $*/gaf_files_ECOLI/ -t $(TAXON_ID_PATH) -i $(IDENTIFIER_PATH) -g $(GENE_PATH) -o $*/go.obo -w $*/Pthr_GO_19.0.tsv.ECOLI -e $*/PthrGOLog_19.0.txt.ECOLI -d $*/ -H 19.0.dat.ECOLI
 
 split_fullGoMappingPthr_gafs:
 	envsubst < scripts/mkdir_fullGoMappingPthr_groups.slurm > $(BASE_PATH)/mkdir_fullGoMappingPthr_groups.slurm
