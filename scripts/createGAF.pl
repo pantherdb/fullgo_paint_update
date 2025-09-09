@@ -23,7 +23,7 @@ use POSIX qw(strftime);
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:n:N:G:b:C:r:t:u:p:c:T:e:s:vVh') || &usage();
+getopts('o:i:a:q:g:n:N:G:b:C:r:t:u:p:c:T:e:s:UvVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
@@ -43,6 +43,7 @@ $gene_blacklist = $opt_b if ($opt_b);   # -b for the obsoleted UniProt ID blackl
 $complex_termlist = $opt_C if ($opt_C);   # -C for the protein-containing complex descendants file
 $goparentchild = $opt_r if ($opt_r);   # -r for the GO term parent-child relationship file
 $gaf_version = $opt_s if ($opt_s); # -s for output GAF specification version 2.1 (default) or 2.2
+$goa_mode = 1 if ($opt_U); # -g for GOA mode (All gene IDs output as UniProt)
 $errFile = $opt_e if ($opt_e);    # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);         # -v for (v)erbose (debug info to STDERR)
 $verbose = 2 if ($opt_V);         # -V for (V)ery verbose (debug info STDERR)
@@ -673,6 +674,12 @@ foreach my $annotation_id (keys %annotation){
             if (defined $blacklisted_genes{$uniprot_id}){
                 print STDERR "Skipping - obsolete ID missing from latest uniprot_protein.gpi\ttaxon\:$gene_taxon\t$uniprot\n";
                 next;
+            }
+
+            # If GOA mode, primary ID will always be UniProt
+            if ($goa_mode) {
+                $db=$prefix;  # should always be 'UniProtKB'
+                $short_id=$uniprot_id;
             }
             
             my $leaf_ptn;
