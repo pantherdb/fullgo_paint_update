@@ -17,7 +17,7 @@
 -c $BASE_PATH/resources/$EVIDENCE \
 -T $BASE_PATH/resources/$TAXON \
 -G $GENE_PATH \
--b $BASE_PATH/resources/panther_blacklist.txt \
+-p $BASE_PATH/resources/zfin.gpi \
 -s $GAF_VERSION \
 -C $BASE_PATH/resources/complex_terms.tsv \
 -r $BASE_PATH/goparentchild_isaonly.tsv \
