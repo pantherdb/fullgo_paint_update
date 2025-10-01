@@ -3,7 +3,7 @@ PyYAML
 biopython>=1.72
 prefixcommons==0.1.7
 SPARQLWrapper==1.8.2
-pthr_db_caller==2.0.0
+pthr_db_caller==2.0.2
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib

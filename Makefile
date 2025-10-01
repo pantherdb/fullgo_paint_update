@@ -407,13 +407,20 @@ gen_iba_gaf_yamls:
 	envsubst < resources/iba_gaf_gen_a.yaml > $(BASE_PATH)/iba_gaf_gen_a.yaml
 	envsubst < resources/iba_gaf_gen_b.yaml > $(BASE_PATH)/iba_gaf_gen_b.yaml
 
-create_gafs: setup_directories pombe_sources $(BASE_PATH)/zfin.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
+create_gafs: setup_directories pombe_sources $(BASE_PATH)/resources/zfin.gpi $(BASE_PATH)/resources/japonicusdb.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
 	# Slurm this
 	# envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
 	# sbatch $(BASE_PATH)/createGAF.slurm
 	envsubst < scripts/createGAF.sh > $(BASE_PATH)/createGAF.sh
 	chmod 744 $(BASE_PATH)/createGAF.sh
 	./$(BASE_PATH)/createGAF.sh
+
+create_gafs_goa:
+# 	mkdir -p $(IBA_DIR)_GOA
+# 	IBA_DIR=$(IBA_DIR)_GOA envsubst < scripts/createGAF_GOA.sh > $(BASE_PATH)/createGAF_GOA.sh
+# 	chmod 744 $(BASE_PATH)/createGAF_GOA.sh
+# 	./$(BASE_PATH)/createGAF_GOA.sh
+	cat <(grep -e '^\!' $(BASE_PATH)/IBA_GAFs_GOA/gene_association.paint_human.gaf) <(grep -h -v -e '^\!' $(BASE_PATH)/IBA_GAFs_GOA/*) > $(BASE_PATH)/gene_association.paint_uniprot.gaf
 
 create_gafs_from_xml: $(BASE_PATH)/resources/go_aspects.tsv
 	IBA_XML_DIR=$(BASE_PATH)/leafIBAInfo GO_RELEASE_DATE=$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2) \
@@ -463,9 +470,13 @@ pombe_sources:
 	wget https://www.pombase.org/nightly_update/misc/gene_IDs_names.tsv -O $(BASE_PATH)/resources/gene_IDs_names.tsv
 	wget https://www.pombase.org/nightly_update/misc/sysID2product.tsv -O $(BASE_PATH)/resources/sysID2product.tsv
 
-%/zfin.gpi:
+%/resources/zfin.gpi:
 	wget https://zfin.org/downloads/zfin.gpi.gz -O $(BASE_PATH)/resources/zfin.gpi.gz
 	gunzip -f $(BASE_PATH)/resources/zfin.gpi.gz
+
+%/resources/japonicusdb.gpi:
+	wget https://www.japonicusdb.org/data/annotations/Gene_ontology/japonicusdb.gpi.gz -O $(BASE_PATH)/resources/japonicusdb.gpi.gz
+	gunzip -f $(BASE_PATH)/resources/japonicusdb.gpi.gz
 
 # Now in createGAF.slurm
 repair_gaf_symbols:
