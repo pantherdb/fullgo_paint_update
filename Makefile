@@ -407,7 +407,7 @@ gen_iba_gaf_yamls:
 	envsubst < resources/iba_gaf_gen_a.yaml > $(BASE_PATH)/iba_gaf_gen_a.yaml
 	envsubst < resources/iba_gaf_gen_b.yaml > $(BASE_PATH)/iba_gaf_gen_b.yaml
 
-create_gafs: setup_directories pombe_sources $(BASE_PATH)/resources/zfin.gpi $(BASE_PATH)/resources/japonicusdb.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate	# must run from tcsh shell
+create_gafs: setup_directories pombe_sources $(BASE_PATH)/resources/zfin.gpi $(BASE_PATH)/resources/japonicusdb.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate paint_exp_aggregate	# must run from tcsh shell
 	# Slurm this
 	# envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
 	# sbatch $(BASE_PATH)/createGAF.slurm
@@ -462,6 +462,9 @@ paint_evidence:
 
 go_aggregate:
 	python3 scripts/db_caller.py scripts/sql/go_aggregate.sql -o $(BASE_PATH)/resources/$(GO_AGG)
+
+paint_exp_aggregate:
+	python3 scripts/db_caller.py scripts/sql/paint_exp_aggregate.sql -o $(BASE_PATH)/resources/paint_exp_aggregate
 
 organism_taxon:
 	python3 scripts/db_caller.py scripts/sql/organism_taxon.sql -o $(BASE_PATH)/resources/$(TAXON)
