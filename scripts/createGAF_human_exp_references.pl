@@ -23,7 +23,7 @@ use POSIX qw(strftime);
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:n:N:G:b:C:r:t:u:c:T:e:s:vVh') || &usage();
+getopts('o:i:a:q:g:n:N:G:b:C:r:t:u:c:T:e:w:R:s:vVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
@@ -42,6 +42,8 @@ $gene_blacklist = $opt_b if ($opt_b);   # -b for the obsoleted UniProt ID blackl
 $complex_termlist = $opt_C if ($opt_C);   # -C for the protein-containing complex descendants file
 $goparentchild = $opt_r if ($opt_r);   # -r for the GO term parent-child relationship file
 $gaf_version = $opt_s if ($opt_s); # -s for output GAF specification version 2.1 (default) or 2.2
+$valid_gaf = $opt_w if ($opt_w);    # -w for GO pipeline-validated GAF 2.2. Should be almost identical to what we generate here. IBAs not in this file will not be written out.
+$obsolete_go_terms_file = $opt_R if ($opt_R);    # -R for obsolete_go_terms.txt file produced from ontology matching $valid_gaf (if supplying $valid_gaf)
 $errFile = $opt_e if ($opt_e);    # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);         # -v for (v)erbose (debug info to STDERR)
 $verbose = 2 if ($opt_V);         # -V for (V)ery verbose (debug info STDERR)
@@ -105,12 +107,14 @@ close (AR);
 #################################
 
 my %taxon;
+my %taxon_name;
 open (TA, $taxon) or die "Could not open file $taxon\n";
 while (my $line=<TA>){
     chomp $line;
     
     my ($org, $sh_name, $id)=split(/;/, $line);
     $taxon{$sh_name}=$id;
+    $taxon_name{$id}=$sh_name;
 }
 close (TA);
 
@@ -430,6 +434,7 @@ close (EV);
 ###########################################
 
 my %IBAs;
+my %IBAs_granular;
 my %geneQualTerms;
 
 print "\!gaf-version: 2.1\n";
@@ -730,6 +735,7 @@ foreach my $annotation_id (keys %annotation){
                 }
 
                 $IBAs{$file_type}{$foo}=1;
+                $IBAs_granular{$file_type}{$ptn}{"$db:$short_id"}{$go}{$with_id}{$foo}=1;  # DS for faster retrieval
             }
 
             my $full_id = "$db:$short_id";
@@ -738,41 +744,137 @@ foreach my $annotation_id (keys %annotation){
     }
 }
 
-foreach my $type (keys %IBAs){
-    my $outFile = "gene_association.paint_$type.gaf";
-    my $datestring = strftime "%F", localtime;
+my %taxon_type_lkp;
+$taxon_type_lkp{'MOUSE'} = "mgi";
+$taxon_type_lkp{'HUMAN'} = "human";
+$taxon_type_lkp{'RAT'} = "rgd";
+$taxon_type_lkp{'DROME'} = "fb";
+$taxon_type_lkp{'ARATH'} = "tair";
+$taxon_type_lkp{'CAEEL'} = "wb";
+$taxon_type_lkp{'CHiCK'} = "chicken";
+$taxon_type_lkp{'ECOLI'} = "ecocyc";
+$taxon_type_lkp{'YEAST'} = "sgd";
+$taxon_type_lkp{'DICDI'} = "dictyBase";
+$taxon_type_lkp{'SCHPO'} = "pombase";
+$taxon_type_lkp{'DANRE'} = "zfin";
+$taxon_type_lkp{'CANAL'} = "cgd";
+$taxon_type_lkp{'CHICK'} = "chicken";
+$taxon_type_lkp{'XENTR'} = "xenbase";
 
-    open (OUT, ">$outDir/$outFile");
+if ($valid_gaf) {
+    # Prep the hash of obsoleted terms and their replacements if file is provided
+    my %term_replacements;  # This is to predict the obsoletion and replacements that the validation will have applied using the newer ontology.
+    if ($obsolete_go_terms_file) {
+        open (TR, $obsolete_go_terms_file) or die "Could not open file $obsolete_go_terms_file\n";
+        while (my $line=<TR>){
+            chomp $line;
+            my ($old_term, $new_term)=split(/\t/, $line);
+            $term_replacements{$new_term}{$old_term} = 1;
+        }
+        close (TR);
+    }
+
+    # Iterate valid_iba GAF file, explode by with, and print out
+    open (VG, $valid_gaf) or die "Could not open file $valid_gaf\n";
+    open (OUT, ">$outDir/gene_association.paint_human_validated.gaf");
+    my $datestring = strftime "%F", localtime;
     print OUT "\!gaf-version: $gaf_version\n";
     print OUT "\!Created on " . localtime . ".\n";
     print OUT "\!generated-by: PANTHER\n";
     print OUT "\!date-generated: $datestring\n";
     print OUT "\!PANTHER version: $panther_version.\n";
     print OUT "\!GO version: $go_version.\n";
-        foreach my $line (keys %{$IBAs{$type}}){
-            my $printThisLine=1;
-            my ($gene, $qual, $goTerm) = &extractGeneQualTerm($line);
-            my @goRelatedTerms;  # Could be descendants or ancestors
-            if (index($qual, "NOT") != -1){  # Is a NOT annotation, so print only most generic term
-                @goRelatedTerms = &getAncestorTerms($goTerm);
-            }else{
-                @goRelatedTerms = &getDescendantTerms($goTerm);
-            }
-            foreach my $relTerm (@goRelatedTerms){
-                if (defined $geneQualTerms{$gene}{$qual}{$relTerm}){
-                    $printThisLine=0;
-                    last;
+    while (my $line=<VG>){
+        next if ($line =~ /^!/);
+        chomp $line;
+        
+        # Ex: UniProtKB       Q9BXY0  MAK16   part_of GO:0030687      GO_REF:0000033  IBA     PANTHER:PTN000600976|SGD:S000000023     C       Protein MAK16 homolog  UniProtKB:Q9BXY0|PTN002511754   protein taxon:9606      20170228        GO_Central
+        my ($db_name, $db_id, $sym, $relations, $go, $reference, $ev_code, $with, $aspect, $gene_name, $db_xref, $entity_type, $taxon, $date, $contrib_group)=split(/\t/, $line);
+        # Parse $with to get PTN number and gene IDs
+        my @withs = split(/\|/, $with);
+        # Get $ptn which is first element of $withs
+        my $ptn = shift @withs;
+        # Find the %IBAs entry that matches this line
+        $ptn =~ s/PANTHER://;  # Remove PANTHER: prefix if present
+        $taxon =~ s/taxon://;  # Remove taxon: prefix if present
+        my $taxon_name = $taxon_name{$taxon};
+        my $type = undef;
+        if (defined $taxon_type_lkp{$taxon_name}) {
+            $type = $taxon_type_lkp{$taxon_name};
+        } else {
+            $type = "other";
+        }
+
+        my @all_matched_lines;
+        foreach my $with_id (@withs) {  # Iterate through each gene ID
+            # Check matching criteria
+            my @matched_lines = keys %{$IBAs_granular{$type}{$ptn}{"$db_name:$db_id"}{$go}{$with_id}};
+            # Check for replaced terms if no matched lines
+            if (!@matched_lines && defined($term_replacements{$go})) {
+                foreach my $replaced_go (keys %{$term_replacements{$go}}) {
+                    push @matched_lines, keys %{$IBAs_granular{$type}{$ptn}{"$db_name:$db_id"}{$replaced_go}{$with_id}};
                 }
             }
-            # print OUT "$line\n";
-            if ($printThisLine){
-                my $msg = "$line\n";
-                $msg =~ s/\r//;
-                print OUT "$msg";
+            # Recheck if no matched lines after checking for replaced terms
+            if (!@matched_lines) {
+                print STDERR "No matching IBA found for $ptn $db_name:$db_id $go $with_id\n";
+                next;
+            }
+            foreach my $iba_line (@matched_lines) {
+                my @iba_parts = split(/\t/, $iba_line);
+                # Get ref, symbol, def, taxon, contrib_group and append to $line
+                my @new_line_parts = split(/\t/, $line);
+                my $new_with = "PANTHER:$ptn\|$with_id";
+                $new_line_parts[7] = $new_with;
+                my $with_gene_symbol = $iba_parts[18];
+                my $with_gene_name = $iba_parts[19];
+                my $with_gene_taxon_id = $iba_parts[20];
+                my $exp_pmids = $iba_parts[17];
+                my $exp_groups = $iba_parts[21];
+                print OUT join("\t", @new_line_parts) . "\t\t\t$exp_pmids\t$with_gene_symbol\t$with_gene_name\t$with_gene_taxon_id\t$exp_groups\n";
+                push @all_matched_lines, $iba_line;
             }
         }
+    }
     close (OUT);
-    
+    close (VG);
+} else {
+    foreach my $type (keys %IBAs){
+        my $outFile = "gene_association.paint_$type.gaf";
+        my $datestring = strftime "%F", localtime;
+
+        open (OUT, ">$outDir/$outFile");
+        print OUT "\!gaf-version: $gaf_version\n";
+        print OUT "\!Created on " . localtime . ".\n";
+        print OUT "\!generated-by: PANTHER\n";
+        print OUT "\!date-generated: $datestring\n";
+        print OUT "\!PANTHER version: $panther_version.\n";
+        print OUT "\!GO version: $go_version.\n";
+            foreach my $line (keys %{$IBAs{$type}}){
+                my $printThisLine=1;
+                my ($gene, $qual, $goTerm) = &extractGeneQualTerm($line);
+                my @goRelatedTerms;  # Could be descendants or ancestors
+                if (index($qual, "NOT") != -1){  # Is a NOT annotation, so print only most generic term
+                    @goRelatedTerms = &getAncestorTerms($goTerm);
+                }else{
+                    @goRelatedTerms = &getDescendantTerms($goTerm);
+                }
+                foreach my $relTerm (@goRelatedTerms){
+                    if (defined $geneQualTerms{$gene}{$qual}{$relTerm}){
+                        $printThisLine=0;
+                        last;
+                    }
+                }
+                # print OUT "$line\n";
+                if ($printThisLine){
+                    my $msg = "$line\n";
+                    $msg =~ s/\r//;
+                    print OUT "$msg";
+                }
+            }
+        close (OUT);
+        
+    }
 }
 
 #########################################
