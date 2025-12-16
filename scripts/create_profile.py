@@ -11,13 +11,17 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     with open(args.date_json) as df:
-        date_j = json.load(df)
-        release_date = date_j['date']
-
-    with open(args.doi_json) as df:
-        doi_j = json.load(df)
-        doi = doi_j['doi']
-
+        if args.date_json.endswith(".txt"):
+            release_date = df.readline().rstrip()
+        else:
+            date_j = json.load(df)
+            release_date = date_j['date']
     print("\t".join(["GO", release_date]))
-    print("\t".join(["DOI GO", doi]))
+
+    if args.doi_json:
+        with open(args.doi_json) as df:
+            doi_j = json.load(df)
+            doi = doi_j['doi']
+        print("\t".join(["DOI GO", doi]))
+
     print("\t".join(["PANTHER", f"v.{args.panther_version}"]))

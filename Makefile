@@ -116,7 +116,8 @@ export PAINT_ANNOT_B_TABLE = paint_annotation
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH) $(BASE_PATH)/resources
-	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u http://current.geneontology.org/
+# 	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u http://current.geneontology.org/
+	python3 scripts/download_goex.py -d $(BASE_PATH) -g $(GAF_FILES_PATH)
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	$(MAKE) make_profile
@@ -192,7 +193,7 @@ get_fullgo_date:
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
 
 make_profile:
-	python3 scripts/create_profile.py -j $(BASE_PATH)/release-date.json -d $(BASE_PATH)/release-archive-doi.json -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
+	python3 scripts/create_profile.py -j $(BASE_PATH)/release_date.txt -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
 
 make_profile_from_db:
 	# query DB table fullgo_version - likely w/ python
@@ -200,7 +201,7 @@ make_profile_from_db:
 
 make_readme:
 	echo "GO source files downloaded on $(shell date +%Y-%m-%d)" > $(BASE_PATH)/README
-	python3 scripts/make_readme.py -r $(BASE_PATH)/release-date.json -d $(BASE_PATH)/downloaded_files.txt >> $(BASE_PATH)/README
+	python3 scripts/make_readme.py -r $(BASE_PATH)/release_date.txt -d $(BASE_PATH)/downloaded_files.txt >> $(BASE_PATH)/README
 
 raw_table_count:
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,goanno_wf
@@ -474,12 +475,12 @@ pombe_sources:
 	wget https://www.pombase.org/nightly_update/misc/sysID2product.tsv -O $(BASE_PATH)/resources/sysID2product.tsv
 
 %/resources/zfin.gpi:
-	wget https://zfin.org/downloads/zfin.gpi.gz -O $(BASE_PATH)/resources/zfin.gpi.gz
-	gunzip -f $(BASE_PATH)/resources/zfin.gpi.gz
+	wget https://zfin.org/downloads/zfin.gpi.gz -O $*/resources/zfin.gpi.gz
+	gunzip -f $*/resources/zfin.gpi.gz
 
 %/resources/japonicusdb.gpi:
-	wget https://www.japonicusdb.org/data/annotations/Gene_ontology/japonicusdb.gpi.gz -O $(BASE_PATH)/resources/japonicusdb.gpi.gz
-	gunzip -f $(BASE_PATH)/resources/japonicusdb.gpi.gz
+	wget https://www.japonicusdb.org/data/annotations/Gene_ontology/japonicusdb.gpi.gz -O $*/resources/japonicusdb.gpi.gz
+	gunzip -f $*/resources/japonicusdb.gpi.gz
 
 # Now in createGAF.slurm
 repair_gaf_symbols:
