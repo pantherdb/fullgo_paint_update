@@ -23,7 +23,7 @@ use POSIX qw(strftime);
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:n:N:G:b:C:r:t:u:p:c:T:e:s:UvVh') || &usage();
+getopts('o:i:a:q:g:P:n:N:G:b:C:r:t:u:p:c:T:e:w:R:s:UvVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
@@ -32,6 +32,7 @@ $node_dat = $opt_n if ($opt_n);       # -d for the data folder from library
 $treeNodes_dir = $opt_N if ($opt_N);       # -d for the data folder from library
 $annotation = $opt_a if ($opt_a); # -a for annotation file
 $go_aggregate = $opt_g if ($opt_g); # -g for go_aggregate file
+$paint_exp_aggregate = $opt_P if ($opt_P); # -P for paint_exp_aggregate file
 $qualifier = $opt_q if ($opt_q);  # -q for qualifier file
 $tair = $opt_t if ($opt_t);       # -t for the TAIR ID lookup file
 $araport = $opt_u if ($opt_u);    # -u for the UniProt-to-Araport ID lookup file
@@ -43,6 +44,8 @@ $gene_blacklist = $opt_b if ($opt_b);   # -b for the obsoleted UniProt ID blackl
 $complex_termlist = $opt_C if ($opt_C);   # -C for the protein-containing complex descendants file
 $goparentchild = $opt_r if ($opt_r);   # -r for the GO term parent-child relationship file
 $gaf_version = $opt_s if ($opt_s); # -s for output GAF specification version 2.1 (default) or 2.2
+$valid_gaf = $opt_w if ($opt_w);    # -w for GO pipeline-validated GAF 2.2. Should be almost identical to what we generate here. IBAs not in this file will not be written out.
+$obsolete_go_terms_file = $opt_R if ($opt_R);    # -R for obsolete_go_terms.txt file produced from ontology matching $valid_gaf (if supplying $valid_gaf)
 $goa_mode = 1 if ($opt_U); # -g for GOA mode (All gene IDs output as UniProt)
 $errFile = $opt_e if ($opt_e);    # -e for (e)rror file (redirect STDERR)
 $verbose = 1 if ($opt_v);         # -v for (v)erbose (debug info to STDERR)
@@ -144,12 +147,14 @@ foreach my $gpi_file (@gpi_files){
 #################################
 
 my %taxon;
+my %taxon_name;
 open (TA, $taxon) or die "Could not open file $taxon\n";
 while (my $line=<TA>){
     chomp $line;
     
     my ($org, $sh_name, $id)=split(/;/, $line);
     $taxon{$sh_name}=$id;
+    $taxon_name{$id}=$sh_name;
 }
 close (TA);
 
@@ -190,6 +195,7 @@ my %parent_child;
 my %child_parent;
 my %leaf;
 my %id_lookup;  # the long ID to gene or protein ID lookup
+my %long_id_lookup;  # the gene or protein ID to long ID lookup; reverse of %id_lookup
 my %node_taxon;   # the node to taxon hash;
 my %leaf_ptn;
 
@@ -274,6 +280,8 @@ foreach my $file (@files){
             }
             #print "$shortId\n";
             $id_lookup{$longId}=$shortId;
+            $long_id_lookup{$shortId}=$longId;
+
         }
     }
     close (FH);
@@ -301,20 +309,19 @@ close (QA);
 
 my %experimental_seqs;
 my %exp_qualifier;
-open (GA, $go_aggregate) or die "Could not open file $go_aggregate\n";
-while (my $line=<GA>){
-    chomp $line;
-    my ($annotation_id, $an, $go, $type, $evidence_id, $evidence, $confidence, $exp_qual, $rest)=split(/\;/, $line);
-    next unless ($confidence=~/IDA|EXP|IMP|IPI|IGI|IEP/);
-    if ($exp_qual =~/CONTRIBUTES|COLOCALIZES/){
-        $exp_qual=~tr/[A-Z]/[a-z]/;
-    }
-    $experimental_seqs{$annotation_id}=$an;
-    $longId = $leaf{$an};
-    $exp_qualifier{$longId}{$go}{$evidence_id}{$exp_qual}=1;  # Need to track by evidence_id
-}
+my %exp_group_pmid;
+&parseAggregateFile($go_aggregate, undef, \%leaf, \%experimental_seqs, \%exp_qualifier, \%exp_group_pmid);
 
-close (GA);
+##################################
+# Parse paint_exp_aggregate file
+##################################
+
+my %paint_experimental_seqs;
+# %exp_qualifier can be reused since the chance of gene->go->evidence_id collisions is very, very low
+my %paint_exp_group_pmid;
+if ($paint_exp_aggregate) {
+    &parseAggregateFile($paint_exp_aggregate, "GO_Central", \%leaf, \%paint_experimental_seqs, \%exp_qualifier, \%paint_exp_group_pmid);
+}
 
 #########################################
 # Parse the gene_dat file
@@ -411,6 +418,7 @@ foreach my $id (keys %annotation){
 my %with;
 my %nots;
 my %confidence_codes;
+my %paint_evidence_annotation_ids;  # Lookup exp annotation_ids (e.g, GO annotation) by paint annotation_id
 open (EV, $evidence) or die "Could not open file $evidence\n";
 while (my $line=<EV>){
     chomp $line;
@@ -425,12 +433,39 @@ while (my $line=<EV>){
                 $longId = $leaf{$an};
                 my $id = $id_lookup{$longId};
                 $with{$annotation_id}{$id}=1;
-                
+                foreach my $exp_group (keys %{$exp_group_pmid{$evidence}}){  # array of groups
+                    $paint_evidence_annotation_ids{$annotation_id}{$id}{$exp_group}=();
+                    foreach my $exp_pmid (keys %{$exp_group_pmid{$evidence}{$exp_group}}){  # array of PMIDs
+                        $paint_evidence_annotation_ids{$annotation_id}{$id}{$exp_group}{$exp_pmid}=1;
+                    }
+                }
             }else{
                 print STDERR "Can't find long id for $an.\n";
             }
         }else{
             print STDERR "Annotation ID $annotation_id has $evidence as experimental evidence that can't be found in go_aggregate table.\n";
+        }
+
+    }elsif ($type=~/CURATION\_EXP/){
+        # Look in paint_exp_aggregate
+        if (defined $paint_experimental_seqs{$evidence}){
+            my $an = $paint_experimental_seqs{$evidence};
+            my $longId;
+            if (defined $leaf{$an}){
+                $longId = $leaf{$an};
+                my $id = $id_lookup{$longId};
+                $with{$annotation_id}{$id}=1;
+                foreach my $exp_group (keys %{$paint_exp_group_pmid{$evidence}}){  # array of groups
+                    $paint_evidence_annotation_ids{$annotation_id}{$id}{$exp_group}=();
+                    foreach my $exp_pmid (keys %{$paint_exp_group_pmid{$evidence}{$exp_group}}){  # array of PMIDs
+                        $paint_evidence_annotation_ids{$annotation_id}{$id}{$exp_group}{$exp_pmid}=1;
+                    }
+                }
+            }else{
+                print STDERR "Can't find long id for $an.\n";
+            }
+        }else{
+            print STDERR "Annotation ID $annotation_id has $evidence as PAINT-curated experimental evidence that can't be found in paint_exp_aggregate table.\n";
         }
 
     }elsif ($type=~/PAINT\_ANCESTOR/){
@@ -456,6 +491,7 @@ close (EV);
 ###########################################
 
 my %IBAs;
+my %IBAs_granular;
 my %geneQualTerms;
 
 print "\!gaf-version: 2.1\n";
@@ -583,6 +619,8 @@ foreach my $annotation_id (keys %annotation){
     }
     if (defined $node_genes{$ptn}){
         foreach my $gene (keys %{$node_genes{$ptn}}){
+            # Skip if $valid_gaf not supplied and gene is not HUMAN
+            next if ($valid_gaf && !($gene=~/^HUMAN/));
             # my %positive_quals = (''=>1, 'colocalizes_with'=>1, 'contributes_to'=>1);  # no qualifier, colocalizes_with, and contributes_to are considered positive
             # my %negative_quals = ('NOT'=>1);  # NOT is negative
             my $qual_supported=0;
@@ -682,10 +720,7 @@ foreach my $annotation_id (keys %annotation){
             }
             next unless ($db);
             next unless ($short_id);
-            my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t";
-            my $full_id = "$db:$short_id";
-            $geneQualTerms{$full_id}{$qual_output}{$go} = 1;
-            
+
             my $file_type;
             if ($org eq 'MOUSE'){
                 $file_type = "mgi";
@@ -723,22 +758,166 @@ foreach my $annotation_id (keys %annotation){
                 $file_type = "other";
             }
 
-            $IBAs{$file_type}{$foo}=1;
+            if ($valid_gaf) {
+                foreach my $with_id (keys %{$with{$annotation_id}}){
+                    # Fetch PMID for $with_id
+                    # keys %{$pmids_for_annot_gene_ids{$annotation_id}{$with_id}};
+                    my %exp_gene_refs;
+                    my $exp_gene_refs_str;
+                    my %exp_gene_ref_groups;
+                    my $exp_gene_ref_groups_str;
+                    for my $exp_group (keys %{$paint_evidence_annotation_ids{$annotation_id}{$with_id}}){
+                        $exp_gene_ref_groups{$exp_group}=1;
+                        for my $exp_pmid (keys %{$paint_evidence_annotation_ids{$annotation_id}{$with_id}{$exp_group}}){
+                            $exp_gene_refs{$exp_pmid}=1;
+                        }
+                    }
+                    $exp_gene_refs_str = join ("\|", (keys %exp_gene_refs));
+                    $exp_gene_ref_groups_str = join ("\|", (keys %exp_gene_ref_groups));
+                    # Hack to handle cases where $with_id is a PTN node, such as for IBAs created by more specific term IKR.
+                    if ($exp_gene_ref_groups_str eq '' && $with_id =~ /^PANTHER:/) {
+                        $exp_gene_ref_groups_str = 'GO_Central';
+                    }
+
+                    # Fetch with/from gene info
+                    my $with_long_id = $long_id_lookup{$with_id};
+                    my $with_gene_symbol = $gene_symbol{$with_long_id};
+                    my $with_gene_def = $gene_def{$with_long_id};
+                    my ($with_org, $with_geneId, $with_uniprot) = split(/\|/, $with_long_id);
+                    my $with_taxon_id = $taxon{$with_org};
+
+                    my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with_id\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t\t$exp_gene_refs_str\t$with_gene_symbol\t$with_gene_def\ttaxon\:$with_taxon_id\t$exp_gene_ref_groups_str";
+
+                    $IBAs{$file_type}{$foo}=1;
+                    $IBAs_granular{$file_type}{$ptn}{"$db:$short_id"}{$go}{$with_id}{$foo}=1;  # DS for faster retrieval
+                }
+            } else {
+                my $foo = "$db\t$short_id\t$symbol\t$qual_output\t$go\t$db_ref\tIBA\tPANTHER\:$ptn\|$with\t$ontology\t$def\t$uniprot\|$leaf_ptn\tprotein\ttaxon\:$gene_taxon\t$date\tGO_Central\t\t";
+
+                $IBAs{$file_type}{$foo}=1;
+            }
+
+            my $full_id = "$db:$short_id";
+            $geneQualTerms{$full_id}{$qual_output}{$go} = 1;
         }
     }
 }
 
-foreach my $type (keys %IBAs){
-    my $outFile = "gene_association.paint_$type.gaf";
-    my $datestring = strftime "%F", localtime;
+my %taxon_type_lkp;
+$taxon_type_lkp{'MOUSE'} = "mgi";
+$taxon_type_lkp{'HUMAN'} = "human";
+$taxon_type_lkp{'RAT'} = "rgd";
+$taxon_type_lkp{'DROME'} = "fb";
+$taxon_type_lkp{'ARATH'} = "tair";
+$taxon_type_lkp{'CAEEL'} = "wb";
+$taxon_type_lkp{'CHiCK'} = "chicken";
+$taxon_type_lkp{'ECOLI'} = "ecocyc";
+$taxon_type_lkp{'YEAST'} = "sgd";
+$taxon_type_lkp{'DICDI'} = "dictyBase";
+$taxon_type_lkp{'SCHPO'} = "pombase";
+$taxon_type_lkp{'DANRE'} = "zfin";
+$taxon_type_lkp{'CANAL'} = "cgd";
+$taxon_type_lkp{'CHICK'} = "chicken";
+$taxon_type_lkp{'XENTR'} = "xenbase";
+$taxon_type_lkp{'SCHJY'} = "japonicusdb";
 
-    open (OUT, ">$outDir/$outFile");
+if ($valid_gaf) {
+    # Prep the hash of obsoleted terms and their replacements if file is provided
+    my %term_replacements;  # This is to predict the obsoletion and replacements that the validation will have applied using the newer ontology.
+    if ($obsolete_go_terms_file) {
+        open (TR, $obsolete_go_terms_file) or die "Could not open file $obsolete_go_terms_file\n";
+        while (my $line=<TR>){
+            chomp $line;
+            my ($old_term, $new_term)=split(/\t/, $line);
+            $term_replacements{$new_term}{$old_term} = 1;
+        }
+        close (TR);
+    }
+
+    # Iterate valid_iba GAF file, explode by with, and print out
+    open (VG, $valid_gaf) or die "Could not open file $valid_gaf\n";
+    open (OUT, ">$outDir/gene_association.paint_human_validated.gaf");
+    my $datestring = strftime "%F", localtime;
     print OUT "\!gaf-version: $gaf_version\n";
     print OUT "\!Created on " . localtime . ".\n";
     print OUT "\!generated-by: PANTHER\n";
     print OUT "\!date-generated: $datestring\n";
     print OUT "\!PANTHER version: $panther_version.\n";
     print OUT "\!GO version: $go_version.\n";
+    while (my $line=<VG>){
+        next if ($line =~ /^!/);
+        chomp $line;
+        
+        # Ex: UniProtKB       Q9BXY0  MAK16   part_of GO:0030687      GO_REF:0000033  IBA     PANTHER:PTN000600976|SGD:S000000023     C       Protein MAK16 homolog  UniProtKB:Q9BXY0|PTN002511754   protein taxon:9606      20170228        GO_Central
+        my ($db_name, $db_id, $sym, $relations, $go, $reference, $ev_code, $with, $aspect, $gene_name, $db_xref, $entity_type, $taxon, $date, $contrib_group)=split(/\t/, $line);
+        # Parse $with to get PTN number and gene IDs
+        my @withs = split(/\|/, $with);
+        # Find which element contains PANTHER:PTN prefix
+        my $ptn;
+        my @gene_withs;
+        foreach my $with_element (@withs) {
+            if ($with_element =~ /^PANTHER:/) {
+                $ptn = $with_element;
+                $ptn =~ s/PANTHER://;  # Remove PANTHER: prefix
+            } else {
+                push @gene_withs, $with_element;
+            }
+        }
+        @withs = @gene_withs;  # Update @withs to contain only gene IDs
+        $taxon =~ s/taxon://;  # Remove taxon: prefix if present
+        my $taxon_name = $taxon_name{$taxon};
+        my $type = undef;
+        if (defined $taxon_type_lkp{$taxon_name}) {
+            $type = $taxon_type_lkp{$taxon_name};
+        } else {
+            $type = "other";
+        }
+
+        my @all_matched_lines;
+        foreach my $with_id (@withs) {  # Iterate through each gene ID
+            # Check matching criteria
+            my @matched_lines = keys %{$IBAs_granular{$type}{$ptn}{"$db_name:$db_id"}{$go}{$with_id}};
+            # Check for replaced terms if no matched lines
+            if (!@matched_lines && defined($term_replacements{$go})) {
+                foreach my $replaced_go (keys %{$term_replacements{$go}}) {
+                    push @matched_lines, keys %{$IBAs_granular{$type}{$ptn}{"$db_name:$db_id"}{$replaced_go}{$with_id}};
+                }
+            }
+            # Recheck if no matched lines after checking for replaced terms
+            if (!@matched_lines) {
+                print STDERR "No matching IBA found for $ptn $db_name:$db_id $go $with_id\n";
+                next;
+            }
+            foreach my $iba_line (@matched_lines) {
+                my @iba_parts = split(/\t/, $iba_line);
+                # Get ref, symbol, def, taxon, contrib_group and append to $line
+                my @new_line_parts = split(/\t/, $line);
+                my $new_with = "PANTHER:$ptn\|$with_id";
+                $new_line_parts[7] = $new_with;
+                my $with_gene_symbol = $iba_parts[18];
+                my $with_gene_name = $iba_parts[19];
+                my $with_gene_taxon_id = $iba_parts[20];
+                my $exp_pmids = $iba_parts[17];
+                my $exp_groups = $iba_parts[21];
+                print OUT join("\t", @new_line_parts) . "\t$exp_pmids\t$with_gene_symbol\t$with_gene_name\t$with_gene_taxon_id\t$exp_groups\n";
+                push @all_matched_lines, $iba_line;
+            }
+        }
+    }
+    close (OUT);
+    close (VG);
+} else {
+    foreach my $type (keys %IBAs){
+        my $outFile = "gene_association.paint_$type.gaf";
+        my $datestring = strftime "%F", localtime;
+
+        open (OUT, ">$outDir/$outFile");
+        print OUT "\!gaf-version: $gaf_version\n";
+        print OUT "\!Created on " . localtime . ".\n";
+        print OUT "\!generated-by: PANTHER\n";
+        print OUT "\!date-generated: $datestring\n";
+        print OUT "\!PANTHER version: $panther_version.\n";
+        print OUT "\!GO version: $go_version.\n";
         foreach my $line (keys %{$IBAs{$type}}){
             my $printThisLine=1;
             my ($gene, $qual, $goTerm) = &extractGeneQualTerm($line);
@@ -761,8 +940,9 @@ foreach my $type (keys %IBAs){
                 print OUT "$msg";
             }
         }
-    close (OUT);
-    
+        close (OUT);
+        
+    }
 }
 
 #########################################
@@ -854,5 +1034,32 @@ sub qualOutput{
     }
     my $qual_output = join ("\|", @quals);
     return $qual_output;
+}
+
+sub parseAggregateFile{
+    my ($file, $default_group, $leaf_href, $experimental_seqs_href, $exp_qualifier_href, $exp_group_pmid_href) = @_;
+
+    open (AGG, $file) or die "Could not open file $file\n";
+    while (my $line=<AGG>){
+        chomp $line;
+        my ($annotation_id, $an, $go, $type, $evidence_id, $evidence, $confidence, $exp_qual, $date, $group)=split(/\;/, $line);
+        # Use default_group if provided (for paint_exp_aggregate which has no group column)
+        if (defined $default_group) {
+            $group = $default_group;
+        }
+        next unless ($confidence=~/IDA|EXP|IMP|IPI|IGI|IEP/);
+        if ($exp_qual =~/CONTRIBUTES|COLOCALIZES/){
+            $exp_qual=~tr/[A-Z]/[a-z]/;
+        }
+        $experimental_seqs_href->{$annotation_id}=$an;
+        my $longId = $leaf_href->{$an};
+        $exp_qualifier_href->{$longId}{$go}{$evidence_id}{$exp_qual}=1;  # Need to track by evidence_id
+        $exp_group_pmid_href->{$annotation_id}{$group}=();
+        if ($type eq 'PMID'){
+            my $full_ref = "$type:$evidence";
+            $exp_group_pmid_href->{$annotation_id}{$group}{$full_ref}=1;
+        }
+    }
+    close (AGG);
 }
 
