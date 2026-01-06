@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 include config.mk
 
 ### Working directory where files will be downloaded and built for each release (e.g. "2018-06-19_fullgo") - Need to make into makefile argument
@@ -73,7 +75,7 @@ export PANTHER_VERSION_DATE = 20240620
 export CLS_VER_ID = 31
 export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/identifier.dat
 export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/gene.dat
-export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/organism.dat
+export TAXON_ID_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/organism.dat
 export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/node.dat
 export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/treeNodes
 endif
@@ -399,6 +401,7 @@ setup_preupdate_data: $(BASE_PATH)/resources/panther_blacklist.txt $(BASE_PATH)/
 	ln -sf $(realpath $(BASE_PATH)/resources/panther_blacklist.txt) $(BASE_PATH)/preupdate_data/resources/panther_blacklist.txt
 	ln -sf $(realpath $(BASE_PATH)/resources/complex_terms.tsv) $(BASE_PATH)/preupdate_data/resources/complex_terms.tsv
 	ln -sf $(realpath $(BASE_PATH)/goparentchild_isaonly.tsv) $(BASE_PATH)/preupdate_data/goparentchild_isaonly.tsv
+	ln -sf $(realpath $(BASE_PATH)/go.json) $(BASE_PATH)/preupdate_data/go.json
 	# Generate IBA GAFs from preupdate data - call before table name switch
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data create_gafs
 
@@ -408,20 +411,38 @@ gen_iba_gaf_yamls:
 	envsubst < resources/iba_gaf_gen_a.yaml > $(BASE_PATH)/iba_gaf_gen_a.yaml
 	envsubst < resources/iba_gaf_gen_b.yaml > $(BASE_PATH)/iba_gaf_gen_b.yaml
 
-create_gafs: setup_directories pombe_sources $(BASE_PATH)/resources/zfin.gpi $(BASE_PATH)/resources/japonicusdb.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate paint_exp_aggregate	# must run from tcsh shell
+.PRECIOUS: %/gene_association.paint_exp.gaf
+%/gene_association.paint_exp.gaf: $(BASE_PATH)/resources/paint_exp_annotation
+	OUTPUT_GAF=$@ envsubst < scripts/paint_exp_to_gaf.sh > $(BASE_PATH)/paint_exp_to_gaf.sh
+	chmod 744 $(BASE_PATH)/paint_exp_to_gaf.sh
+	./$(BASE_PATH)/paint_exp_to_gaf.sh
+
+.PRECIOUS: %/gene_association.paint_exp_uniprot.gaf
+%/gene_association.paint_exp_uniprot.gaf: $(BASE_PATH)/resources/paint_exp_annotation
+	GOA_MODE=-U OUTPUT_GAF=$@ envsubst < scripts/paint_exp_to_gaf.sh > $(BASE_PATH)/paint_exp_to_gaf_uniprot.sh
+	chmod 744 $(BASE_PATH)/paint_exp_to_gaf_uniprot.sh
+	./$(BASE_PATH)/paint_exp_to_gaf_uniprot.sh
+
+create_gafs: #setup_directories pombe_sources $(BASE_PATH)/resources/zfin.gpi $(BASE_PATH)/resources/japonicusdb.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate paint_exp_aggregate	# must run from tcsh shell
 	# Slurm this
 	# envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
 	# sbatch $(BASE_PATH)/createGAF.slurm
 	envsubst < scripts/createGAF.sh > $(BASE_PATH)/createGAF.sh
 	chmod 744 $(BASE_PATH)/createGAF.sh
 	./$(BASE_PATH)/createGAF.sh
+	$(MAKE) $(BASE_PATH)/gene_association.paint_exp.gaf
 
 create_gafs_goa:
-# 	mkdir -p $(IBA_DIR)_GOA
-# 	IBA_DIR=$(IBA_DIR)_GOA envsubst < scripts/createGAF_GOA.sh > $(BASE_PATH)/createGAF_GOA.sh
-# 	chmod 744 $(BASE_PATH)/createGAF_GOA.sh
-# 	./$(BASE_PATH)/createGAF_GOA.sh
-	cat <(grep -e '^\!' $(BASE_PATH)/IBA_GAFs_GOA/gene_association.paint_human.gaf) <(grep -h -v -e '^\!' $(BASE_PATH)/IBA_GAFs_GOA/*) > $(BASE_PATH)/gene_association.paint_uniprot.gaf
+	mkdir -p $(IBA_DIR)_uniprot
+	IBA_DIR=$(IBA_DIR)_uniprot envsubst < scripts/createGAF_uniprot.sh > $(BASE_PATH)/createGAF_uniprot.sh
+	chmod 744 $(BASE_PATH)/createGAF_uniprot.sh
+	./$(BASE_PATH)/createGAF_uniprot.sh
+	$(MAKE) $(BASE_PATH)/gene_association.paint_exp_uniprot.gaf
+	cat <(grep -e '^\!' $(BASE_PATH)/IBA_GAFs_uniprot/gene_association.paint_human.gaf) <(grep -h -v -e '^\!' $(BASE_PATH)/IBA_GAFs_uniprot/*) <(grep -h -v -e '^\!' $(BASE_PATH)/gene_association.paint_exp_uniprot.gaf) > $(BASE_PATH)/gene_association.paint_uniprot.gaf
+
+.PRECIOUS: %/gene_association.paint_uniprot.gaf
+%/gene_association.paint_uniprot.gaf:
+	cat <(grep -e '^\!' $*/IBA_GAFs_uniprot/gene_association.paint_human.gaf) <(grep -h -v -e '^\!' $*/IBA_GAFs_uniprot/*) <(grep -h -v -e '^\!' $*/gene_association.paint_exp_uniprot.gaf) > $@
 
 create_gafs_from_xml: $(BASE_PATH)/resources/go_aspects.tsv
 	IBA_XML_DIR=$(BASE_PATH)/leafIBAInfo GO_RELEASE_DATE=$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2) \
@@ -466,6 +487,10 @@ go_aggregate:
 
 paint_exp_aggregate:
 	python3 scripts/db_caller.py scripts/sql/paint_exp_aggregate.sql -o $(BASE_PATH)/resources/paint_exp_aggregate
+
+.PRECIOUS: %/resources/paint_exp_annotation
+%/resources/paint_exp_annotation:
+	python3 scripts/db_caller.py scripts/sql/paint_exp_annotation.sql -o $@
 
 organism_taxon:
 	python3 scripts/db_caller.py scripts/sql/organism_taxon.sql -o $(BASE_PATH)/resources/$(TAXON)

@@ -15,6 +15,7 @@
 -t $TAIR_MAP \
 -u $ARAPORT_MAP \
 -c $BASE_PATH/resources/$EVIDENCE \
+-P $BASE_PATH/resources/paint_exp_aggregate \
 -T $BASE_PATH/resources/$TAXON \
 -G $GENE_PATH \
 -p $BASE_PATH/resources/zfin.gpi \
