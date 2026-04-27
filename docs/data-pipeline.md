@@ -181,6 +181,27 @@ Before GAF generation, current annotation data is queried from the database:
 - `fix_pombe_symbol.pl` -- Fixes PomBase gene symbols using current PomBase gene name files
 - `gaf2pmid.pl` -- Extracts unique PMIDs for PubMed linkout generation
 
+### TreeGrafter IBA Propagation (`propagate_paint_ibas`)
+
+**Script**: `scripts/propagate_paint_ibas.py`
+
+**Purpose**: Produces `PAINT_TreeGrafter_Annotations_TOTAL.txt` for the TreeGrafter pipeline by propagating PAINT IBD GO annotations down each PANTHER family's NHX tree. IBD lines act as gains; IKR/IRD lines (with `NOT` qualifier) block propagation at and below the annotated node.
+
+**Inputs**:
+- `$(BASE_PATH)/IBD` -- IBD GAF emitted to stdout by `create_gafs` (via `createGAF.sh`)
+- `$(TREEGRAFTER_TREE_DIR)` -- per-family NHX trees (`PTHR{N}.tree`) for the active PANTHER version
+- `$(TREEGRAFTER_ANNOTATION_PATH)` -- `annotation_treegrafter.dat`; only SF and PC lines are used (GO lines are ignored, since GO comes from the IBD GAF)
+- `$(NODE_PATH)` -- `node.dat` for PTN ↔ PTHR:AN mapping
+
+**Output**: `$(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt` -- one line per node (leaf + internal), tab-separated:
+```
+PTHR{N}:AN{x}	PTHR{N}:SF{y}  GO:terms;  PC;	PTN{n}
+```
+
+**Run order**: After `create_gafs` (which produces the `$(BASE_PATH)/IBD` input). Configure `TREEGRAFTER_TREE_DIR` and `TREEGRAFTER_ANNOTATION_PATH` in `config.mk` for the active PANTHER version before running. NHX→Newick conversion is handled internally via `pthr_db_caller.haiming_to_newick.ToNewick`.
+
+**Design doc**: `.plans/2026-03-05-propagate-paint-ibas-design.md`
+
 ## Phase 4: Reporting and QC
 
 ### Before/After Comparison
