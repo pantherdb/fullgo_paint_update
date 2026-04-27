@@ -82,6 +82,15 @@ PUBMED_PWORD: xxxxxxxx
 
 **Supported versions**: 13.1, 14.0, 14.1, 15.0, 16.0, 17.0, 18.0, and an `else` block mapping to 19.0 (the current production version). The `else` block maps to `CLS_VER_ID = 31`.
 
+**TreeGrafter IBA propagation** (used by `make propagate_paint_ibas`):
+
+| Variable | Purpose |
+|----------|---------|
+| `TREEGRAFTER_TREE_DIR` | Directory of per-family NHX trees (`PTHR{N}.tree`) for the active PANTHER version. Must be set in `config.mk` (no default). |
+| `TREEGRAFTER_ANNOTATION_PATH` | Path to `annotation_treegrafter.dat` (SF/PC annotations only). Must be set in `config.mk` (no default). |
+| `TREEGRAFTER_IBD_GAF` | IBD GAF input. Defaults to `$(BASE_PATH)/IBD` (emitted by `create_gafs`). |
+| `TREEGRAFTER_ANNOTATIONS_TOTAL` | Output file. Defaults to `$(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt`. |
+
 **How to override**:
 ```bash
 make PANTHER_VERSION=19.0 BASE_PATH=2024-12-01_fullgo download_fullgo

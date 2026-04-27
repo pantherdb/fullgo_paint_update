@@ -116,6 +116,16 @@ export GAF_GEN_B_IBA_DIR = $(IBA_DIR)
 export PAINT_ANNOT_A_TABLE = paint_annotation_old
 export PAINT_ANNOT_B_TABLE = paint_annotation
 
+########## TREEGRAFTER IBA PROPAGATION ##########
+### -t directory of per-family NHX tree files (PTHR{N}.tree) for the current PANTHER version
+export TREEGRAFTER_TREE_DIR ?=
+### -a annotation_treegrafter.dat (SF/PC annotations only; GO lines are ignored)
+export TREEGRAFTER_ANNOTATION_PATH ?=
+### -i IBD GAF input (defaults to the IBD file emitted by create_gafs)
+export TREEGRAFTER_IBD_GAF ?= $(BASE_PATH)/IBD
+### -o output PAINT_Annotations_TOTAL-style file with all nodes (leaf + internal)
+export TREEGRAFTER_ANNOTATIONS_TOTAL = $(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt
+
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH) $(BASE_PATH)/resources
 # 	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u http://current.geneontology.org/
@@ -506,6 +516,14 @@ pombe_sources:
 %/resources/japonicusdb.gpi:
 	wget https://www.japonicusdb.org/data/annotations/Gene_ontology/japonicusdb.gpi.gz -O $*/resources/japonicusdb.gpi.gz
 	gunzip -f $*/resources/japonicusdb.gpi.gz
+
+propagate_paint_ibas:
+	python3 scripts/propagate_paint_ibas.py \
+		-i $(TREEGRAFTER_IBD_GAF) \
+		-t $(TREEGRAFTER_TREE_DIR) \
+		-a $(TREEGRAFTER_ANNOTATION_PATH) \
+		-n $(NODE_PATH) \
+		-o $(TREEGRAFTER_ANNOTATIONS_TOTAL)
 
 # Now in createGAF.slurm
 repair_gaf_symbols:

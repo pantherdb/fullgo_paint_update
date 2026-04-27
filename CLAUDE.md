@@ -11,6 +11,7 @@ Automated monthly pipeline for updating PANTHER and PAINT PostgreSQL databases w
 ### Running Tests
 ```bash
 python test.py                # Unit tests (tree parsing, node loading)
+pytest test_propagate_paint_ibas.py  # IBA propagation tests
 pytest tests/                 # Integration tests (requires DB + pthr_db_caller)
 pytest tests/test_gaferencer.py  # Single test file
 ```
@@ -25,7 +26,9 @@ make <recipe> | tee -a log.txt
 
 **PAINT pipeline:** `load_raw_go_to_paint` → `update_paint_go_classification` → `update_paint_go_annotation` → `update_paint_go_evidence` → `update_paint_go_annot_qualifier` → `switch_evidence_to_pmid` → `delete_incorrect_go_annot_qualifiers` → `setup_preupdate_data` → `gen_iba_gaf_yamls` → `switch_table_names_go_only`
 
-**GAF generation:** `paint_annotation` → `paint_annotation_qualifier` → `paint_evidence` → `go_aggregate` → `organism_taxon` → `create_gafs` → `repair_gaf_symbols`
+**GAF generation:** `paint_annotation` → `paint_annotation_qualifier` → `paint_evidence` → `go_aggregate` → `organism_taxon` → `create_gafs` → `repair_gaf_symbols` → `propagate_paint_ibas`
+
+**IBA propagation:** `make propagate_paint_ibas` runs `scripts/propagate_paint_ibas.py` to propagate PAINT IBD GO annotations down PANTHER trees, producing `$(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt` for the TreeGrafter pipeline. Reads the IBD GAF emitted by `create_gafs` (`$(BASE_PATH)/IBD`), the per-version NHX trees (`TREEGRAFTER_TREE_DIR`), `annotation_treegrafter.dat` (`TREEGRAFTER_ANNOTATION_PATH`, SF/PC only), and `node.dat` (`NODE_PATH`). Set `TREEGRAFTER_TREE_DIR` and `TREEGRAFTER_ANNOTATION_PATH` in `config.mk` for the active PANTHER version. Uses `pthr_db_caller.haiming_to_newick` for NHX→Newick conversion. Design doc: `.plans/2026-03-05-propagate-paint-ibas-design.md`. Implementation plan: `.plans/2026-03-05-propagate-paint-ibas.md`.
 
 **PAN-GO update:**
 ```bash
