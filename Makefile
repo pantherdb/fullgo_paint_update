@@ -91,10 +91,8 @@ export ANNOT = paint_annotation
 export ANNOT_QUALIFIER = paint_annotation_qualifier
 ### -g go_aggregate (from database)
 export GO_AGG = go_aggregate
-### -t TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
-export TAIR_MAP = resources/TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
-### -u Mapping to support "TAIR=locus" long IDs
-export ARAPORT_MAP = resources/uniprot_to_araport_map_gaf.tsv
+### -t AGI_LocusCode lookup TSV used to render ARATH IDs as AGI_LocusCode:ATxGNNNNN
+export AGI_MAP = resources/AGI_LocusCode_UniProt_19.gene2acc
 ### -c evidence (from database)
 export EVIDENCE = paint_evidence
 ### -T organism_taxon
