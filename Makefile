@@ -41,43 +41,43 @@ export TREE_NODES_DIR = /auto/rcf-proj/hm/debert/PANTHER14.1/library_building/tr
 else ifeq ($(PANTHER_VERSION),15.0)
 export PANTHER_VERSION_DATE = 20200214
 export CLS_VER_ID = 27
-export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/identifier.dat
-export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/gene.dat
-export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/organism.dat
-export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/node.dat
-export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER15.0/library_building/treeNodes
+export IDENTIFIER_PATH = /project2/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/identifier.dat
+export GENE_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/gene.dat
+export TAXON_ID_PATH = /project2/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/organism.dat
+export NODE_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER15.0/library_building/DBload/node.dat
+export TREE_NODES_DIR ?= /project2/huaiyumi_14/hm/debert/PANTHER15.0/library_building/treeNodes
 else ifeq ($(PANTHER_VERSION),16.0)
 export PANTHER_VERSION_DATE = 20201201
 export CLS_VER_ID = 28
-export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/identifier.dat
-export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/gene.dat
-export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/organism.dat
-export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/node.dat
-export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/treeNodes
+export IDENTIFIER_PATH = /project2/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/identifier.dat
+export GENE_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/gene.dat
+export TAXON_ID_PATH = /project2/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/organism.dat
+export NODE_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/DBload/node.dat
+export TREE_NODES_DIR ?= /project2/huaiyumi_14/hm/debert/PANTHER16.0/library_building/target4/treeNodes
 else ifeq ($(PANTHER_VERSION),17.0)
 export PANTHER_VERSION_DATE = 20220222
 export CLS_VER_ID = 29
-export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/identifier.dat
-export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/gene.dat
-export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/organism.dat
-export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/node.dat
-export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/treeNodes
+export IDENTIFIER_PATH = /project2/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/identifier.dat
+export GENE_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/gene.dat
+export TAXON_ID_PATH = /project2/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/organism.dat
+export NODE_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/DBload/node.dat
+export TREE_NODES_DIR ?= /project2/huaiyumi_14/hm/debert/PANTHER17.0/library_building/target/treeNodes
 else ifeq ($(PANTHER_VERSION),18.0)
 export PANTHER_VERSION_DATE = 20230801
 export CLS_VER_ID = 30
-export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/identifier.dat
-export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/gene.dat
-export TAXON_ID_PATH = /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/organism.dat
-export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/node.dat
-export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/treeNodes
+export IDENTIFIER_PATH = /project2/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/identifier.dat
+export GENE_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/gene.dat
+export TAXON_ID_PATH = /project2/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/organism.dat
+export NODE_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/DBload/node.dat
+export TREE_NODES_DIR ?= /project2/huaiyumi_14/hm/debert/PANTHER18.0/library_building/target/treeNodes
 else
 export PANTHER_VERSION_DATE = 20240620
 export CLS_VER_ID = 31
-export IDENTIFIER_PATH = /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/identifier.dat
-export GENE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/gene.dat
-export TAXON_ID_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/organism.dat
-export NODE_PATH ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/node.dat
-export TREE_NODES_DIR ?= /project/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/treeNodes
+export IDENTIFIER_PATH = /project2/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/identifier.dat
+export GENE_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/gene.dat
+export TAXON_ID_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/organism.dat
+export NODE_PATH ?= /project2/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/DBload/node.dat
+export TREE_NODES_DIR ?= /project2/huaiyumi_14/hm/debert/PANTHER19.0/library_building/target/treeNodes
 endif
 
 ########## GAF CREATION ##########
@@ -135,7 +135,7 @@ download_fullgo:
 	$(MAKE) make_profile
 	$(MAKE) make_readme
 	$(MAKE) $(BASE_PATH)/resources/complex_terms.tsv
-	$(MAKE) $(BASE_PATH)/resources/panther_blacklist.txt
+# 	$(MAKE) $(BASE_PATH)/resources/panther_blacklist.txt
 	$(MAKE) $(BASE_PATH)/TaxonConstraintsLookup.txt
 
 extractfromgoobo:
