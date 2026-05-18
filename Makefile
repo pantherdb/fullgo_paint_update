@@ -556,6 +556,16 @@ run_reports:
 	# sbatch --wait $(BASE_PATH)/compare_paint_releases.slurm
 	# python3 scripts/publish_sheet_json.py -t $(shell date +%Y-%m-%d)_update_stats -j $(BASE_PATH)/update_stats.json
 
+# Re-map experimental PAINT GO annotations from the previous release through this release's
+# obsolete_go_terms.txt, then surface rows in Pthr_GO_$(PANTHER_VERSION).tsv that match the
+# refreshed (gene_product, GO_term, reference, evidence, with_from) tuples.
+build_pthr_go_match: PREV_PAINT_EXP_GAF ?= $(BEFORE_DATE)_fullgo/gene_association.paint_exp_uniprot.gaf
+build_pthr_go_match: FULL_GO_TSV ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION).tsv
+build_pthr_go_match: MATCH_OUT ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION)_match.tsv
+build_pthr_go_match:
+	PREV_PAINT_EXP_GAF=$(PREV_PAINT_EXP_GAF) FULL_GO_TSV=$(FULL_GO_TSV) MATCH_OUT=$(MATCH_OUT) envsubst < scripts/build_pthr_go_match.slurm > $(BASE_PATH)/build_pthr_go_match.slurm
+	sbatch $(BASE_PATH)/build_pthr_go_match.slurm
+
 push_gafs_to_ftp:
 	@echo "Needs to be implemented"
 
