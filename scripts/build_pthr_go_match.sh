@@ -27,3 +27,5 @@ awk -F'\t' 'NR==FNR {queries[$1"\t"$2"\t"$3"\t"$4"\t"$5]; next}
   }
 }' $BASE_PATH/Pthr_GO_prev_exp_query.tsv $FULL_GO_TSV \
     > $MATCH_OUT
+
+cat $MATCH_OUT | grep -v -f /dev/stdin $FULL_GO_TSV > $BASE_PATH/Pthr_GO_19.0_filtered.tsv
