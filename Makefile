@@ -124,6 +124,14 @@ export TREEGRAFTER_IBD_GAF ?= $(BASE_PATH)/IBD
 ### -o output PAINT_Annotations_TOTAL-style file with all nodes (leaf + internal)
 export TREEGRAFTER_ANNOTATIONS_TOTAL = $(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt
 
+.PHONY: check-profile                                                                                                                                                                                                    
+check-profile:  
+	@test -f $(BASE_PATH)/profile.txt || { \
+		echo "ERROR: $(BASE_PATH)/profile.txt not found." >&2; \
+		echo "Run 'make make_profile' (or 'make make_profile_from_db') first." >&2; \
+		exit 1; \                                                                                                                                                                                                        
+	}
+
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH) $(BASE_PATH)/resources
 # 	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u http://current.geneontology.org/
@@ -177,6 +185,16 @@ submit_fullGoMappingPthrHierarchy_slurm:
 	envsubst < scripts/fullGoMappingPthrHierarchy.slurm > $(BASE_PATH)/fullGoMappingPthrHierarchy_$(PANTHER_VERSION).slurm
 	sbatch $(BASE_PATH)/fullGoMappingPthrHierarchy_$(PANTHER_VERSION).slurm
 
+# Re-map experimental PAINT GO annotations from the previous release through this release's
+# obsolete_go_terms.txt, then surface rows in Pthr_GO_$(PANTHER_VERSION).tsv that match the
+# refreshed (gene_product, GO_term, reference, evidence, with_from) tuples.
+build_pthr_go_match: PREV_PAINT_EXP_GAF ?= $(BEFORE_DATE)_fullgo/gene_association.paint_exp_uniprot.gaf
+build_pthr_go_match: FULL_GO_TSV ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION).tsv
+build_pthr_go_match: MATCH_OUT ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION)_match.tsv
+build_pthr_go_match:
+	PREV_PAINT_EXP_GAF=$(PREV_PAINT_EXP_GAF) FULL_GO_TSV=$(FULL_GO_TSV) MATCH_OUT=$(MATCH_OUT) envsubst < scripts/build_pthr_go_match.slurm > $(BASE_PATH)/build_pthr_go_match.slurm
+	sbatch $(BASE_PATH)/build_pthr_go_match.slurm
+
 gaf2pmid_slurm:
 	envsubst < scripts/gaf2pmid.slurm > $(BASE_PATH)/gaf2pmid.slurm
 	sbatch $(BASE_PATH)/gaf2pmid.slurm
@@ -199,7 +217,7 @@ generate_go_hierarchy:
 	BASE_PATH=$* envsubst < scripts/format_taxon_term_table.slurm > $*/format_taxon_term_table.slurm
 	sbatch $*/format_taxon_term_table.slurm
 
-get_fullgo_date:
+get_fullgo_date: check-profile
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
 
 make_profile:
@@ -237,7 +255,7 @@ load_raw_go_to_panther:
 	@echo "Counts of raw tables after data load:"
 	$(MAKE) raw_table_count
 
-update_panther_new_tables:
+update_panther_new_tables: check-profile
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/go_classification.sql
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/fullgo_version.sql -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "go_doi": "$(shell grep DOI $(BASE_PATH)/profile.txt | head -n 1 | cut -f2)", "panther_version": "$(PANTHER_VERSION)", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/genelist_agg.sql
@@ -250,7 +268,7 @@ switch_panther_table_names:
 	$(MAKE) panther_table_count
 	$(MAKE) record_db_import_date
 
-update_pango_new_tables:
+update_pango_new_tables: check-profile
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/pango_go_classification.sql
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/pango_version.sql -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "go_doi": "$(shell grep DOI $(BASE_PATH)/profile.txt | head -n 1 | cut -f2)", "pango_version": "$(PANGO_VERSION)", "pango_version_date": "$(PANGO_VERSION_DATE)"}'
 	python3 scripts/db_caller.py scripts/sql/panther_go_update/pango_genelist_agg.sql
@@ -274,7 +292,7 @@ load_raw_go_to_paint:
 reset_paint_table:
 	python3 scripts/db_caller.py scripts/sql/util/reset_paint_table.sql -v '{"table_name": "$(TABLE_NAME)"}'
 
-update_paint_go_classification:
+update_paint_go_classification: check-profile
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification.sql
 	# python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql	# Check for dups in relationship table?
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/fullgo_version.sql -v '{"go_release_date": "$(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2 | sed 's/-//g')", "go_doi": "$(shell grep DOI $(BASE_PATH)/profile.txt | head -n 1 | cut -f2)", "panther_version": "$(PANTHER_VERSION)", "panther_version_date": "$(PANTHER_VERSION_DATE)"}'
@@ -431,7 +449,7 @@ gen_iba_gaf_yamls:
 	chmod 744 $(BASE_PATH)/paint_exp_to_gaf_uniprot.sh
 	./$(BASE_PATH)/paint_exp_to_gaf_uniprot.sh
 
-create_gafs: #setup_directories pombe_sources $(BASE_PATH)/resources/zfin.gpi $(BASE_PATH)/resources/japonicusdb.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate paint_exp_aggregate	# must run from tcsh shell
+create_gafs: setup_directories pombe_sources $(BASE_PATH)/resources/zfin.gpi $(BASE_PATH)/resources/japonicusdb.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate paint_exp_aggregate check-profile
 	# Slurm this
 	# envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
 	# sbatch $(BASE_PATH)/createGAF.slurm
@@ -545,6 +563,7 @@ run_reports:
 	# envsubst < scripts/compare_paint_releases.slurm > $(BASE_PATH)/compare_paint_releases.slurm
 	# sbatch --wait $(BASE_PATH)/compare_paint_releases.slurm
 	# python3 scripts/publish_sheet_json.py -t $(shell date +%Y-%m-%d)_update_stats -j $(BASE_PATH)/update_stats.json
+
 
 push_gafs_to_ftp:
 	@echo "Needs to be implemented"
