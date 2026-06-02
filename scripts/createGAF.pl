@@ -12,7 +12,7 @@ use POSIX qw(strftime);
 ##      -a paint_annotation (from database)
 ##      -q paint_annotation_qualifier (from database)
 ##      -g go_aggregate (from database)
-##      -t TAIR10_TAIRlocusaccessionID_AGI_mapping.txt
+##      -t AGI_LocusCode_UniProt_<version>.gene2acc (TAIR/Araport -> AGI_LocusCode lookup)
 ##      -c evidence (from database)
 ##      -T organism_taxon
 ##      -G gene.dat in the DBload folder
@@ -23,7 +23,7 @@ use POSIX qw(strftime);
 
 # get command-line arguments
 use Getopt::Std;
-getopts('o:i:a:q:g:P:n:N:G:b:C:r:t:u:p:c:T:e:w:R:s:UvVh') || &usage();
+getopts('o:i:a:q:g:P:n:N:G:b:C:r:t:p:c:T:e:w:R:s:UvVh') || &usage();
 &usage() if ($opt_h);         # -h for help
 $outDir = $opt_o if ($opt_o);     # -o for (o)utput directory
 $inFile = $opt_i if ($opt_i);     # -i for (i)Input profile file
@@ -34,8 +34,7 @@ $annotation = $opt_a if ($opt_a); # -a for annotation file
 $go_aggregate = $opt_g if ($opt_g); # -g for go_aggregate file
 $paint_exp_aggregate = $opt_P if ($opt_P); # -P for paint_exp_aggregate file
 $qualifier = $opt_q if ($opt_q);  # -q for qualifier file
-$tair = $opt_t if ($opt_t);       # -t for the TAIR ID lookup file
-$araport = $opt_u if ($opt_u);    # -u for the UniProt-to-Araport ID lookup file
+$agi_lookup_file = $opt_t if ($opt_t);   # -t for the AGI_LocusCode lookup TSV
 $gpi_files = $opt_p if ($opt_p);  # -p for the UniProt-to-MOD ID GPI 1.2 file(s), comma-delimited
 $evidence = $opt_c if ($opt_c);   # -c for evidence file
 $taxon = $opt_T if ($opt_T);      # -T for the taxon file
@@ -60,6 +59,59 @@ if (!$gaf_version) {
     $gaf_version = '2.1';
 }
 
+###############################
+# AGI_LocusCode lookup helpers
+#
+# parse_agi_lookup_file($path) reads a 3-column TSV (source_id,
+# uniprot_id, canonical_agi_id) and returns two hashrefs:
+#   $by_protein->{$uniprot_id}              = $canonical_agi
+#   $by_geneid ->{ uc(prefix-stripped col1)} = $canonical_agi
+#
+# lookup_agi($geneId, $proteinId, $by_protein, $by_geneid) returns the
+# canonical AGI_LocusCode:... string or undef. It strips a leading
+# "<prefix>:" (e.g. "TAIR:", "Araport:", "UniProtKB:") from each input
+# and prefers the UniProt match over the gene-id match.
+###############################
+sub parse_agi_lookup_file {
+    my ($path) = @_;
+    open my $fh, '<', $path or die "Could not open file $path: $!";
+    my (%by_protein, %by_geneid);
+    while (my $line = <$fh>) {
+        chomp $line;
+        next if $line eq '' || $line =~ /^#/;
+        my ($source_id, $protein_id, $canonical_agi) = split(/\t/, $line);
+        next unless defined $canonical_agi && $canonical_agi ne '';
+
+        if (defined $protein_id && $protein_id ne '') {
+            $by_protein{$protein_id} = $canonical_agi;
+        }
+        if (defined $source_id && $source_id ne '') {
+            my $bare = $source_id;
+            $bare =~ s/^\w+://;
+            $by_geneid{uc($bare)} = $canonical_agi;
+        }
+    }
+    close $fh;
+    return (\%by_protein, \%by_geneid);
+}
+
+sub lookup_agi {
+    my ($geneId, $proteinId, $by_protein, $by_geneid) = @_;
+
+    my $bare_protein = defined $proteinId ? $proteinId : '';
+    $bare_protein =~ s/^\w+://;
+    my $bare_gene = defined $geneId ? $geneId : '';
+    $bare_gene =~ s/^\w+://;
+
+    if ($bare_protein ne '' && defined $by_protein->{$bare_protein}) {
+        return $by_protein->{$bare_protein};
+    }
+    if ($bare_gene ne '' && defined $by_geneid->{uc($bare_gene)}) {
+        return $by_geneid->{uc($bare_gene)};
+    }
+    return;
+}
+
 my $go_version;
 my $panther_version;
 #############################
@@ -81,29 +133,12 @@ close (FH);
 print STDERR "GO version is $go_version\n";
 print STDERR "PANTHER version is $panther_version\n";
 
-###############################
-# Parse TAIR ID lookup file
-###############################
-my %tair;   # atg and locus ID lookup file.
-open (TA, $tair) or die "Could not open file $tair\n";
-while (my $line=<TA>){
-    chomp $line;
-    my ($locus, $agi)=split(/\t/, $line);
-    $tair{$agi}=$locus;
-}
-close (TA);
-
-###############################
-# Parse Uniprot-to-Araport ID lookup file
-###############################
-my %araport;   # atg and locus ID lookup file.
-open (AR, $araport) or die "Could not open file $araport\n";
-while (my $line=<AR>){
-    chomp $line;
-    my ($uniprotid, $agi, $rest)=split(/\t/, $line);
-    $araport{$uniprotid}=$agi;
-}
-close (AR);
+######################################
+# Parse AGI_LocusCode lookup TSV
+# Provides ARATH UniProt-or-gene-id -> AGI_LocusCode:ATxGNNNNN
+######################################
+die "-t (AGI_LocusCode lookup file) is required\n" unless defined $agi_lookup_file;
+my ($agi_by_protein, $agi_by_geneid) = parse_agi_lookup_file($agi_lookup_file);
 
 ###############################
 # Parse Uniprot-to-MOD-ID GPI file
@@ -246,28 +281,12 @@ foreach my $file (@files){
                 }elsif ($geneId =~/WormBase/){
                     $geneId=~s/WormBase/WB/;
                     $shortId = $geneId;
-                }elsif ($geneId=~/^TAIR/ && !($geneId=~/^TAIR:locus:\d+/)){
-                    $geneId=~s/^\w+\://;
-                    if ($geneId eq 'locus'){
-                        $proteinId=~s/^\w+\://;
-                        if (defined $araport{$proteinId}){
-                            $geneId = $araport{$proteinId};
-                        }
-                    }
-                    if (defined $tair{$geneId}){
-                        my $locus = $tair{$geneId};
-                        $shortId="TAIR:locus:$locus";
-                    }else{
-                        print STDERR "TAIR ID $geneId has no mapped locus link ID.\n";
-                        next;
-                    }
-                }elsif ($geneId=~/Araport/){
-                    $geneId=~s/^\w+\://;
-                    if (defined $tair{$geneId}){
-                        my $locus = $tair{$geneId};
-                        $shortId="TAIR:locus:$locus";
-                    }else{
-                        print STDERR "Araport ID $geneId has no mapped locus link ID.\n";
+                }elsif ($geneId=~/^TAIR/ || $geneId=~/^Araport/){
+                    my $agi = lookup_agi($geneId, $proteinId, $agi_by_protein, $agi_by_geneid);
+                    if (defined $agi) {
+                        $shortId = $agi;
+                    } else {
+                        print STDERR "ARATH leaf has no mapped AGI_LocusCode (longId=$longId).\n";
                         next;
                     }
                 }elsif ($geneId=~/HGNC/){

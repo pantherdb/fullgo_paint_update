@@ -44,7 +44,7 @@ def query_ds_by_ptn_and_term(ds, ptn, term):
 def get_ibd_counts_from_dir(dir_path, mods_only=None):
     ibd_nodes = {}
     for gaf in os.listdir(dir_path):
-        if gaf == "gene_association.paint_exp.gaf":
+        if "paint_exp" in gaf:
             continue
         gaf_f = open("{}/{}".format(dir_path, gaf))
         for l in gaf_f.readlines():
@@ -76,6 +76,8 @@ def get_ibd_counts_from_dir(dir_path, mods_only=None):
 def get_iba_gafs_by_ibd_ptn_list(ibd_ptns, dir_path, mods_only=None):
     found_lines = []
     for gaf in os.listdir(dir_path):
+        if "paint_exp" in gaf:
+            continue
         with open("{}/{}".format(dir_path, gaf)) as gaf_f:
             for l in gaf_f.readlines():
                 if not l.startswith("!"):

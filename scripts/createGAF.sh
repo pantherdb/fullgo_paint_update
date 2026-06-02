@@ -6,8 +6,7 @@
 -a $BASE_PATH/resources/$ANNOT \
 -q $BASE_PATH/resources/$ANNOT_QUALIFIER \
 -g $BASE_PATH/resources/$GO_AGG \
--t $TAIR_MAP \
--u $ARAPORT_MAP \
+-t $AGI_MAP \
 -c $BASE_PATH/resources/$EVIDENCE \
 -P $BASE_PATH/resources/paint_exp_aggregate \
 -T $BASE_PATH/resources/$TAXON \

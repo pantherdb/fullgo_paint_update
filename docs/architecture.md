@@ -144,7 +144,9 @@ fullgo_paint_update/
   resources/                 # Static data files
     organism.dat              #   Organism-to-taxon mappings
     paint_taxons*.txt          #   Version-specific taxon lists
-    uniprot_to_araport_map_gaf.tsv  # Arabidopsis ID mapping
+    AGI_LocusCode_UniProt_*.gene2acc  # Arabidopsis UniProt/gene-id -> AGI_LocusCode lookup
+    uniprot_to_araport_map_gaf.tsv  # Legacy Arabidopsis ID mapping (superseded by AGI_LocusCode_UniProt_*.gene2acc)
+    TAIR10_TAIRlocusaccessionID_AGI_mapping.txt  # Legacy TAIR locus mapping (superseded)
     iba_gaf_gen_*.yaml        #   Before/after comparison templates
     test/                     #   Test fixtures
   scripts/
@@ -180,4 +182,4 @@ All PANTHER library paths (`/auto/rcf-proj3/...`, `/project/huaiyumi_14/...`) ar
 The database schema is implied by the SQL scripts but never explicitly defined in this repo. There are no migration files, no CREATE TABLE statements (except for raw staging tables), and no ERD. Understanding the schema requires reading the SQL update scripts or inspecting the live database.
 
 ### Monolithic createGAF.pl
-At ~40KB with ~1000 lines of procedural Perl, `createGAF.pl` is the system's most complex component. It parses 10+ input files, implements tree traversal, redundancy filtering, and GAF formatting all in a single script. Three variants exist (`createGAF.pl`, `createGAF_human_exp_references.pl`, `createGAFallDescendants.pl`) with significant code duplication.
+At ~40KB with ~1000 lines of procedural Perl, `createGAF.pl` is the system's most complex component. It parses 10+ input files, implements tree traversal, redundancy filtering, and GAF formatting all in a single script. A second variant `createGAFallDescendants.pl` still exists with significant code duplication.

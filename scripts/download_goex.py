@@ -58,7 +58,7 @@ if __name__ == "__main__":
     download_files(args.goex_download_base_url, metadata_files, args.goex_working_dir, download_logfile)
 
     # Download ontology files ontology/go.obo and ontology/extensions/go-gaf.owl
-    ontology_files = ["ontology/go.obo", "ontology/extensions/go-gaf.owl"]
+    ontology_files = ["ontology/go.obo", "ontology/extensions/go-gaf.owl", "ontology/go.json"]
     download_files(args.goex_download_base_url, ontology_files, args.goex_working_dir, download_logfile)
 
     # Download subset files
