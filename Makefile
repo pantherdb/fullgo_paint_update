@@ -124,12 +124,12 @@ export TREEGRAFTER_IBD_GAF ?= $(BASE_PATH)/IBD
 ### -o output PAINT_Annotations_TOTAL-style file with all nodes (leaf + internal)
 export TREEGRAFTER_ANNOTATIONS_TOTAL = $(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt
 
-.PHONY: check-profile                                                                                                                                                                                                    
-check-profile:  
+.PHONY: check-profile
+check-profile:
 	@test -f $(BASE_PATH)/profile.txt || { \
 		echo "ERROR: $(BASE_PATH)/profile.txt not found." >&2; \
 		echo "Run 'make make_profile' (or 'make make_profile_from_db') first." >&2; \
-		exit 1; \                                                                                                                                                                                                        
+		exit 1; \
 	}
 
 download_fullgo:
@@ -437,8 +437,8 @@ gen_iba_gaf_yamls:
 	envsubst < resources/iba_gaf_gen_a.yaml > $(BASE_PATH)/iba_gaf_gen_a.yaml
 	envsubst < resources/iba_gaf_gen_b.yaml > $(BASE_PATH)/iba_gaf_gen_b.yaml
 
-.PRECIOUS: %/gene_association.paint_exp.gaf
-%/gene_association.paint_exp.gaf: $(BASE_PATH)/resources/paint_exp_annotation
+.PRECIOUS: $(IBA_DIR)/gene_association.paint_exp.gaf
+$(IBA_DIR)/gene_association.paint_exp.gaf: $(BASE_PATH)/resources/paint_exp_annotation
 	OUTPUT_GAF=$@ envsubst < scripts/paint_exp_to_gaf.sh > $(BASE_PATH)/paint_exp_to_gaf.sh
 	chmod 744 $(BASE_PATH)/paint_exp_to_gaf.sh
 	./$(BASE_PATH)/paint_exp_to_gaf.sh
@@ -456,7 +456,7 @@ create_gafs: setup_directories pombe_sources $(BASE_PATH)/resources/zfin.gpi $(B
 	envsubst < scripts/createGAF.sh > $(BASE_PATH)/createGAF.sh
 	chmod 744 $(BASE_PATH)/createGAF.sh
 	./$(BASE_PATH)/createGAF.sh
-	$(MAKE) $(BASE_PATH)/gene_association.paint_exp.gaf
+	$(MAKE) $(IBA_DIR)/gene_association.paint_exp.gaf
 
 create_gafs_goa:
 	mkdir -p $(IBA_DIR)_uniprot
