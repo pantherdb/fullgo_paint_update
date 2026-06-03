@@ -124,6 +124,14 @@ export TREEGRAFTER_IBD_GAF ?= $(BASE_PATH)/IBD
 ### -o output PAINT_Annotations_TOTAL-style file with all nodes (leaf + internal)
 export TREEGRAFTER_ANNOTATIONS_TOTAL = $(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt
 
+########## RELEASE PACKAGING ##########
+### Date stamp used in the release tarball name and top-level directory. Override
+### when packaging a release on a different day than the artifacts were generated.
+export TODAYS_DATE ?= $(shell date +%Y-%m-%d)
+export RELEASE_DIR_NAME = $(TODAYS_DATE)_release
+export RELEASE_STAGING = $(BASE_PATH)/release_staging/$(RELEASE_DIR_NAME)
+export RELEASE_TARBALL = $(BASE_PATH)/$(TODAYS_DATE)_release.tar.gz
+
 .PHONY: check-profile
 check-profile:
 	@test -f $(BASE_PATH)/profile.txt || { \
@@ -564,6 +572,48 @@ run_reports:
 	# sbatch --wait $(BASE_PATH)/compare_paint_releases.slurm
 	# python3 scripts/publish_sheet_json.py -t $(shell date +%Y-%m-%d)_update_stats -j $(BASE_PATH)/update_stats.json
 
+
+# File-target shims so release_tarball can declare its inputs as prerequisites
+# without forcing regeneration when the artifacts already exist. Each shim has
+# no prerequisites: make skips it if the file is present, and otherwise delegates
+# to the canonical producer recipe via sub-make. To force a rebuild, delete the
+# file (or invoke the producer directly: create_gafs / propagate_paint_ibas /
+# create_gafs_goa).
+$(BASE_PATH)/IBD:
+	$(MAKE) create_gafs
+
+# propagate_paint_ibas reads $(BASE_PATH)/IBD (via TREEGRAFTER_IBD_GAF), so IBD
+# must exist first.
+$(TREEGRAFTER_ANNOTATIONS_TOTAL): $(BASE_PATH)/IBD
+	$(MAKE) propagate_paint_ibas
+
+# create_gafs_goa reads SQL-query result files in $(BASE_PATH)/resources/ that
+# create_gafs (the producer of IBD) writes, so IBD must exist first.
+$(BASE_PATH)/gene_association.paint_uniprot.gaf: $(BASE_PATH)/IBD
+	$(MAKE) create_gafs_goa
+
+release_tarball: $(BASE_PATH)/IBD $(TREEGRAFTER_ANNOTATIONS_TOTAL) $(BASE_PATH)/gene_association.paint_uniprot.gaf
+	@echo "==> Preflight check: verifying source files exist"
+	@test -f $(BASE_PATH)/IBD || { echo "ERROR: $(BASE_PATH)/IBD not found" >&2; exit 1; }
+	@test -f $(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt || { echo "ERROR: $(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt not found" >&2; exit 1; }
+	@test -f $(BASE_PATH)/gene_association.paint_uniprot.gaf || { echo "ERROR: $(BASE_PATH)/gene_association.paint_uniprot.gaf not found" >&2; exit 1; }
+	@test -d $(BASE_PATH)/IBA_GAFs || { echo "ERROR: $(BASE_PATH)/IBA_GAFs/ directory not found" >&2; exit 1; }
+	@ls $(BASE_PATH)/IBA_GAFs/*.gaf >/dev/null 2>&1 || { echo "ERROR: no .gaf files in $(BASE_PATH)/IBA_GAFs/" >&2; exit 1; }
+	@echo "==> Staging files into $(RELEASE_STAGING)"
+	rm -rf $(RELEASE_STAGING)
+	mkdir -p $(RELEASE_STAGING)/presubmission
+	cp $(BASE_PATH)/IBD $(RELEASE_STAGING)/IBD.gaf
+	cp $(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt $(RELEASE_STAGING)/
+	gzip $(RELEASE_STAGING)/PAINT_TreeGrafter_Annotations_TOTAL.txt
+	cp $(BASE_PATH)/gene_association.paint_uniprot.gaf $(RELEASE_STAGING)/
+	gzip $(RELEASE_STAGING)/gene_association.paint_uniprot.gaf
+	cp $(BASE_PATH)/IBA_GAFs/*.gaf $(RELEASE_STAGING)/presubmission/
+	gzip $(RELEASE_STAGING)/presubmission/*.gaf
+	@echo "==> Creating tarball $(RELEASE_TARBALL)"
+	tar -czf $(RELEASE_TARBALL) -C $(BASE_PATH)/release_staging $(RELEASE_DIR_NAME)
+	rm -rf $(BASE_PATH)/release_staging
+	@echo "==> Release tarball created:"
+	@ls -lh $(RELEASE_TARBALL)
 
 push_gafs_to_ftp:
 	@echo "Needs to be implemented"
