@@ -26,7 +26,10 @@ def download_files(base_url, file_relative_paths, dest_dir, download_logfile=Non
         dest_fullpath = os.path.join(dest_dir, basename)
         with requests.get(full_url, stream=True) as r:
             with open(dest_fullpath, 'wb') as f:
-                pbar = tqdm(total=int(r.headers['Content-Length']))
+                # No Content-Length when the server compresses on the fly (e.g. go.json
+                # via CloudFront); tqdm handles total=None as an unbounded progress bar.
+                content_length = r.headers.get('Content-Length')
+                pbar = tqdm(total=int(content_length) if content_length else None)
                 for chunk in r.iter_content(chunk_size=8192): 
                     f.write(chunk)
                     pbar.update(len(chunk))
@@ -34,6 +37,9 @@ def download_files(base_url, file_relative_paths, dest_dir, download_logfile=Non
 
 def get_directory_listing(full_dir_url):
     r = requests.get(full_dir_url)
+    # A listing URL missing its trailing slash 403s, which used to yield an empty
+    # file list and silently download nothing.
+    r.raise_for_status()
     data = bs4.BeautifulSoup(r.text, "html.parser")
     file_list = [l["href"] for l in data.find_all("a")]
     return file_list
@@ -47,10 +53,12 @@ if __name__ == "__main__":
 
     # Download release GAFs - all GAFs in URL directory
     # annotations_dir_url = f"{args.go_download_base_url}/annotations/"
-    annotations_dir_url = urllib.parse.urljoin(args.go_download_base_url, "annotations/gaf")
+    annotations_dir_url = urllib.parse.urljoin(args.go_download_base_url, "annotations/gaf/")
     annotation_files = get_directory_listing(annotations_dir_url)
     gaf_files = [af for af in annotation_files if af.endswith("-uniprot.gaf.gz")]
-    
+    if not gaf_files:
+        raise RuntimeError(f"No -uniprot.gaf.gz files listed at {annotations_dir_url}")
+
     download_files(args.go_download_base_url, gaf_files, args.gaf_files_dir, download_logfile)
 
     # Download metadata/release-date.json and metadata/release-archive-doi.json

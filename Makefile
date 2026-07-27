@@ -14,6 +14,15 @@ GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f
 export PANTHER_VERSION ?= 15.0
 export GAF_VERSION ?= 2.2
 
+### GO source location - defaults target the LBL GO release (scripts/download_fullgo.py).
+### For GOEx (scripts/download_goex.py) override with:
+###   GO_CURRENT_BASE_URL=https://ftp.ebi.ac.uk/pub/contrib/goa/goex/current/ \
+###   GO_RELEASE_BASE_URL=https://ftp.ebi.ac.uk/pub/contrib/goa/goex/releases/ \
+###   GO_RELEASE_DATE_FILE=$$(BASE_PATH)/release_date.txt
+GO_CURRENT_BASE_URL ?= https://current.geneontology.org/
+GO_RELEASE_BASE_URL ?= https://release.geneontology.org/
+GO_RELEASE_DATE_FILE ?= $(BASE_PATH)/release-date.json
+
 ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
 export PANTHER_VERSION_DATE = 20180203
@@ -142,8 +151,8 @@ check-profile:
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH) $(BASE_PATH)/resources
-	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u http://current.geneontology.org/
-# 	python3 scripts/download_goex.py -d $(BASE_PATH) -g $(GAF_FILES_PATH)
+	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u $(GO_CURRENT_BASE_URL)
+# 	python3 scripts/download_goex.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u $(GO_CURRENT_BASE_URL)
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	$(MAKE) make_profile
@@ -229,7 +238,7 @@ get_fullgo_date: check-profile
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
 
 make_profile:
-	python3 scripts/create_profile.py -j $(BASE_PATH)/release_date.txt -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
+	python3 scripts/create_profile.py -j $(GO_RELEASE_DATE_FILE) -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
 
 make_profile_from_db:
 	# query DB table fullgo_version - likely w/ python
@@ -237,7 +246,8 @@ make_profile_from_db:
 
 make_readme:
 	echo "GO source files downloaded on $(shell date +%Y-%m-%d)" > $(BASE_PATH)/README
-	python3 scripts/make_readme.py -r $(BASE_PATH)/release_date.txt -d $(BASE_PATH)/downloaded_files.txt >> $(BASE_PATH)/README
+	python3 scripts/make_readme.py -r $(GO_RELEASE_DATE_FILE) -d $(BASE_PATH)/downloaded_files.txt \
+		-c $(GO_CURRENT_BASE_URL) -b $(GO_RELEASE_BASE_URL) >> $(BASE_PATH)/README
 
 raw_table_count:
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,goanno_wf
