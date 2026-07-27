@@ -47,11 +47,9 @@ if __name__ == "__main__":
 
     # Download release GAFs - all GAFs in URL directory
     # annotations_dir_url = f"{args.go_download_base_url}/annotations/"
-    annotations_dir_url = urllib.parse.urljoin(args.go_download_base_url, "annotations/")
+    annotations_dir_url = urllib.parse.urljoin(args.go_download_base_url, "annotations/gaf")
     annotation_files = get_directory_listing(annotations_dir_url)
-    gaf_files = [af for af in annotation_files if af.endswith(".gaf.gz")]
-
-    gaf_files.append("products/upstream_and_raw_data/paint_other.gaf.gz")  # Don't forget our paint_other
+    gaf_files = [af for af in annotation_files if af.endswith("-uniprot.gaf.gz")]
     
     download_files(args.go_download_base_url, gaf_files, args.gaf_files_dir, download_logfile)
 
@@ -60,7 +58,7 @@ if __name__ == "__main__":
     download_files(args.go_download_base_url, metadata_files, args.fullgo_working_dir, download_logfile)
 
     # Download ontology files ontology/go.obo and ontology/extensions/go-gaf.owl
-    ontology_files = ["ontology/go.obo", "ontology/extensions/go-gaf.owl"]
+    ontology_files = ["ontology/go.obo", "ontology/extensions/go-gaf.owl", "ontology/go.json"]
     download_files(args.go_download_base_url, ontology_files, args.fullgo_working_dir, download_logfile)
 
     # Download subset files

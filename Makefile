@@ -142,8 +142,8 @@ check-profile:
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH) $(BASE_PATH)/resources
-# 	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u http://current.geneontology.org/
-	python3 scripts/download_goex.py -d $(BASE_PATH) -g $(GAF_FILES_PATH)
+	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u http://current.geneontology.org/
+# 	python3 scripts/download_goex.py -d $(BASE_PATH) -g $(GAF_FILES_PATH)
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	$(MAKE) make_profile
