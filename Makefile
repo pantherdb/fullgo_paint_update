@@ -21,6 +21,11 @@ export GAF_VERSION ?= 2.2
 ###   GO_RELEASE_DATE_FILE=$$(BASE_PATH)/release_date.txt GO_DOI_FILE=
 ### GO_DOI_FILE is optional - set it empty to leave the DOI out of profile.txt (GOEx
 ### publishes no DOI), which also empties the go_doi passed to the *_version.sql recipes.
+### Set PREFER_MOD_GAFS to any non-empty value to download a species' -mod.gaf.gz instead
+### of its -uniprot.gaf.gz wherever the -mod file exists (e.g. PREFER_MOD_GAFS=1 make
+### download_fullgo). Default is -uniprot only; use this while a -uniprot file is dropping
+### annotations vs its -mod counterpart. LBL GO release only, not GOEx.
+PREFER_MOD_GAFS ?=
 GO_CURRENT_BASE_URL ?= https://current.geneontology.org/
 GO_RELEASE_BASE_URL ?= https://release.geneontology.org/
 GO_RELEASE_DATE_FILE ?= $(BASE_PATH)/release-date.json
@@ -154,7 +159,7 @@ check-profile:
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH) $(BASE_PATH)/resources
-	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u $(GO_CURRENT_BASE_URL)
+	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u $(GO_CURRENT_BASE_URL) $(if $(PREFER_MOD_GAFS),--prefer_mod)
 # 	python3 scripts/download_goex.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u $(GO_CURRENT_BASE_URL)
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm

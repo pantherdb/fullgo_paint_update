@@ -91,3 +91,47 @@ def test_get_directory_listing_parses_hrefs(module_name, monkeypatch):
     assert module.get_directory_listing("https://example.org/annotations/gaf/") == [
         "ACIB2-uniprot.gaf.gz", "ANOCA-uniprot.gaf.gz"
     ]
+
+
+ANNOTATION_LISTING = [
+    "index.html",
+    "ACIB2-uniprot.gaf.gz",
+    "ARATH-mod.gaf.gz",
+    "ARATH-uniprot.gaf.gz",
+    "DANRE-mod.gaf.gz",
+    "DANRE-uniprot.gaf.gz",
+    "goa_uniprot_all_noiea.gaf.gz",
+]
+
+
+def test_select_gaf_files_defaults_to_uniprot():
+    """Long-term pipeline goal is UniProt-only, so no flag means no -mod files."""
+    module = load_downloader("download_fullgo")
+    assert module.select_gaf_files(ANNOTATION_LISTING) == [
+        "ACIB2-uniprot.gaf.gz", "ARATH-uniprot.gaf.gz", "DANRE-uniprot.gaf.gz"
+    ]
+
+
+def test_select_gaf_files_prefers_mod_when_available():
+    """-uniprot can drop annotations vs -mod (e.g. DANRE), hence the opt-in flag."""
+    module = load_downloader("download_fullgo")
+    assert module.select_gaf_files(ANNOTATION_LISTING, prefer_mod=True) == [
+        "ACIB2-uniprot.gaf.gz", "ARATH-mod.gaf.gz", "DANRE-mod.gaf.gz"
+    ]
+
+
+def test_select_gaf_files_prefers_mod_for_species_without_uniprot():
+    module = load_downloader("download_fullgo")
+    assert module.select_gaf_files(["FOO-mod.gaf.gz"], prefer_mod=True) == ["FOO-mod.gaf.gz"]
+
+
+def test_select_gaf_files_skips_mod_only_species_by_default():
+    module = load_downloader("download_fullgo")
+    assert module.select_gaf_files(["FOO-mod.gaf.gz"]) == []
+
+
+def test_select_gaf_files_handles_listing_paths():
+    """Some listings hand back paths rather than bare filenames."""
+    module = load_downloader("download_fullgo")
+    listing = ["/annotations/gaf/DANRE-mod.gaf.gz", "/annotations/gaf/DANRE-uniprot.gaf.gz"]
+    assert module.select_gaf_files(listing, prefer_mod=True) == ["/annotations/gaf/DANRE-mod.gaf.gz"]

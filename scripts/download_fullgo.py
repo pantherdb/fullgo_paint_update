@@ -10,6 +10,34 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--fullgo_working_dir', help="BASE_PATH containing fullgo_paint_update files for current release")
 parser.add_argument('-g', '--gaf_files_dir', help="Path to directory where downloaded .gaf files will be saved")
 parser.add_argument('-u', '--go_download_base_url', help="Usually http://current.geneontology.org/")
+parser.add_argument('-m', '--prefer_mod', action='store_true',
+                    help="Download a species' -mod.gaf.gz instead of its -uniprot.gaf.gz whenever "
+                         "the -mod file exists. Default (no flag) is -uniprot only, the long-term "
+                         "pipeline goal; use this while a -uniprot file is dropping annotations.")
+
+UNIPROT_SUFFIX = "-uniprot.gaf.gz"
+MOD_SUFFIX = "-mod.gaf.gz"
+
+
+def select_gaf_files(annotation_files, prefer_mod=False):
+    """Pick one release GAF per species code out of a directory listing.
+
+    Default is every -uniprot.gaf.gz. With prefer_mod, a species' -mod.gaf.gz wins
+    whenever it is listed, so species with only a -mod file are picked up too.
+    """
+    uniprot_files = {}
+    mod_files = {}
+    for af in annotation_files:
+        basename = os.path.basename(af)
+        if basename.endswith(UNIPROT_SUFFIX):
+            uniprot_files[basename[:-len(UNIPROT_SUFFIX)]] = af
+        elif basename.endswith(MOD_SUFFIX):
+            mod_files[basename[:-len(MOD_SUFFIX)]] = af
+    if not prefer_mod:
+        return list(uniprot_files.values())
+    species_codes = list(uniprot_files)
+    species_codes.extend(sc for sc in mod_files if sc not in uniprot_files)
+    return [mod_files[sc] if sc in mod_files else uniprot_files[sc] for sc in species_codes]
 
 
 def download_files(base_url, file_relative_paths, dest_dir, download_logfile=None):
@@ -55,9 +83,12 @@ if __name__ == "__main__":
     # annotations_dir_url = f"{args.go_download_base_url}/annotations/"
     annotations_dir_url = urllib.parse.urljoin(args.go_download_base_url, "annotations/gaf/")
     annotation_files = get_directory_listing(annotations_dir_url)
-    gaf_files = [af for af in annotation_files if af.endswith("-uniprot.gaf.gz")]
+    gaf_files = select_gaf_files(annotation_files, prefer_mod=args.prefer_mod)
     if not gaf_files:
-        raise RuntimeError(f"No -uniprot.gaf.gz files listed at {annotations_dir_url}")
+        raise RuntimeError(f"No species GAF files listed at {annotations_dir_url}")
+    if args.prefer_mod:
+        mod_count = sum(1 for gf in gaf_files if gf.endswith(MOD_SUFFIX))
+        print(f"Preferring -mod GAFs: {mod_count} of {len(gaf_files)} species")
 
     download_files(args.go_download_base_url, gaf_files, args.gaf_files_dir, download_logfile)
 

@@ -15,9 +15,10 @@ make download_fullgo
 make extractfromgoobo
 make split_fullGoMappingPthr_gafs
 make slurm_fullGoMappingPthr
+make build_pthr_go_match
 ``` 
 
-* `download_fullgo` will download all current GAF and GO.obo files from GO ftp server. This also creates the base folder ("YYYY-MM-DD_fullgo/") where the update files will live.
+* `download_fullgo` will download all current GAF and GO.obo files from GO ftp server. This also creates the base folder ("YYYY-MM-DD_fullgo/") where the update files will live. Only the `*-uniprot.gaf.gz` species GAFs are downloaded; run `PREFER_MOD_GAFS=1 make download_fullgo` to take a species' `*-mod.gaf.gz` instead wherever one exists (useful when a `-uniprot` file drops annotations vs its `-mod` counterpart).
 * `extractfromgoobo` and `extractfromgoobo_relation` parse out the ontology terms and term relationships, respectively.
 * `submit_fullGoMappingPthrHierarchy_slurm` will create a slurm batch script to run `scripts/fullGoMappingPthrHierarchy.pl` on the USC HPC and then submit it. This script maps the GAF gene product IDs to Panther IDs. It now also outputs files used for tracking ontology hierarchy.
 
@@ -50,17 +51,17 @@ make regenerate_paint_aggregate_view
 ## GAF generation
 After update of both Panther and the PAINT curation DBs, queries are run against the curation DB to generate inputs for creating PAINT GAFs.
 ```
-make paint_annotation
-make paint_annotation_qualifier
-make paint_evidence
-make go_aggregate
-make organism_taxon
 make create_gafs
-make repair_gaf_symbols
+make create_gafs_goa
 ```
 * `paint_annotation`, `paint_annotation_qualifier`, `paint_evidence`, `go_aggregate`, and `organism_taxon` generate the input files for `scripts/createGAF.pl`.
 * `create_gafs` runs `scripts/createGAF.pl` to generate PAINT GAFs under the IBA_GAFs folder.
 * `repair_gaf_symbols` is only used right now (at least until the next Reference Proteome release) to correct gene symbols in the PomBase PAINT GAF.
+
+## FTP Tarball
+```
+make release_tarball
+```
 
 ## Updating PAN-GO tables and genelist_agg fields
 If necessary, you can reuse this command to load from raw annot and ontology files into `goanno_wf`, `goobo_extract`, and `goobo_parent_child`:
