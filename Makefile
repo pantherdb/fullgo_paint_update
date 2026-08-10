@@ -18,10 +18,13 @@ export GAF_VERSION ?= 2.2
 ### For GOEx (scripts/download_goex.py) override with:
 ###   GO_CURRENT_BASE_URL=https://ftp.ebi.ac.uk/pub/contrib/goa/goex/current/ \
 ###   GO_RELEASE_BASE_URL=https://ftp.ebi.ac.uk/pub/contrib/goa/goex/releases/ \
-###   GO_RELEASE_DATE_FILE=$$(BASE_PATH)/release_date.txt
+###   GO_RELEASE_DATE_FILE=$$(BASE_PATH)/release_date.txt GO_DOI_FILE=
+### GO_DOI_FILE is optional - set it empty to leave the DOI out of profile.txt (GOEx
+### publishes no DOI), which also empties the go_doi passed to the *_version.sql recipes.
 GO_CURRENT_BASE_URL ?= https://current.geneontology.org/
 GO_RELEASE_BASE_URL ?= https://release.geneontology.org/
 GO_RELEASE_DATE_FILE ?= $(BASE_PATH)/release-date.json
+GO_DOI_FILE ?= $(BASE_PATH)/release-archive-doi.json
 
 ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
@@ -238,7 +241,7 @@ get_fullgo_date: check-profile
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
 
 make_profile:
-	python3 scripts/create_profile.py -j $(GO_RELEASE_DATE_FILE) -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
+	python3 scripts/create_profile.py -j $(GO_RELEASE_DATE_FILE) $(if $(GO_DOI_FILE),-d $(GO_DOI_FILE),) -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
 
 make_profile_from_db:
 	# query DB table fullgo_version - likely w/ python
@@ -437,12 +440,12 @@ reset_paint_table_names:
 
 # update_taxon_constraints_file:
 
-setup_preupdate_data: $(BASE_PATH)/resources/panther_blacklist.txt $(BASE_PATH)/resources/complex_terms.tsv
+setup_preupdate_data: $(BASE_PATH)/resources/complex_terms.tsv # $(BASE_PATH)/resources/panther_blacklist.txt
 	mkdir -p $(BASE_PATH)/preupdate_data/resources
 	# Retain previous GO version for accuracy
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data make_profile_from_db
 	# Reuse panther_blacklist.txt cuz it takes sooo long to make
-	ln -sf $(realpath $(BASE_PATH)/resources/panther_blacklist.txt) $(BASE_PATH)/preupdate_data/resources/panther_blacklist.txt
+# 	ln -sf $(realpath $(BASE_PATH)/resources/panther_blacklist.txt) $(BASE_PATH)/preupdate_data/resources/panther_blacklist.txt
 	ln -sf $(realpath $(BASE_PATH)/resources/complex_terms.tsv) $(BASE_PATH)/preupdate_data/resources/complex_terms.tsv
 	ln -sf $(realpath $(BASE_PATH)/goparentchild_isaonly.tsv) $(BASE_PATH)/preupdate_data/goparentchild_isaonly.tsv
 	ln -sf $(realpath $(BASE_PATH)/go.json) $(BASE_PATH)/preupdate_data/go.json
