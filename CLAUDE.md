@@ -22,7 +22,9 @@ All pipeline steps are Makefile recipes, run individually and sequentially. Logg
 make <recipe> | tee -a log.txt
 ```
 
-**Panther pipeline:** `download_fullgo` → `extractfromgoobo` → `split_fullGoMappingPthr_gafs` → `slurm_fullGoMappingPthr` → `load_raw_go_to_panther` → `update_panther_new_tables` → `switch_panther_table_names`
+**Panther pipeline:** `download_fullgo` → `extractfromgoobo` → `split_fullGoMappingPthr_gafs` → `slurm_fullGoMappingPthr` → `compare_pthr_go_counts` → `load_raw_go_to_panther` → `update_panther_new_tables` → `switch_panther_table_names`
+
+**QA gate:** `make BEFORE_DATE=<prev release date> compare_pthr_go_counts` runs `scripts/compare_pthr_go_counts.py` to diff per-proteome annotation and mapped-gene-product counts in `Pthr_GO_$(PANTHER_VERSION).tsv` against the previous release, sorted by greatest percent deviation. It exists to catch a GAF-source or ID-mapping change that guts a proteome (e.g. ECOLI switched from a UniProt-centric GAF to a MOD-centric EcoCyc one: 54,316 annotations → 677). Exits non-zero on any proteome deviating by `PTHR_GO_DIFF_THRESHOLD` percent (default 10.0), so it fails the recipe before the DB load; pass `--no_fail` to run it advisory-only. Reads the previous release's Pthr_GO whether it is a plain `.tsv`, `.tsv.gz`, or archived `.tsv.tar.gz`. Writes `$(BASE_PATH)/pthr_go_count_diff.tsv`.
 
 **PAINT pipeline:** `load_raw_go_to_paint` → `update_paint_go_classification` → `update_paint_go_annotation` → `update_paint_go_evidence` → `update_paint_go_annot_qualifier` → `switch_evidence_to_pmid` → `delete_incorrect_go_annot_qualifiers` → `setup_preupdate_data` → `gen_iba_gaf_yamls` → `switch_table_names_go_only`
 

@@ -14,6 +14,9 @@ GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f
 export PANTHER_VERSION ?= 15.0
 export GAF_VERSION ?= 2.2
 
+### Percent deviation at which compare_pthr_go_counts flags a proteome and fails the recipe.
+PTHR_GO_DIFF_THRESHOLD ?= 10.0
+
 ### GO source location - defaults target the LBL GO release (scripts/download_fullgo.py).
 ### For GOEx (scripts/download_goex.py) override with:
 ###   GO_CURRENT_BASE_URL=https://ftp.ebi.ac.uk/pub/contrib/goa/goex/current/ \
@@ -195,6 +198,18 @@ split_fullGoMappingPthr_gafs:
 slurm_fullGoMappingPthr:
 	NUMGROUPS=$(shell ls -d $(GAF_FILES_PATH)/group_* | wc -l) envsubst < scripts/fullGoMappingPthrHierarchy_para.slurm > $(BASE_PATH)/fullGoMappingPthrHierarchy_para_$(PANTHER_VERSION).slurm
 	sbatch $(BASE_PATH)/fullGoMappingPthrHierarchy_para_$(PANTHER_VERSION).slurm
+
+# QA gate between slurm_fullGoMappingPthr and load_raw_go_to_panther: compares per-proteome
+# annotation counts against the previous release so a GAF-source or ID-mapping change that
+# guts a proteome is caught before the DB load. Exits non-zero on any flagged proteome; raising
+# PTHR_GO_DIFF_THRESHOLD narrows what gets flagged, but a proteome that appeared or vanished
+# outright always flags - pass --no_fail to run advisory-only. BEFORE_DATE names the previous
+# release dir, where Pthr_GO is usually archived as .tsv.tar.gz.
+compare_pthr_go_counts: BEFORE_PTHR_GO ?= $(BEFORE_DATE)_fullgo/Pthr_GO_$(PANTHER_VERSION).tsv
+compare_pthr_go_counts: AFTER_PTHR_GO ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION).tsv
+compare_pthr_go_counts:
+	python3 scripts/compare_pthr_go_counts.py -b $(BEFORE_PTHR_GO) -a $(AFTER_PTHR_GO) \
+		-t $(PTHR_GO_DIFF_THRESHOLD) -o $(BASE_PATH)/pthr_go_count_diff.tsv
 
 rm_partial_fullGoMappingPthr_files:
 	rm $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION).tsv.*
