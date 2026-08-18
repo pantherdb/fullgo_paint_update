@@ -29,6 +29,11 @@ PTHR_GO_DIFF_THRESHOLD ?= 10.0
 ### download_fullgo). Default is -uniprot only; use this while a -uniprot file is dropping
 ### annotations vs its -mod counterpart. LBL GO release only, not GOEx.
 PREFER_MOD_GAFS ?=
+### Per-proteome overrides of that choice, in either direction - PANTHER cannot map every MOD
+### ID namespace, so some proteomes must never take -mod. Reads as an always-mod list under the
+### default and as a never-mod list under PREFER_MOD_GAFS. Verify edits with
+### `make compare_pthr_go_counts` before loading the DB.
+GAF_SOURCE_BY_PROTEOME ?= resources/gaf_source_by_proteome.tsv
 GO_CURRENT_BASE_URL ?= https://current.geneontology.org/
 GO_RELEASE_BASE_URL ?= https://release.geneontology.org/
 GO_RELEASE_DATE_FILE ?= $(BASE_PATH)/release-date.json
@@ -162,7 +167,8 @@ check-profile:
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH) $(BASE_PATH)/resources
-	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u $(GO_CURRENT_BASE_URL) $(if $(PREFER_MOD_GAFS),--prefer_mod)
+	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u $(GO_CURRENT_BASE_URL) \
+		-s $(GAF_SOURCE_BY_PROTEOME) $(if $(PREFER_MOD_GAFS),--prefer_mod)
 # 	python3 scripts/download_goex.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u $(GO_CURRENT_BASE_URL)
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
