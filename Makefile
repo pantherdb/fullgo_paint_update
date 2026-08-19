@@ -17,6 +17,24 @@ export GAF_VERSION ?= 2.2
 ### Percent deviation at which compare_pthr_go_counts flags a proteome and fails the recipe.
 PTHR_GO_DIFF_THRESHOLD ?= 10.0
 
+### One-command PAINT table update (scripts/run_paint_table_update.py). The step list lives
+### in that script so nobody retypes README's block by hand and drops a step. Between the
+### write-heavy steps it runs scripts/settle_db_tables.py, which waits out the autovacuum
+### each step's single big commit triggers and then VACUUM (ANALYZE)s the tables - otherwise
+### the next step stalls on the vacuum's lock, its I/O, or the stats it has not refreshed.
+###   DRY_RUN=1         print the plan and run nothing
+###   START_AT=<step>   resume after a failure (see: make list_paint_table_steps)
+###   STOP_AFTER=<step> stop once that step and its settle have finished
+###   CONFIRM_SWITCH=1  run switch_table_names_go_only without asking first
+PAINT_SCHEMA ?= panther_upl
+START_AT ?=
+STOP_AFTER ?=
+CONFIRM_SWITCH ?=
+PAINT_UPDATE_FLAGS = $(if $(START_AT),--start_at $(START_AT)) \
+	$(if $(STOP_AFTER),--stop_after $(STOP_AFTER)) \
+	$(if $(SETTLE_TIMEOUT),--settle_timeout $(SETTLE_TIMEOUT)) \
+	$(if $(CONFIRM_SWITCH),--confirm_switch) $(if $(DRY_RUN),--dry_run)
+
 ### GO source location - defaults target the LBL GO release (scripts/download_fullgo.py).
 ### For GOEx (scripts/download_goex.py) override with:
 ###   GO_CURRENT_BASE_URL=https://ftp.ebi.ac.uk/pub/contrib/goa/goex/current/ \
@@ -175,7 +193,7 @@ export RELEASE_DIR_NAME = $(TODAYS_DATE)_release
 export RELEASE_STAGING = $(BASE_PATH)/release_staging/$(RELEASE_DIR_NAME)
 export RELEASE_TARBALL = $(BASE_PATH)/$(TODAYS_DATE)_release.tar.gz
 
-.PHONY: check-profile
+.PHONY: check-profile update_paint_tables list_paint_table_steps settle_db_tables
 check-profile:
 	@test -f $(BASE_PATH)/profile.txt || { \
 		echo "ERROR: $(BASE_PATH)/profile.txt not found." >&2; \
@@ -352,6 +370,21 @@ record_db_import_date:
 
 check_dups:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/go_classification_dups.sql
+
+### Runs the whole "Updating PAINT tables" block. Everything up to switch_table_names_go_only
+### only touches _new tables and can be re-run; the switch itself is gated and will not run
+### unattended unless CONFIRM_SWITCH=1.
+update_paint_tables:
+	python3 scripts/run_paint_table_update.py $(PAINT_UPDATE_FLAGS)
+
+list_paint_table_steps:
+	@python3 scripts/run_paint_table_update.py --list
+
+### Ad-hoc settle, for when a step is already stalling behind autovacuum:
+###   make TABLES="go_annotation_new go_evidence_new" settle_db_tables
+settle_db_tables:
+	python3 scripts/settle_db_tables.py --schema $(PAINT_SCHEMA) \
+		$(if $(SETTLE_TIMEOUT),--timeout $(SETTLE_TIMEOUT)) $(TABLES)
 
 load_raw_go_to_paint:
 	python3 scripts/db_caller.py scripts/sql/paint_go_update/load_raw_go.sql -v '{"panther_version": "$(PANTHER_VERSION)"}'
