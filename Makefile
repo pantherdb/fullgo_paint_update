@@ -34,6 +34,24 @@ PREFER_MOD_GAFS ?=
 ### default and as a never-mod list under PREFER_MOD_GAFS. Verify edits with
 ### `make compare_pthr_go_counts` before loading the DB.
 GAF_SOURCE_BY_PROTEOME ?= resources/gaf_source_by_proteome.tsv
+
+### Cross-machine file transfers (scripts/transfer_release_files.py). A firewall blocks HPC
+### from reaching the DB servers, so the local workstation relays. Set these in config.mk.
+###   fetch_release_files : SRC_HOST + SRC_BASE_PATH  (cluster BASE_PATH) -> local BASE_PATH
+###   push_db_load_files  : DB_HOST + DB_LOAD_DIR     (load_dir from config/config.yaml)
+###   push_gafs_to_ftp    : FTP_HOST + FTP_PATH       (e.g. .../downloads/paint/19.0/<date>)
+###   archive_gafs_to_hpc : HPC_HOST + HPC_ARCHIVE_PATH
+### Every recipe takes DRY_RUN=1 to print the transfers without moving anything - run that
+### first, these move multiple GB.
+SRC_HOST ?=
+SRC_BASE_PATH ?=
+DB_HOST ?=
+DB_LOAD_DIR ?= /pgres_data/data/
+FTP_HOST ?=
+FTP_PATH ?=
+HPC_HOST ?= $(SRC_HOST)
+HPC_ARCHIVE_PATH ?=
+TRANSFER_FLAGS = $(if $(DRY_RUN),--dry_run) -p $(PANTHER_VERSION)
 GO_CURRENT_BASE_URL ?= https://current.geneontology.org/
 GO_RELEASE_BASE_URL ?= https://release.geneontology.org/
 GO_RELEASE_DATE_FILE ?= $(BASE_PATH)/release-date.json
@@ -237,8 +255,10 @@ submit_fullGoMappingPthrHierarchy_slurm:
 build_pthr_go_match: PREV_PAINT_EXP_GAF ?= $(BEFORE_DATE)_fullgo/gene_association.paint_exp_uniprot.gaf
 build_pthr_go_match: FULL_GO_TSV ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION).tsv
 build_pthr_go_match: MATCH_OUT ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION)_match.tsv
+build_pthr_go_match: FILTERED_OUT ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION)_filtered.tsv
 build_pthr_go_match:
-	PREV_PAINT_EXP_GAF=$(PREV_PAINT_EXP_GAF) FULL_GO_TSV=$(FULL_GO_TSV) MATCH_OUT=$(MATCH_OUT) envsubst < scripts/build_pthr_go_match.slurm > $(BASE_PATH)/build_pthr_go_match.slurm
+	PREV_PAINT_EXP_GAF=$(PREV_PAINT_EXP_GAF) FULL_GO_TSV=$(FULL_GO_TSV) MATCH_OUT=$(MATCH_OUT) \
+		FILTERED_OUT=$(FILTERED_OUT) envsubst < scripts/build_pthr_go_match.slurm > $(BASE_PATH)/build_pthr_go_match.slurm
 	sbatch $(BASE_PATH)/build_pthr_go_match.slurm
 
 gaf2pmid_slurm:
@@ -654,8 +674,37 @@ release_tarball: $(BASE_PATH)/IBD $(TREEGRAFTER_ANNOTATIONS_TOTAL) $(BASE_PATH)/
 	@echo "==> Release tarball created:"
 	@ls -lh $(RELEASE_TARBALL)
 
+# Cluster -> local. Pulls every file the local DB-update and GAF-generation phases need;
+# scripts/transfer_release_files.py holds the manifest so the list is not something to remember.
+fetch_release_files:
+	@test -n "$(SRC_HOST)" || { echo "ERROR: set SRC_HOST (cluster host)" >&2; exit 1; }
+	@test -n "$(SRC_BASE_PATH)" || { echo "ERROR: set SRC_BASE_PATH (BASE_PATH on $(SRC_HOST))" >&2; exit 1; }
+	mkdir -p $(BASE_PATH)
+	python3 scripts/transfer_release_files.py fetch -H $(SRC_HOST) -r $(SRC_BASE_PATH) \
+		-l $(BASE_PATH) $(TRANSFER_FLAGS)
+
+# Local -> DB server load_dir, for the COPY statements in */load_raw_go.sql.
+push_db_load_files:
+	@test -n "$(DB_HOST)" || { echo "ERROR: set DB_HOST (DB server)" >&2; exit 1; }
+	python3 scripts/transfer_release_files.py push_db -H $(DB_HOST) -r $(DB_LOAD_DIR) \
+		-l $(BASE_PATH) $(TRANSFER_FLAGS)
+
+# Local -> public file server. Ships the release_tarball payload (IBD.gaf, the TreeGrafter
+# annotations, gene_association.paint_uniprot.gaf, presubmission/*.gaf.gz) and unpacks it into
+# FTP_PATH, which should be the dated release dir, e.g. .../downloads/paint/19.0/2026-08-18.
+# RELEASE_TARBALL defaults to today's date; override it to push an older release's tarball.
 push_gafs_to_ftp:
-	@echo "Needs to be implemented"
+	@test -n "$(FTP_HOST)" || { echo "ERROR: set FTP_HOST (file server)" >&2; exit 1; }
+	@test -n "$(FTP_PATH)" || { echo "ERROR: set FTP_PATH (dated release dir on $(FTP_HOST))" >&2; exit 1; }
+	python3 scripts/transfer_release_files.py push_gafs -H $(FTP_HOST) -r $(FTP_PATH) \
+		-a $(RELEASE_TARBALL) --unpack $(TRANSFER_FLAGS)
+
+# Local -> HPC, for archival. Stays a tarball; no unpacking.
+archive_gafs_to_hpc:
+	@test -n "$(HPC_HOST)" || { echo "ERROR: set HPC_HOST (or SRC_HOST)" >&2; exit 1; }
+	@test -n "$(HPC_ARCHIVE_PATH)" || { echo "ERROR: set HPC_ARCHIVE_PATH" >&2; exit 1; }
+	python3 scripts/transfer_release_files.py push_gafs -H $(HPC_HOST) -r $(HPC_ARCHIVE_PATH) \
+		-a $(RELEASE_TARBALL) $(TRANSFER_FLAGS)
 
 leaf_species_list:
 	python3 scripts/db_caller.py -n scripts/sql/util/leaf_species_list.sql

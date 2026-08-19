@@ -12,8 +12,8 @@ join -t "	" -a 1 -1 2 -o 1.1,1.2,2.2,1.3,1.4,1.5 \
     | sort \
     > $BASE_PATH/Pthr_GO_prev_exp_query.tsv
 
-# Match the refreshed query rows against the new release's full Pthr_GO_19.0.tsv: for each line in
-# Pthr_GO_19.0.tsv, emit it if some query row's 5 fields all appear as substrings of the line.
+# Match the refreshed query rows against the new release's full Pthr_GO TSV: for each line in
+# $FULL_GO_TSV, emit it if some query row's 5 fields all appear as substrings of the line.
 awk -F'\t' 'NR==FNR {queries[$1"\t"$2"\t"$3"\t"$4"\t"$5]; next}
 {
   for (query in queries) {
@@ -28,4 +28,6 @@ awk -F'\t' 'NR==FNR {queries[$1"\t"$2"\t"$3"\t"$4"\t"$5]; next}
 }' $BASE_PATH/Pthr_GO_prev_exp_query.tsv $FULL_GO_TSV \
     > $MATCH_OUT
 
-cat $MATCH_OUT | grep -v -f /dev/stdin $FULL_GO_TSV > $BASE_PATH/Pthr_GO_19.0_filtered.tsv
+# Everything that did NOT match: the annotations PAINT should load. $FILTERED_OUT carries the
+# PANTHER version from the Makefile - it used to be hardcoded to 19.0.
+cat $MATCH_OUT | grep -v -f /dev/stdin $FULL_GO_TSV > $FILTERED_OUT
