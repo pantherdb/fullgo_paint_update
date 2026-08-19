@@ -214,32 +214,42 @@ USC HPC head node              Local workstation              DB server(s)
 **HPC** (post-pipeline):
 - Receives GAF files via SCP for archival/backup
 
-### Manual File Transfers
+### File Transfers
 
-The SCP transfers are manual and undocumented in the Makefile. The operator must:
+The transfers are Makefile recipes backed by `scripts/transfer_release_files.py`, which owns
+the manifest of what has to move and which downstream step needs each file. Every recipe takes
+`DRY_RUN=1` to print the plan without transferring; run that first, since these move multiple GB.
 
-1. After SLURM jobs complete on HPC:
+1. After the SLURM jobs finish on HPC, pull the release to the local workstation:
    ```bash
-   scp hpc:$BASE_PATH/Pthr_GO_*.tsv ./
-   scp hpc:$BASE_PATH/inputforGOClassification.tsv ./
-   scp hpc:$BASE_PATH/goparentchild*.tsv ./
-   # ... other loading files
+   make SRC_HOST=hpc SRC_BASE_PATH=/path/to/2026-08-18_fullgo fetch_release_files
    ```
+   Pulls the 4 DB-load files plus `profile.txt`, `go.json`, `goparentchild_isaonly.tsv`,
+   `resources/complex_terms.tsv` and `go.obo`. A missing manifest file fails the recipe and
+   names its consumer, rather than surfacing hours later as a failed `COPY`.
 
-2. Before `load_raw_go_to_*`:
+2. Before `load_raw_go_to_*`, relay the loading files to the DB server:
    ```bash
-   scp Pthr_GO_*.tsv dbserver:/pgres_data/data/
-   scp inputforGOClassification.tsv dbserver:/pgres_data/data/
-   # ... etc
+   make DB_HOST=dbserver push_db_load_files
    ```
+   Sends only the four files a `{load_dir}` COPY reads. A compressed sibling is preferred on
+   the wire (`.gz`, then `.tar.gz`, then the plain file) and expanded on the DB server, since
+   `COPY` reads the plain `.tsv`: `gunzip -f` for a `.gz`, `tar -xzOf` redirected to the plain
+   name for a `.tar.gz`. Completed releases archive Pthr_GO as `.tsv.tar.gz`, and that name also
+   ends in `.gz` - gunzipping it would leave a `.tsv.tar` no COPY can read.
 
-3. After `create_gafs`:
+3. After `release_tarball`, publish and archive the GAFs:
    ```bash
-   scp -r IBA_GAFs/ fileserver:/path/to/hosting/
-   scp -r IBA_GAFs/ hpc:/path/to/backup/
+   make FTP_HOST=fileserver FTP_PATH=/srv/ftp/downloads/paint/19.0/2026-08-18 push_gafs_to_ftp
+   make HPC_HOST=hpc HPC_ARCHIVE_PATH=/archive/paint/19.0 archive_gafs_to_hpc
    ```
+   Both ship the release tarball. The file-server push unpacks it remotely with
+   `--strip-components=1`, so `FTP_PATH` is the dated release directory itself; the HPC copy
+   stays packed.
 
-These transfers are a pain point: they are error-prone, undocumented, and break the pipeline into disconnected segments that can't be scripted end-to-end.
+Transfers use rsync over ssh, so an interrupted multi-GB file resumes rather than restarting.
+Set the hosts and paths in `config.mk` to avoid passing them each time.
+
 
 ## Timing and Monitoring
 

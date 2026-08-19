@@ -1,0 +1,21 @@
+# Per-proteome override of which GO release GAF scripts/download_fullgo.py downloads for a
+# species. Two whitespace-separated columns: PANTHER proteome (OSCODE) and source, where
+# source is "uniprot" or "mod". Trailing # comments carry the rationale.
+#
+# Proteomes NOT listed here follow the global default: -uniprot normally, or -mod wherever a
+# -mod.gaf.gz exists under PREFER_MOD_GAFS=1 (download_fullgo.py --prefer_mod). So this file
+# reads as an always-mod list under the plain default and as a never-mod list under the flag.
+#
+# Why any of this exists: PANTHER cannot map every MOD ID namespace back to UniProt, and a
+# -mod GAF whose namespace does not map produces almost no rows in Pthr_GO_<version>.tsv.
+# Breakage is per-proteome, not per-namespace - XENTR is also Xenbase and came through fine.
+# Verify any change here with `make compare_pthr_go_counts` before loading the DB.
+#
+# Counts below are Pthr_GO_19.0.tsv annotation rows, 2026-07-27 -> 2026-08-10, when ECOLI,
+# XENLA and SCHJY were switched to -mod.
+
+ECOLI	uniprot	# EcoCyc IDs do not map; 54,316 -> 677 (-98.8%)
+XENLA	uniprot	# Xenbase IDs do not map for this proteome; 342,375 -> 203,089 (-40.7%)
+SCHJY	uniprot	# JaponicusDB IDs do not map; 42,549 -> 0 (-100%)
+
+DANRE	mod	# ZFIN IDs map fine and -uniprot drops annotations; 141,825 -> 205,275 (+44.7%)

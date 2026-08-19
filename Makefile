@@ -14,6 +14,49 @@ GO_VERSION_DATE ?= $(shell grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f
 export PANTHER_VERSION ?= 15.0
 export GAF_VERSION ?= 2.2
 
+### Percent deviation at which compare_pthr_go_counts flags a proteome and fails the recipe.
+PTHR_GO_DIFF_THRESHOLD ?= 10.0
+
+### GO source location - defaults target the LBL GO release (scripts/download_fullgo.py).
+### For GOEx (scripts/download_goex.py) override with:
+###   GO_CURRENT_BASE_URL=https://ftp.ebi.ac.uk/pub/contrib/goa/goex/current/ \
+###   GO_RELEASE_BASE_URL=https://ftp.ebi.ac.uk/pub/contrib/goa/goex/releases/ \
+###   GO_RELEASE_DATE_FILE=$$(BASE_PATH)/release_date.txt GO_DOI_FILE=
+### GO_DOI_FILE is optional - set it empty to leave the DOI out of profile.txt (GOEx
+### publishes no DOI), which also empties the go_doi passed to the *_version.sql recipes.
+### Set PREFER_MOD_GAFS to any non-empty value to download a species' -mod.gaf.gz instead
+### of its -uniprot.gaf.gz wherever the -mod file exists (e.g. PREFER_MOD_GAFS=1 make
+### download_fullgo). Default is -uniprot only; use this while a -uniprot file is dropping
+### annotations vs its -mod counterpart. LBL GO release only, not GOEx.
+PREFER_MOD_GAFS ?=
+### Per-proteome overrides of that choice, in either direction - PANTHER cannot map every MOD
+### ID namespace, so some proteomes must never take -mod. Reads as an always-mod list under the
+### default and as a never-mod list under PREFER_MOD_GAFS. Verify edits with
+### `make compare_pthr_go_counts` before loading the DB.
+GAF_SOURCE_BY_PROTEOME ?= resources/gaf_source_by_proteome.tsv
+
+### Cross-machine file transfers (scripts/transfer_release_files.py). A firewall blocks HPC
+### from reaching the DB servers, so the local workstation relays. Set these in config.mk.
+###   fetch_release_files : SRC_HOST + SRC_BASE_PATH  (cluster BASE_PATH) -> local BASE_PATH
+###   push_db_load_files  : DB_HOST + DB_LOAD_DIR     (load_dir from config/config.yaml)
+###   push_gafs_to_ftp    : FTP_HOST + FTP_PATH       (e.g. .../downloads/paint/19.0/<date>)
+###   archive_gafs_to_hpc : HPC_HOST + HPC_ARCHIVE_PATH
+### Every recipe takes DRY_RUN=1 to print the transfers without moving anything - run that
+### first, these move multiple GB.
+SRC_HOST ?=
+SRC_BASE_PATH ?=
+DB_HOST ?=
+DB_LOAD_DIR ?= /pgres_data/data/
+FTP_HOST ?=
+FTP_PATH ?=
+HPC_HOST ?= $(SRC_HOST)
+HPC_ARCHIVE_PATH ?=
+TRANSFER_FLAGS = $(if $(DRY_RUN),--dry_run) -p $(PANTHER_VERSION)
+GO_CURRENT_BASE_URL ?= https://current.geneontology.org/
+GO_RELEASE_BASE_URL ?= https://release.geneontology.org/
+GO_RELEASE_DATE_FILE ?= $(BASE_PATH)/release-date.json
+GO_DOI_FILE ?= $(BASE_PATH)/release-archive-doi.json
+
 ifeq ($(PANTHER_VERSION),13.1)
 ### PANTHER 13.1 ###
 export PANTHER_VERSION_DATE = 20180203
@@ -142,8 +185,9 @@ check-profile:
 
 download_fullgo:
 	mkdir -p $(GAF_FILES_PATH) $(BASE_PATH)/resources
-# 	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u http://current.geneontology.org/
-	python3 scripts/download_goex.py -d $(BASE_PATH) -g $(GAF_FILES_PATH)
+	python3 scripts/download_fullgo.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u $(GO_CURRENT_BASE_URL) \
+		-s $(GAF_SOURCE_BY_PROTEOME) $(if $(PREFER_MOD_GAFS),--prefer_mod)
+# 	python3 scripts/download_goex.py -d $(BASE_PATH) -g $(GAF_FILES_PATH) -u $(GO_CURRENT_BASE_URL)
 	envsubst < scripts/gunzip_gafs.slurm > $(BASE_PATH)/gunzip_gafs.slurm
 	sbatch $(BASE_PATH)/gunzip_gafs.slurm
 	$(MAKE) make_profile
@@ -179,6 +223,18 @@ slurm_fullGoMappingPthr:
 	NUMGROUPS=$(shell ls -d $(GAF_FILES_PATH)/group_* | wc -l) envsubst < scripts/fullGoMappingPthrHierarchy_para.slurm > $(BASE_PATH)/fullGoMappingPthrHierarchy_para_$(PANTHER_VERSION).slurm
 	sbatch $(BASE_PATH)/fullGoMappingPthrHierarchy_para_$(PANTHER_VERSION).slurm
 
+# QA gate between slurm_fullGoMappingPthr and load_raw_go_to_panther: compares per-proteome
+# annotation counts against the previous release so a GAF-source or ID-mapping change that
+# guts a proteome is caught before the DB load. Exits non-zero on any flagged proteome; raising
+# PTHR_GO_DIFF_THRESHOLD narrows what gets flagged, but a proteome that appeared or vanished
+# outright always flags - pass --no_fail to run advisory-only. BEFORE_DATE names the previous
+# release dir, where Pthr_GO is usually archived as .tsv.tar.gz.
+compare_pthr_go_counts: BEFORE_PTHR_GO ?= $(BEFORE_DATE)_fullgo/Pthr_GO_$(PANTHER_VERSION).tsv
+compare_pthr_go_counts: AFTER_PTHR_GO ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION).tsv
+compare_pthr_go_counts:
+	python3 scripts/compare_pthr_go_counts.py -b $(BEFORE_PTHR_GO) -a $(AFTER_PTHR_GO) \
+		-t $(PTHR_GO_DIFF_THRESHOLD) -o $(BASE_PATH)/pthr_go_count_diff.tsv
+
 rm_partial_fullGoMappingPthr_files:
 	rm $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION).tsv.*
 	rm $(BASE_PATH)/GOWithHierarchy-CC-$(PANTHER_VERSION).dat.*
@@ -199,8 +255,10 @@ submit_fullGoMappingPthrHierarchy_slurm:
 build_pthr_go_match: PREV_PAINT_EXP_GAF ?= $(BEFORE_DATE)_fullgo/gene_association.paint_exp_uniprot.gaf
 build_pthr_go_match: FULL_GO_TSV ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION).tsv
 build_pthr_go_match: MATCH_OUT ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION)_match.tsv
+build_pthr_go_match: FILTERED_OUT ?= $(BASE_PATH)/Pthr_GO_$(PANTHER_VERSION)_filtered.tsv
 build_pthr_go_match:
-	PREV_PAINT_EXP_GAF=$(PREV_PAINT_EXP_GAF) FULL_GO_TSV=$(FULL_GO_TSV) MATCH_OUT=$(MATCH_OUT) envsubst < scripts/build_pthr_go_match.slurm > $(BASE_PATH)/build_pthr_go_match.slurm
+	PREV_PAINT_EXP_GAF=$(PREV_PAINT_EXP_GAF) FULL_GO_TSV=$(FULL_GO_TSV) MATCH_OUT=$(MATCH_OUT) \
+		FILTERED_OUT=$(FILTERED_OUT) envsubst < scripts/build_pthr_go_match.slurm > $(BASE_PATH)/build_pthr_go_match.slurm
 	sbatch $(BASE_PATH)/build_pthr_go_match.slurm
 
 gaf2pmid_slurm:
@@ -229,7 +287,7 @@ get_fullgo_date: check-profile
 	grep GO $(BASE_PATH)/profile.txt | head -n 1 | cut -f2
 
 make_profile:
-	python3 scripts/create_profile.py -j $(BASE_PATH)/release_date.txt -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
+	python3 scripts/create_profile.py -j $(GO_RELEASE_DATE_FILE) $(if $(GO_DOI_FILE),-d $(GO_DOI_FILE),) -p $(PANTHER_VERSION) > $(BASE_PATH)/profile.txt
 
 make_profile_from_db:
 	# query DB table fullgo_version - likely w/ python
@@ -237,7 +295,8 @@ make_profile_from_db:
 
 make_readme:
 	echo "GO source files downloaded on $(shell date +%Y-%m-%d)" > $(BASE_PATH)/README
-	python3 scripts/make_readme.py -r $(BASE_PATH)/release_date.txt -d $(BASE_PATH)/downloaded_files.txt >> $(BASE_PATH)/README
+	python3 scripts/make_readme.py -r $(GO_RELEASE_DATE_FILE) -d $(BASE_PATH)/downloaded_files.txt \
+		-c $(GO_CURRENT_BASE_URL) -b $(GO_RELEASE_BASE_URL) >> $(BASE_PATH)/README
 
 raw_table_count:
 	python3 scripts/db_caller.py scripts/sql/table_count.sql -v panther,goanno_wf
@@ -427,12 +486,12 @@ reset_paint_table_names:
 
 # update_taxon_constraints_file:
 
-setup_preupdate_data: $(BASE_PATH)/resources/panther_blacklist.txt $(BASE_PATH)/resources/complex_terms.tsv
+setup_preupdate_data: $(BASE_PATH)/resources/complex_terms.tsv # $(BASE_PATH)/resources/panther_blacklist.txt
 	mkdir -p $(BASE_PATH)/preupdate_data/resources
 	# Retain previous GO version for accuracy
 	$(MAKE) BASE_PATH=$(BASE_PATH)/preupdate_data make_profile_from_db
 	# Reuse panther_blacklist.txt cuz it takes sooo long to make
-	ln -sf $(realpath $(BASE_PATH)/resources/panther_blacklist.txt) $(BASE_PATH)/preupdate_data/resources/panther_blacklist.txt
+# 	ln -sf $(realpath $(BASE_PATH)/resources/panther_blacklist.txt) $(BASE_PATH)/preupdate_data/resources/panther_blacklist.txt
 	ln -sf $(realpath $(BASE_PATH)/resources/complex_terms.tsv) $(BASE_PATH)/preupdate_data/resources/complex_terms.tsv
 	ln -sf $(realpath $(BASE_PATH)/goparentchild_isaonly.tsv) $(BASE_PATH)/preupdate_data/goparentchild_isaonly.tsv
 	ln -sf $(realpath $(BASE_PATH)/go.json) $(BASE_PATH)/preupdate_data/go.json
@@ -615,8 +674,37 @@ release_tarball: $(BASE_PATH)/IBD $(TREEGRAFTER_ANNOTATIONS_TOTAL) $(BASE_PATH)/
 	@echo "==> Release tarball created:"
 	@ls -lh $(RELEASE_TARBALL)
 
+# Cluster -> local. Pulls every file the local DB-update and GAF-generation phases need;
+# scripts/transfer_release_files.py holds the manifest so the list is not something to remember.
+fetch_release_files:
+	@test -n "$(SRC_HOST)" || { echo "ERROR: set SRC_HOST (cluster host)" >&2; exit 1; }
+	@test -n "$(SRC_BASE_PATH)" || { echo "ERROR: set SRC_BASE_PATH (BASE_PATH on $(SRC_HOST))" >&2; exit 1; }
+	mkdir -p $(BASE_PATH)
+	python3 scripts/transfer_release_files.py fetch -H $(SRC_HOST) -r $(SRC_BASE_PATH) \
+		-l $(BASE_PATH) $(TRANSFER_FLAGS)
+
+# Local -> DB server load_dir, for the COPY statements in */load_raw_go.sql.
+push_db_load_files:
+	@test -n "$(DB_HOST)" || { echo "ERROR: set DB_HOST (DB server)" >&2; exit 1; }
+	python3 scripts/transfer_release_files.py push_db -H $(DB_HOST) -r $(DB_LOAD_DIR) \
+		-l $(BASE_PATH) $(TRANSFER_FLAGS)
+
+# Local -> public file server. Ships the release_tarball payload (IBD.gaf, the TreeGrafter
+# annotations, gene_association.paint_uniprot.gaf, presubmission/*.gaf.gz) and unpacks it into
+# FTP_PATH, which should be the dated release dir, e.g. .../downloads/paint/19.0/2026-08-18.
+# RELEASE_TARBALL defaults to today's date; override it to push an older release's tarball.
 push_gafs_to_ftp:
-	@echo "Needs to be implemented"
+	@test -n "$(FTP_HOST)" || { echo "ERROR: set FTP_HOST (file server)" >&2; exit 1; }
+	@test -n "$(FTP_PATH)" || { echo "ERROR: set FTP_PATH (dated release dir on $(FTP_HOST))" >&2; exit 1; }
+	python3 scripts/transfer_release_files.py push_gafs -H $(FTP_HOST) -r $(FTP_PATH) \
+		-a $(RELEASE_TARBALL) --unpack $(TRANSFER_FLAGS)
+
+# Local -> HPC, for archival. Stays a tarball; no unpacking.
+archive_gafs_to_hpc:
+	@test -n "$(HPC_HOST)" || { echo "ERROR: set HPC_HOST (or SRC_HOST)" >&2; exit 1; }
+	@test -n "$(HPC_ARCHIVE_PATH)" || { echo "ERROR: set HPC_ARCHIVE_PATH" >&2; exit 1; }
+	python3 scripts/transfer_release_files.py push_gafs -H $(HPC_HOST) -r $(HPC_ARCHIVE_PATH) \
+		-a $(RELEASE_TARBALL) $(TRANSFER_FLAGS)
 
 leaf_species_list:
 	python3 scripts/db_caller.py -n scripts/sql/util/leaf_species_list.sql

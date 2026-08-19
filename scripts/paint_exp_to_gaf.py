@@ -203,6 +203,8 @@ class GafFactory:
             db = mod_id.split(':')[0] if ':' in mod_id else ''
             db_object_id = mod_id.split(':', maxsplit=1)[1]
         db_object_symbol = gene_entry.synonym
+        if not db_object_symbol:
+            db_object_symbol = db_object_id
         go_id = row['accession']
         aspect = self.get_term_aspect(go_id)
         default_relation = self.relation_rules[aspect]

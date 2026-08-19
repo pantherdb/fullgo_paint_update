@@ -10,4 +10,5 @@ BASE_PATH=$BASE_PATH \
     PREV_PAINT_EXP_GAF=$PREV_PAINT_EXP_GAF \
     FULL_GO_TSV=$FULL_GO_TSV \
     MATCH_OUT=$MATCH_OUT \
+    FILTERED_OUT=$FILTERED_OUT \
     bash scripts/build_pthr_go_match.sh
