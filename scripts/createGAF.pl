@@ -199,7 +199,10 @@ close (TA);
 ###################################################
 
 my $node = $node_dat;   # from PANTHER version.
-my %ptn_an;
+# NB: no %ptn_an here. createGAFallDescendants.pl keeps one and reads it, but this script
+# only ever wrote it: $ptn_an{$ptn}={$an} allocated an anonymous single-key hashref for
+# every row of a 3.57M-row node.dat and nothing ever read it back. Measured on node_19.dat,
+# this loop went from 2274MB to 962MB without it.
 my %an_ptn;
 open (FH, $node) or die "Could not open file $node\n";
 #my $header=<FH>;
@@ -210,7 +213,6 @@ while (my $line=<FH>){
     my $book=$an;
     $book=~s/\:AN\d+//;
     
-    $ptn_an{$ptn}={$an};
     $an_ptn{$an}=$ptn;
 }
 close (FH);
@@ -227,7 +229,7 @@ shift @files;
 shift @files;
 
 my %parent_child;
-my %child_parent;
+# No %child_parent: it was written for every non-root tree node and never read.
 my %leaf;
 my %id_lookup;  # the long ID to gene or protein ID lookup
 my %long_id_lookup;  # the gene or protein ID to long ID lookup; reverse of %id_lookup
@@ -254,7 +256,6 @@ foreach my $file (@files){
         if ($parent_an){
             my $parent = "$book:$parent_an";
             $parent_child{$parent}{$node}=1;
-            $child_parent{$node}=$parent;
         }
         
         my $foo;

@@ -108,7 +108,35 @@ The gene-to-PANTHER mapping is the most compute-intensive step and uses SLURM ar
 4. Each task runs `fullGoMappingPthrHierarchy.pl` on its group
 5. Partial results are concatenated after all tasks complete
 
-## `run_paint_pipeline.sh` (Semi-automated PAINT Pipeline)
+## `run_paint_table_update.py` (One-command PAINT table update)
+
+`make update_paint_tables` runs the whole "Updating PAINT tables" block. The step list lives in
+the script, so the operator no longer retypes README's twelve make calls once a month:
+
+```bash
+make update_paint_tables                                   # ask before the switch
+make CONFIRM_SWITCH=1 update_paint_tables                  # unattended
+make DRY_RUN=1 update_paint_tables                         # print the plan only
+make START_AT=update_paint_go_evidence update_paint_tables # resume after a failure
+```
+
+Key characteristics:
+- Runs a preflight (`config/config.yaml`, `profile.txt`, `resources/complex_terms.tsv`) before
+  the first step, so a missing file fails in seconds rather than hours in
+- Interleaves `scripts/settle_db_tables.py` after every write-heavy step: waits for autovacuum
+  to drain off the tables that step rewrote, then `VACUUM (ANALYZE)`s them
+- Fails fast, and prints the failed step, `AFFECTED_TABLES`, and a `START_AT=` resume command
+- Gates `switch_table_names_go_only`, the point of no return, behind a confirmation that an
+  unattended run cannot answer
+- Streams each step's output to the terminal and to `$BASE_PATH/log.txt` without a shell pipe,
+  so exit codes survive
+- Reports per-step timings at the end
+
+## `run_paint_pipeline.sh` (Superseded semi-automated PAINT Pipeline)
+
+Superseded by `make update_paint_tables`. Retained for reference; its step list predates the
+current block, it hardcodes a `_fullgo_test` BASE_PATH, and its `| tee` without
+`set -o pipefail` means it never observed a step's exit code.
 
 This script automates the PAINT update portion by calling each Makefile recipe sequentially:
 
@@ -139,15 +167,15 @@ Key characteristics:
 ### Current State: Minimal
 
 - **No step-level error checking**: Makefile recipes don't use `set -e` or check return codes between commands within a recipe.
-- **No pipeline-level error checking**: `run_paint_pipeline.sh` doesn't check exit codes between steps.
-- **No retry logic**: Failed steps must be manually investigated and re-run.
-- **No rollback automation**: `reset_paint_table.sh` exists but must be manually invoked with the correct table names.
+- **Pipeline-level error checking**: `run_paint_table_update.py` stops at the first non-zero step and prints the resume command. The older `run_paint_pipeline.sh` does not.
+- **No retry logic**: Failed steps must be manually investigated and re-run, though `START_AT=` makes resuming cheap.
+- **No rollback automation**: `reset_paint_table.sh` exists but must be manually invoked; `run_paint_table_update.py` at least prints the `AFFECTED_TABLES` list to hand it.
 - **No alerting**: No email, Slack, or other notification on failure.
 
 ### Recovery Procedures
 
 **For PAINT pipeline failures**:
-1. Note which tables were affected (tracked by `AFFECTED_TABLES` in `run_paint_pipeline.sh`)
+1. Note which tables were affected (`run_paint_table_update.py` prints `AFFECTED_TABLES=` on failure)
 2. Run `./scripts/util/reset_paint_table.sh {AFFECTED_TABLES}` to rename `_old` tables back
 3. On DB server: run `./restore_paint_table.sh {AFFECTED_TABLES}` if restore from dump needed
 4. Investigate and fix the issue

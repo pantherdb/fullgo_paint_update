@@ -39,18 +39,42 @@ After these are run the Panther web server needs to be restarted before the chan
 ## Updating PAINT tables
 
 ```
-make load_raw_go_to_paint
-make update_paint_go_classification
-make update_paint_go_annotation
-make update_paint_go_evidence
-make update_paint_go_annot_qualifier
-make switch_evidence_to_pmid
-make delete_incorrect_go_annot_qualifiers
-make setup_preupdate_data
-make gen_iba_gaf_yamls
-make switch_table_names_go_only
-make regenerate_go_aggregate_view
-make regenerate_paint_aggregate_view
+make update_paint_tables
+```
+This runs the whole block in order. The step list lives in `scripts/run_paint_table_update.py`
+(`make list_paint_table_steps` prints it) rather than here, so a step cannot be dropped by
+retyping the block; a dropped step is otherwise not noticed until GAF generation produces
+wrong output hours later.
+
+Between the write-heavy steps it runs `scripts/settle_db_tables.py`, which waits for
+autovacuum to drain off the tables that step just rewrote and then `VACUUM (ANALYZE)`s them.
+`db_caller.py` commits each `.sql` file as one transaction, so autovacuum fires the instant a
+step returns and the next step pays for it in a lock wait, in disk I/O, or in a plan built on
+stats nothing has refreshed yet — worst case the freshly `CREATE`d `go_classification_descendants`
+and `goanno_w_qualifier` matviews, which carry no stats at all until analyzed. The vacuum costs
+the same either way; settling just makes it synchronous and visible instead of a surprise stall.
+
+`switch_table_names_go_only` is the point of no return — it renames the `_new` tables over the
+live ones. Everything before it only touches `_new` tables and can be re-run, so the switch is
+gated: it prints `paint_go_table_counts` and asks first, and a run with no terminal to ask on
+stops in front of it rather than flipping the live tables unattended.
+
+| | |
+|---|---|
+| `make DRY_RUN=1 update_paint_tables` | print the plan, run nothing |
+| `make CONFIRM_SWITCH=1 update_paint_tables` | unattended, switch included |
+| `make START_AT=<step> update_paint_tables` | resume after a failure |
+| `make STOP_AFTER=<step> update_paint_tables` | stop early (e.g. before the switch) |
+| `make list_paint_table_steps` | print the step names |
+
+On failure it stops at once and prints the failed step, the `AFFECTED_TABLES` list for
+`scripts/util/reset_paint_table.sh`, and the exact `START_AT=` command to resume with. If a
+*settle* fails the resume points at the following step: the step itself already committed, and
+re-running it would hit an `ALTER TABLE ..._old RENAME TO ..._new` with no `_old` table left.
+
+To settle tables by hand when a step is already stalling behind autovacuum:
+```
+make TABLES="go_annotation_new go_evidence_new" settle_db_tables
 ```
 
 ## GAF generation

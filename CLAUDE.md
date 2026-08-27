@@ -38,6 +38,30 @@ Transfers use rsync over ssh so an interrupted multi-GB file resumes. A compress
 
 **PAINT pipeline:** `load_raw_go_to_paint` → `update_paint_go_classification` → `update_paint_go_annotation` → `update_paint_go_evidence` → `update_paint_go_annot_qualifier` → `switch_evidence_to_pmid` → `delete_incorrect_go_annot_qualifiers` → `setup_preupdate_data` → `gen_iba_gaf_yamls` → `switch_table_names_go_only`
 
+**PAINT pipeline, one command:** `make update_paint_tables` runs that whole block via
+`scripts/run_paint_table_update.py`, which owns the step list (`make list_paint_table_steps`).
+Between write-heavy steps it runs `scripts/settle_db_tables.py`: `db_caller.py` executes a whole
+`.sql` file on one non-autocommit connection and commits at the end, so autovacuum fires the
+instant a step returns and stalls the next one on its lock, its I/O, or stats it has not
+refreshed — acutely for `go_classification_descendants` and `goanno_w_qualifier`, matviews the
+pipeline `DROP`s and `CREATE`s, which carry no stats until analyzed. Settling waits the vacuum
+out and then `VACUUM (ANALYZE)`s explicitly, which also resets the dead-tuple counters so
+autovacuum has no reason to re-fire mid-step. This cannot be a `.sql` file through `db_caller.py`
+— `VACUUM` cannot run in a transaction block and `DBCaller` never sets autocommit, so the script
+opens its own autocommit connection off `DBCallerConfig`.
+
+`switch_table_names_go_only` is the point of no return; everything before it only touches `_new`
+tables. It is gated — prints `paint_go_table_counts`, asks, and stops in front of the switch when
+there is no terminal to ask on. `CONFIRM_SWITCH=1` proceeds unattended, `DRY_RUN=1` prints the
+plan, `START_AT=`/`STOP_AFTER=` bound the range. A preflight checks `config/config.yaml`,
+`profile.txt` and `resources/complex_terms.tsv` up front so a missing file costs seconds, not
+hours. On failure it prints the failed step, `AFFECTED_TABLES` for
+`scripts/util/reset_paint_table.sh`, and the `START_AT=` resume command — pointing at the
+*following* step when a settle failed, since the step itself already committed and its
+`ALTER TABLE ..._old RENAME` cannot run twice. `scripts/run_paint_pipeline.sh` is the superseded
+predecessor: stale step list, hardcoded `_fullgo_test` BASE_PATH, and no `set -o pipefail` behind
+its `| tee`, so it never saw a non-zero exit code.
+
 **GAF generation:** `paint_annotation` → `paint_annotation_qualifier` → `paint_evidence` → `go_aggregate` → `organism_taxon` → `create_gafs` → `repair_gaf_symbols` → `propagate_paint_ibas` → `release_tarball` → `push_gafs_to_ftp` / `archive_gafs_to_hpc`
 
 **IBA propagation:** `make propagate_paint_ibas` runs `scripts/propagate_paint_ibas.py` to propagate PAINT IBD GO annotations down PANTHER trees, producing `$(BASE_PATH)/PAINT_TreeGrafter_Annotations_TOTAL.txt` for the TreeGrafter pipeline. Reads the IBD GAF emitted by `create_gafs` (`$(BASE_PATH)/IBD`), the per-version NHX trees (`TREEGRAFTER_TREE_DIR`), `annotation_treegrafter.dat` (`TREEGRAFTER_ANNOTATION_PATH`, SF/PC only), and `node.dat` (`NODE_PATH`). Set `TREEGRAFTER_TREE_DIR` and `TREEGRAFTER_ANNOTATION_PATH` in `config.mk` for the active PANTHER version. Uses `pthr_db_caller.haiming_to_newick` for NHX→Newick conversion. Design doc: `.plans/2026-03-05-propagate-paint-ibas-design.md`. Implementation plan: `.plans/2026-03-05-propagate-paint-ibas.md`.
