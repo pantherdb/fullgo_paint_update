@@ -23,8 +23,29 @@ CREATE MATERIALIZED VIEW panther_upl.go_aggregate AS
   LEFT JOIN panther_upl.qualifier q ON gpq.qualifier_id = q.qualifier_id::numeric 
   WHERE n.classification_version_sid::numeric = {classification_version_sid}::numeric AND n.obsolescence_date IS NULL AND clf.obsolescence_date IS NULL WITH DATA;  
 
+-- The PAINT validator (edu.usc.ksom.pm.panther.paintServer.tools.FixAnnotUtility)
+-- looks this view up one book at a time, via
+--   WHERE accession LIKE 'PTHR12345:%'
+-- Without an index that is a sequential scan of the whole view for every book:
+-- ~12.5M rows and ~1.5 GB of I/O discarded per book, ~1,800 ms each, repeated
+-- for all ~10,000 books.
+--
+-- text_pattern_ops is REQUIRED and must not be "simplified" away.  The database
+-- collation is en_US.UTF-8, and under a non-C collation a plain btree index
+-- CANNOT satisfy a LIKE 'prefix%' predicate - the index would be created but
+-- silently never used.
+CREATE INDEX idx_go_aggregate_accession_pat
+  ON panther_upl.go_aggregate (accession text_pattern_ops);
+
+-- A newly created materialized view has no statistics.  Without ANALYZE the
+-- planner may keep choosing a sequential scan even though the index exists.
+ANALYZE panther_upl.go_aggregate;
+
+-- Owned by panther_upl, the schema this view lives in.  This was previously
+-- panther_isp, a role belonging to a different project, which meant nobody on
+-- the PAINT side could add an index or otherwise alter the view without a DBA.
 ALTER TABLE panther_upl.go_aggregate
-  OWNER TO panther_isp;
+  OWNER TO panther_upl;
 GRANT ALL ON TABLE panther_upl.go_aggregate TO panther_isp;
 GRANT ALL ON TABLE panther_upl.go_aggregate TO panther_users;
 GRANT ALL ON TABLE panther_upl.go_aggregate TO panther_paint;
