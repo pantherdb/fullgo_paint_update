@@ -162,6 +162,8 @@ export TAXON = organism_taxon
 # GENE_DAT = "/auto/pmd-02/pdt/pdthomas/panther/xiaosonh/UPL/PANTHER13.1/library_building/DBload/gene.dat"
 ### -o output IBA gaf file folder
 export IBA_DIR = $(BASE_PATH)/IBA_GAFs
+### Directory emptied by clean_iba_dir; create_gafs_goa points it at the _uniprot dir.
+IBA_CLEAN_DIR ?= $(IBA_DIR)
 
 ### gen_iba_gaf_yamls variables ###
 export GAF_GEN_A_DATA_TITLE = Before  # Before GO update - fullgo_version before table switch? Get from DB?
@@ -193,7 +195,8 @@ export RELEASE_DIR_NAME = $(TODAYS_DATE)_release
 export RELEASE_STAGING = $(BASE_PATH)/release_staging/$(RELEASE_DIR_NAME)
 export RELEASE_TARBALL = $(BASE_PATH)/$(TODAYS_DATE)_release.tar.gz
 
-.PHONY: check-profile update_paint_tables list_paint_table_steps settle_db_tables
+.PHONY: check-profile update_paint_tables list_paint_table_steps settle_db_tables \
+	clean_iba_dir paint_exp_annotation paint_exp_gaf paint_exp_gaf_uniprot
 check-profile:
 	@test -f $(BASE_PATH)/profile.txt || { \
 		echo "ERROR: $(BASE_PATH)/profile.txt not found." >&2; \
@@ -537,33 +540,35 @@ gen_iba_gaf_yamls:
 	envsubst < resources/iba_gaf_gen_a.yaml > $(BASE_PATH)/iba_gaf_gen_a.yaml
 	envsubst < resources/iba_gaf_gen_b.yaml > $(BASE_PATH)/iba_gaf_gen_b.yaml
 
-.PRECIOUS: $(IBA_DIR)/gene_association.paint_exp.gaf
-$(IBA_DIR)/gene_association.paint_exp.gaf: $(BASE_PATH)/resources/paint_exp_annotation
-	OUTPUT_GAF=$@ envsubst < scripts/paint_exp_to_gaf.sh > $(BASE_PATH)/paint_exp_to_gaf.sh
+### Name-only targets, like paint_annotation and go_aggregate below. createGAF.pl rewrites
+### every IBA GAF on each run, so the paint_exp GAF and the SQL dump it is built from have to
+### rewrite too. As file targets they went stale instead: make saw the files, declared them up
+### to date, and a second create_gafs in one BASE_PATH reused the previous run's annotations.
+paint_exp_gaf: paint_exp_annotation
+	OUTPUT_GAF=$(IBA_DIR)/gene_association.paint_exp.gaf envsubst < scripts/paint_exp_to_gaf.sh > $(BASE_PATH)/paint_exp_to_gaf.sh
 	chmod 744 $(BASE_PATH)/paint_exp_to_gaf.sh
 	./$(BASE_PATH)/paint_exp_to_gaf.sh
 
-.PRECIOUS: %/gene_association.paint_exp_uniprot.gaf
-%/gene_association.paint_exp_uniprot.gaf: $(BASE_PATH)/resources/paint_exp_annotation
-	GOA_MODE=-U OUTPUT_GAF=$@ envsubst < scripts/paint_exp_to_gaf.sh > $(BASE_PATH)/paint_exp_to_gaf_uniprot.sh
+paint_exp_gaf_uniprot: paint_exp_annotation
+	GOA_MODE=-U OUTPUT_GAF=$(BASE_PATH)/gene_association.paint_exp_uniprot.gaf envsubst < scripts/paint_exp_to_gaf.sh > $(BASE_PATH)/paint_exp_to_gaf_uniprot.sh
 	chmod 744 $(BASE_PATH)/paint_exp_to_gaf_uniprot.sh
 	./$(BASE_PATH)/paint_exp_to_gaf_uniprot.sh
 
-create_gafs: setup_directories pombe_sources $(BASE_PATH)/resources/zfin.gpi $(BASE_PATH)/resources/japonicusdb.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate paint_exp_aggregate check-profile
+create_gafs: setup_directories clean_iba_dir pombe_sources $(BASE_PATH)/resources/zfin.gpi $(BASE_PATH)/resources/japonicusdb.gpi paint_annotation paint_evidence paint_annotation_qualifier organism_taxon go_aggregate paint_exp_aggregate check-profile
 	# Slurm this
 	# envsubst < scripts/createGAF.slurm > $(BASE_PATH)/createGAF.slurm
 	# sbatch $(BASE_PATH)/createGAF.slurm
 	envsubst < scripts/createGAF.sh > $(BASE_PATH)/createGAF.sh
 	chmod 744 $(BASE_PATH)/createGAF.sh
 	./$(BASE_PATH)/createGAF.sh
-	$(MAKE) $(IBA_DIR)/gene_association.paint_exp.gaf
+	$(MAKE) paint_exp_gaf
 
 create_gafs_goa:
-	mkdir -p $(IBA_DIR)_uniprot
+	$(MAKE) IBA_CLEAN_DIR=$(IBA_DIR)_uniprot clean_iba_dir
 	IBA_DIR=$(IBA_DIR)_uniprot envsubst < scripts/createGAF_uniprot.sh > $(BASE_PATH)/createGAF_uniprot.sh
 	chmod 744 $(BASE_PATH)/createGAF_uniprot.sh
 	./$(BASE_PATH)/createGAF_uniprot.sh
-	$(MAKE) $(BASE_PATH)/gene_association.paint_exp_uniprot.gaf
+	$(MAKE) paint_exp_gaf_uniprot
 	cat <(grep -e '^\!' $(BASE_PATH)/IBA_GAFs_uniprot/gene_association.paint_human.gaf) <(grep -h -v -e '^\!' $(BASE_PATH)/IBA_GAFs_uniprot/*) <(grep -h -v -e '^\!' $(BASE_PATH)/gene_association.paint_exp_uniprot.gaf) > $(BASE_PATH)/gene_association.paint_uniprot.gaf
 
 .PRECIOUS: %/gene_association.paint_uniprot.gaf
@@ -578,6 +583,15 @@ create_gafs_from_xml: $(BASE_PATH)/resources/go_aspects.tsv
 setup_directories:
 	mkdir -p $(BASE_PATH)/resources
 	mkdir -p $(IBA_DIR)
+
+### createGAF.pl writes one GAF per species here and the aggregate steps sweep the directory
+### with a glob, so a species dropped since the last run would otherwise leave a stale GAF
+### behind to be swept up. Empty the directory rather than rm -rf it, and refuse an empty
+### BASE_PATH, so a mistyped override cannot turn this into rm -rf /IBA_GAFs.
+clean_iba_dir:
+	@test -n "$(BASE_PATH)" || { echo "ERROR: BASE_PATH is empty; refusing to clean $(IBA_CLEAN_DIR)." >&2; exit 1; }
+	mkdir -p $(IBA_CLEAN_DIR)
+	rm -f $(IBA_CLEAN_DIR)/*
 
 %resources/panther_blacklist.txt: %resources/uniprot_protein.gpi.ids
 	R_DIR=$*resources envsubst < scripts/create_panther_gene_blacklist.slurm > $*create_panther_gene_blacklist.slurm
@@ -614,9 +628,8 @@ go_aggregate:
 paint_exp_aggregate:
 	python3 scripts/db_caller.py scripts/sql/paint_exp_aggregate.sql -o $(BASE_PATH)/resources/paint_exp_aggregate
 
-.PRECIOUS: %/resources/paint_exp_annotation
-%/resources/paint_exp_annotation:
-	python3 scripts/db_caller.py scripts/sql/paint_exp_annotation.sql -o $@
+paint_exp_annotation:
+	python3 scripts/db_caller.py scripts/sql/paint_exp_annotation.sql -o $(BASE_PATH)/resources/paint_exp_annotation
 
 organism_taxon:
 	python3 scripts/db_caller.py scripts/sql/organism_taxon.sql -o $(BASE_PATH)/resources/$(TAXON)

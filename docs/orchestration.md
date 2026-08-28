@@ -66,7 +66,6 @@ Exported to environment (for envsubst and child processes)
 - `%/resources/complex_terms.tsv` -- ROBOT extraction
 - `%/resources/panther_blacklist.txt` -- blacklist generation
 - `%/TaxonConstraintsLookup.txt` -- taxon constraint table
-- `%/gene_association.paint_exp.gaf` -- experimental GAF
 
 ## SLURM Integration
 
