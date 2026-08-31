@@ -490,6 +490,18 @@ refresh_paint_panther_upl:
 	# psql Curation < /pgdata/pgsql/data/Curation.panther_upl.dump
 	# Also need to REFRESH MATERIALIZED VIEW for go_aggregate and paint_aggregate
 	# Run create_raw_go_tables.sql in pgAdmin
+	# Run 'make apply_paint_validator_schema' - a restored dump does not carry
+	# the indexes and function definition the PAINT validator needs
+
+### One-time schema setup required by the PAINT validator (FixAnnotUtility).
+### NOT part of a data update: the tables involved are not rebuilt by the
+### GO/PAINT load, so these survive normal loads. Run this after restoring or
+### relocating the database - a dump does not bring them along, and without
+### them the validator goes from ~2 hours to ~24 with no error to explain it.
+### Safe to re-run; every statement is idempotent.
+apply_paint_validator_schema:
+	python3 scripts/db_caller.py scripts/sql/schema/paint_validator_indexes.sql
+	python3 scripts/db_caller.py scripts/sql/schema/get_paint_exp_annotations.sql
 
 paint_error_srv_check:
 	perl scripts/paintErrorCheck.pl resources/book_list_13.1.txt "http://panthercuration.usc.edu/webservices/family.jsp?searchValue=book_var&searchType=SEARCH_TYPE_AGG_FAMILY_ANNOTATION_INFO" > $(BASE_PATH)/paint_error_check.xml

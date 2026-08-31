@@ -2,6 +2,44 @@
 Update of Panther and PAINT DBs with monthly GO release data.
 [Summary Google doc](https://docs.google.com/document/d/1Tx3DGLanQ1P6vBL6FWH5V5M7nVqCCCsqu-6m61jPtQ4/edit?usp=sharing)
 
+## Database schema prerequisites
+
+The PAINT validator (`FixAnnotUtility`, run after each load to re-validate every
+book) depends on four indexes and one function definition that are not created
+by any data update. They are not part of a load, but a database restored from a
+dump or moved to a new server will not have them, and the validator then takes
+about 24 hours instead of about 2 - with no error to explain it.
+
+```
+make apply_paint_validator_schema
+```
+
+Safe to re-run at any time; every statement is idempotent. It applies
+`scripts/sql/schema/paint_validator_indexes.sql` and
+`scripts/sql/schema/get_paint_exp_annotations.sql`, both of which document why
+each object exists and what its measured effect is.
+
+The fifth index, on the `go_aggregate` materialized view, lives in
+`scripts/sql/paint_go_update/regenerate_go_aggregate_view.sql` instead, because
+that view *is* dropped and recreated on every load and so must be re-indexed
+each time.
+
+To verify after a load or restore:
+
+```sql
+select tablename, indexname from pg_indexes
+where schemaname = 'panther_upl'
+  and indexname in ('idx_node_accession_pat', 'idx_node_ver_accession_pat',
+                    'idx_node_rel_child_parent', 'idx_node_organism_node_org',
+                    'idx_go_aggregate_accession_pat');
+
+select l.lanname, p.provolatile
+from pg_proc p join pg_language l on l.oid = p.prolang
+where p.proname = 'get_paint_exp_annotations';
+```
+
+Expect five index rows, and `lanname = sql` with `provolatile = s`.
+
 ## Updating GO tables
 Logging is not built in to the Makefile yet so you'll need to redirect output to a file. I like to do the following:
 ```
